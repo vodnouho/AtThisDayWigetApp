@@ -4,23 +4,23 @@ import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.SystemClock;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.widget.RemoteViews;
-import android.text.format.Time;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Locale;
 
 /**
- * Created by petukhov on 13.08.2015.
+ * Created on 13.08.2015.
  */
 public class ATDWidgetProvider extends AppWidgetProvider {
     private static final String TAG = "ATDWidgetProvider";
@@ -28,87 +28,116 @@ public class ATDWidgetProvider extends AppWidgetProvider {
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
+        Log.d(TAG, "onUpdate");
         final int N = appWidgetIds.length;
         // Perform this loop procedure for each App Widget that belongs to this provider
         for (int i=0; i<N; i++) {
             int appWidgetId = appWidgetIds[i];
 
-            if(!isUpdated(appWidgetId)){
-                updateData(appWidgetId);
+            if(isNeedUpdate(appWidgetId, context)){
+                updateAppWidget(context, appWidgetId);
             }
-            // Get the layout for the App Widget and attach an on-click listener
-            // to the button
-
-            RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.atd_widget_layout);
-
-            // Tell the AppWidgetManager to perform an update on the current app widget
-            appWidgetManager.updateAppWidget(appWidgetId, views);
         }
+    }
+
+
+
+    private boolean isNeedUpdate(int appWidgetId, Context context) {
+        String settingLang = SettingsActivity.loadPrefs(context, appWidgetId) ;
+        if(settingLang == null || settingLang.isEmpty()){
+            return false;
+        }
+        return true;
+    }
+
+
+
+    static void updateAppWidget(Context context, int appWidgetId) {
+        Log.d(TAG, "updateAppWidget ID:"+appWidgetId);
+
+        //save current Lang
+        Resources res = context.getResources();
+        Configuration conf = res.getConfiguration();
+        String currentLang = conf.locale.getLanguage();
+
+        //get settings lang
+        String settingLang = SettingsActivity.loadPrefs(context, appWidgetId);
+        if(settingLang == null || settingLang.isEmpty()){
+            settingLang = currentLang;
+        }
+
+        Date currentDate = new Date();
+        String titleText;
+        //get title by setting lang. Use context lang, so synchronize it
+        //noinspection SynchronizationOnLocalVariableOrMethodParameter
+        synchronized (context){
+            boolean isLangChaged = false;
+            if (!settingLang.equals(currentLang)){
+                setLocate(context, settingLang);
+                isLangChaged = true;
+            }
+            titleText = createTitleText(context, currentDate);
+            if(isLangChaged){
+                setLocate(context, currentLang);
+            }
+        }
+
+        //start service for getData and create Views
+        startService(context, settingLang, currentDate, titleText, appWidgetId);
+
     }
 
 
 
     /**
      *
+     * @param context
+     * @param lang
+     * @param date
+     * @param title
      * @param appWidgetId
-     *
      * If your App Widget setup process can take several seconds
      * (perhaps while performing web requests) and you require that your process continues,
      * consider starting a Service in the onUpdate() method.
      */
-    private void updateData(int appWidgetId) {
+    private static void startService(Context context, String lang, Date date, String title, int appWidgetId) {
+        Log.d(TAG, "Starting service");
+
+        SimpleDateFormat sdf = new SimpleDateFormat("MMdd");
+        String dateS = sdf.format(date);
+
+
+        Intent intent = new Intent(context, UpdateService.class);
+        intent.putExtra(UpdateService.EXTRA_WIDGET_ID, appWidgetId);
+        intent.putExtra(UpdateService.EXTRA_WIDGET_LANG, lang);
+        intent.putExtra(UpdateService.EXTRA_WIDGET_DATE, dateS);
+        intent.putExtra(UpdateService.EXTRA_WIDGET_TITLE, title);
+        context.startService(intent);
 
     }
 
-    private boolean isUpdated(int appWidgetId) {
-        return false;
-    }
+    public static RemoteViews getViewsRegular(Context context, String lang,  String titleText) {
+        Log.d(TAG, "Title:" + titleText);
 
-    static void updateAppWidget(Context context, AppWidgetManager appWidgetManager,
-                                int appWidgetId) {
-
-        String settingLang = SettingsActivity.loadPrefs(context, appWidgetId) ;
-        Resources res = context.getResources();
-        Configuration conf = res.getConfiguration();
-        String currentLang = conf.locale.getLanguage();
-        if(!currentLang.equals(settingLang)){
-            setLocate(context, settingLang);
-        }
-
-
-        // Tell the widget manager
-        RemoteViews views = getViewsRegular(context);
-        appWidgetManager.updateAppWidget(appWidgetId, views);
-    }
-
-    private static RemoteViews getViewsRegular(Context context) {
-
-
-
-        // Build the page title for today, such as "March 21"
-        String titleText = createTitleText(context);
-
-        Log.d(TAG, "Title:"+titleText);
 
         // Construct the RemoteViews object.
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.atd_widget_layout);
         views.setTextViewText(R.id.titleTextView, titleText);
 
-        getCategories(new Date(), context);
-
         return views;
     }
 
     /**
-     * Build localized the page title for today, such as "March 21" or "21 Июля"
+     * Build localized (based on context!!!!) the page title for today, such as "March 21" or "21 Июля"
      * @param context
      * @return
      */
-    private static String createTitleText(Context context) {
+    private static String createTitleText(Context context, Date date) {
         // Find current month and day
-        Time today = new Time();
-        today.setToNow();
-
+        Calendar calendar = new GregorianCalendar();
+        calendar.setTime(date);
+        int monthDay = calendar.get(Calendar.DAY_OF_MONTH);
+        int month = calendar.get(Calendar.MONTH);
 
         Resources res = context.getResources();
         Configuration conf = res.getConfiguration();
@@ -119,14 +148,14 @@ public class ATDWidgetProvider extends AppWidgetProvider {
         titleText.append(res.getString(R.string.title));
         if ("ru".equals(lang)) {
             titleText.append(" ");
-            titleText.append(today.monthDay);
+            titleText.append(calendar.get(Calendar.DAY_OF_MONTH));
             titleText.append(" ");
-            titleText.append(monthNames[today.month]);
+            titleText.append(monthNames[month]);
         } else {
             titleText.append(" ");
-            titleText.append(monthNames[today.month]);
+            titleText.append(monthNames[month]);
             titleText.append(" ");
-            titleText.append(today.monthDay);
+            titleText.append(monthDay);
         }
 
 
@@ -151,39 +180,7 @@ public class ATDWidgetProvider extends AppWidgetProvider {
 
     }
 
-    public static void getCategories(Date date, Context context) {
-        String lang = context.getResources().getConfiguration().locale.getLanguage();
-        SimpleDateFormat sdf = new SimpleDateFormat("MMdd");
-        String dateInString  = sdf.format(date);
 
-        ContentResolver resolver = context.getContentResolver();
-        String[] projection = new String[]{FactsContract.Categories.NAME};
-        Uri contentUri = Uri.withAppendedPath(Uri.withAppendedPath(
-                        FactsContract.Categories.CONTENT_URI,
-                        lang),
-                dateInString);
-
-        Cursor categoryCursor = resolver.query(contentUri,
-                projection,
-                null,
-                null,
-                null
-        );
-
-        if(categoryCursor == null){
-            return;
-        }
-
-        categoryCursor.moveToFirst();
-        while (!categoryCursor.isAfterLast()) {
-            String name = categoryCursor.getString(categoryCursor.getColumnIndex(FactsContract.Categories.NAME));
-            Log.d(TAG, "Category name = " + name);
-            categoryCursor.moveToNext();
-        }
-
-
-
-    }
 
 
 

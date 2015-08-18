@@ -63,9 +63,7 @@ public class SettingsActivity extends AppCompatActivity {
             savePrefs(context, mAppWidgetId);
 
             // Push widget update to surface with newly set prefix
-            AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
-            ATDWidgetProvider.updateAppWidget(context, appWidgetManager,
-                    mAppWidgetId);
+            ATDWidgetProvider.updateAppWidget(context,  mAppWidgetId);
 
             // Make sure we pass back the original appWidgetId
             Intent resultValue = new Intent();
@@ -123,15 +121,8 @@ public class SettingsActivity extends AppCompatActivity {
     // If there is no preference saved, get the default from a resource
     static String loadPrefs(Context context, int appWidgetId) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
-        String lang = prefs.getString(PREF_LANG_KEY + appWidgetId, null);
-        if (lang != null) {
-            return lang;
-        } else {
-            Resources res = context.getResources();
-            Configuration conf = res.getConfiguration();
 
-            return conf.locale.getLanguage();
-        }
+        return prefs.getString(PREF_LANG_KEY + appWidgetId, null);
     }
 
 }
