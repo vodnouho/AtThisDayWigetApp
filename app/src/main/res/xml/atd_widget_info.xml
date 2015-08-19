@@ -6,7 +6,7 @@
                     android:resizeMode="vertical"
                     android:widgetCategory="home_screen"
                     android:initialLayout="@layout/atd_widget_layout"
-                    android:configure="ru.vodnouho.android.atthisdaywigetapp.SettingsActivity"
+                    android:configure="ru.vodnouho.android.atthisdaywidgetapp.SettingsActivity"
     >
 
 

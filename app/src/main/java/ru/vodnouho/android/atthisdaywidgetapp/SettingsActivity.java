@@ -1,11 +1,9 @@
-package ru.vodnouho.android.atthisdaywigetapp;
+package ru.vodnouho.android.atthisdaywidgetapp;
 
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;

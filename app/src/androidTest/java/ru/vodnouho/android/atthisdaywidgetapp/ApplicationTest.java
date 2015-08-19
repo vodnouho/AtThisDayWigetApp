@@ -1,4 +1,4 @@
-package ru.vodnouho.android.atthisdaywigetapp;
+package ru.vodnouho.android.atthisdaywidgetapp;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

@@ -1,14 +1,11 @@
-package ru.vodnouho.android.atthisdaywigetapp;
+package ru.vodnouho.android.atthisdaywidgetapp;
 
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.database.Cursor;
-import android.net.Uri;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.widget.RemoteViews;
