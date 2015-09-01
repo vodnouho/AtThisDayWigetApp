@@ -78,4 +78,52 @@ public class FactsContract {
                 _ID + " ASC";
     }
 
+
+    public static class Facts implements BaseColumns{
+        public static final String FAVCONTENT_URI_STRING = "favfacts/#"; //  content://" + AUTHORITY + "/favfacts/08
+
+
+        //The content:// style URL for this table
+        public static final Uri FAVCONTENT_URI = Uri.withAppendedPath(
+                FactsContract.CONTENT_URI, "favfacts"); //Uri.parse("content://" + AUTHORITY + "/categories/ru/0828");
+
+
+        /**
+         * The mime type of a directory of categories.
+         */
+        public static final String CONTENT_TYPE =
+                ContentResolver.CURSOR_DIR_BASE_TYPE +
+                        "/ru.vodnouho.android.yourday.facts";
+
+        /**
+         * The mime type of a SINGLE of category.
+         */
+        public static final String CONTENT_ITEM_TYPE =
+                ContentResolver.CURSOR_ITEM_BASE_TYPE +
+                        "/ru.vodnouho.android.yourday.facts";
+
+
+        public static final String _ID = BaseColumns._ID;
+        public static final String TEXT = "text"; //text
+        public static final String CATEGORY_ID = "category_id"; //integer
+        public static final String IS_FAVORITE = "is_favorite"; //integer 1 if true
+
+
+        /**
+         * A projection of all columns
+         * in the category table.
+         */
+        public static final String[] PROJECTION_ALL =
+                {_ID, TEXT, CATEGORY_ID, IS_FAVORITE};
+
+        /**
+         * The default sort order
+         */
+        public static final String SORT_ORDER_DEFAULT =
+                _ID + " ASC";
+    }
+
+
+
+
 }

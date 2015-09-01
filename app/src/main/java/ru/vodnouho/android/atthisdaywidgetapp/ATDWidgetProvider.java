@@ -11,6 +11,7 @@ import android.util.Log;
 import android.widget.RemoteViews;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -113,15 +114,9 @@ public class ATDWidgetProvider extends AppWidgetProvider {
 
     }
 
-    public static RemoteViews getViewsRegular(Context context, String lang,  String titleText) {
-        Log.d(TAG, "Title:" + titleText);
-
-
-        // Construct the RemoteViews object.
-        RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.atd_widget_layout);
-        views.setTextViewText(R.id.titleTextView, titleText);
-
-        return views;
+    public static RemoteViews getViewsRegular(Context context, String lang,  String titleText, ArrayList<Category> categories) {
+        OTDRemoteViews rv = new OTDRemoteViews(context, titleText, categories);
+        return rv.getViews();
     }
 
     /**
