@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">AtThisDayWigetApp</string>
+    <string name="app_name">виджет "в этот день ..."</string>
 
    <string name="title">в этот день</string>
     <string name="save">Сохранить</string>

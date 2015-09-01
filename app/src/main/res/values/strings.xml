@@ -1,8 +1,8 @@
 <resources>
-    <string name="app_name">AtThisDayWigetApp</string>
+    <string name="app_name">"On this day ..." widget</string>
 
 
-    <string name="title">at this day</string>
+    <string name="title">On this day</string>
     <string name="save">Save</string>
     <string name="settings">Settings</string>
 
