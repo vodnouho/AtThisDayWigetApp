@@ -10,7 +10,38 @@
               android:weightSum="1"
     android:orientation="vertical">
 
-    <TextView
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingRight="32dp"
+        android:paddingEnd="32dp">
+
+        <TextView
+            android:id="@+id/settings_langRadioGroup_textView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:text="@string/settings_language"
+
+            android:layout_gravity="top|end"
+            android:gravity="end"
+            android:layout_weight="1"
+            />
+
+        <Spinner
+            android:id="@+id/settings_langSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_gravity="top|start"
+
+            />
+
+    </LinearLayout>
+
+
+    <!--TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
@@ -37,11 +68,19 @@
         android:id="@+id/landEn"
         android:checked="false"/>
 
-    </RadioGroup>
+    </RadioGroup-->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="end|bottom"
+        >
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="right"
+
+
         android:text="@string/save"
         android:id="@+id/saveButton"/>
+        </LinearLayout>
 </LinearLayout>

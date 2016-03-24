@@ -9,24 +9,18 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.util.Log;
 import android.widget.RemoteViews;
+import android.widget.RemoteViewsService;
 
 import java.util.ArrayList;
 
 /**
  * Created by petukhov on 18.08.2015.
  */
-public class UpdateService extends IntentService {
+public class UpdateService  extends IntentService {
     private static final String TAG = "UpdateService";
     public static final String EXTRA_WIDGET_ID = "ru.vodnouho.android.atthisdaywigetapp.EXTRA_WIDGET_ID";
     public static final String EXTRA_WIDGET_LANG = "ru.vodnouho.android.atthisdaywigetapp.EXTRA_WIDGET_LANG";
     public static final String EXTRA_WIDGET_DATE = "ru.vodnouho.android.atthisdaywigetapp.EXTRA_WIDGET_DATE";
-    public static final String EXTRA_WIDGET_TITLE = "ru.vodnouho.android.atthisdaywigetapp.EXTRA_WIDGET_TITLE";
-
-
-    public UpdateService() {
-        super("UpdateService");
-    }
-
 
     /**
      * Creates an IntentService.  Invoked by your subclass's constructor.
@@ -37,26 +31,20 @@ public class UpdateService extends IntentService {
         super(name);
     }
 
+
     @Override
-    protected void onHandleIntent(Intent intent) {
-        Log.d(TAG, "Widget onHandleIntent Update Service started");
+    protected void onHandleIntent(Intent intent) {        Log.d(TAG, "onGetViewFactory Update Service started");
         if(intent != null){
             int wigetId = intent.getIntExtra(EXTRA_WIDGET_ID, -1);
             if(wigetId != -1){
 
                 String lang = intent.getStringExtra(EXTRA_WIDGET_LANG);
                 String dateS = intent.getStringExtra(EXTRA_WIDGET_DATE);
-                String title = intent.getStringExtra(EXTRA_WIDGET_TITLE);
 
                 //get content
                 ArrayList<Category> categories =  getCategories(this, lang, dateS);
                 fillCategoriesWithFavoriteFacts(this, categories);
 
-
-                // Tell the widget manager
-                RemoteViews views = ATDWidgetProvider.getViewsRegular(this, lang, title, categories);
-                AppWidgetManager manager = AppWidgetManager.getInstance(this);
-                manager.updateAppWidget(wigetId, views);
 
             }
         }

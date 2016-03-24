@@ -1,10 +1,12 @@
 <resources>
     <string name="app_name">виджет "в этот день ..."</string>
 
-   <string name="title">в этот день</string>
+    <string name="title">в этот день</string>
     <string name="save">Сохранить</string>
-    <string name="settings">Настройки</string>
 
+
+    <string name="settings">Настройки</string>
+    <string name="settings_language">Язык:</string>
 
     <string-array name="month_names">
         <item>Января</item>
@@ -20,5 +22,6 @@
         <item>Ноября</item>
         <item>Декабря</item>
     </string-array>
+
 
 </resources>

@@ -20,7 +20,7 @@ import java.util.Locale;
 /**
  * Created on 13.08.2015.
  */
-public class ATDWidgetProvider extends AppWidgetProvider {
+public class OTDWidgetProvider extends AppWidgetProvider {
     private static final String TAG = "ATDWidgetProvider";
 
 
@@ -33,7 +33,7 @@ public class ATDWidgetProvider extends AppWidgetProvider {
             int appWidgetId = appWidgetIds[i];
 
             if(isNeedUpdate(appWidgetId, context)){
-                updateAppWidget(context, appWidgetId);
+                updateAppWidget(context, appWidgetManager, appWidgetId);
             }
         }
     }
@@ -50,13 +50,13 @@ public class ATDWidgetProvider extends AppWidgetProvider {
 
 
 
-    static void updateAppWidget(Context context, int appWidgetId) {
+    static void updateAppWidget(Context context, AppWidgetManager appWidgetManager, int appWidgetId) {
         Log.d(TAG, "updateAppWidget ID:"+appWidgetId);
-
         //save current Lang
         Resources res = context.getResources();
         Configuration conf = res.getConfiguration();
         String currentLang = conf.locale.getLanguage();
+
 
         //get settings lang
         String settingLang = SettingsActivity.loadPrefs(context, appWidgetId);
@@ -65,6 +65,29 @@ public class ATDWidgetProvider extends AppWidgetProvider {
         }
 
         Date currentDate = new Date();
+
+        RemoteViews rv = new RemoteViews(context.getPackageName(),
+                R.layout.atd_widget_layout);
+
+        setTitle(rv, context, settingLang, currentDate);
+
+        //start service for getData and create Views
+        setList(rv, context, settingLang, currentDate, appWidgetId);
+
+
+
+        appWidgetManager.updateAppWidget(appWidgetId, rv);
+
+
+    }
+
+    private static void setTitle(RemoteViews rv, Context context, String settingLang, Date currentDate) {
+        //save current Lang
+        Resources res = context.getResources();
+        Configuration conf = res.getConfiguration();
+        String currentLang = conf.locale.getLanguage();
+
+
         String titleText;
         //get title by setting lang. Use context lang, so synchronize it
         //noinspection SynchronizationOnLocalVariableOrMethodParameter
@@ -80,11 +103,9 @@ public class ATDWidgetProvider extends AppWidgetProvider {
             }
         }
 
-        //start service for getData and create Views
-        startService(context, settingLang, currentDate, titleText, appWidgetId);
 
+        rv.setTextViewText(R.id.titleTextView, titleText);
     }
-
 
 
     /**
@@ -92,32 +113,28 @@ public class ATDWidgetProvider extends AppWidgetProvider {
      * @param context
      * @param lang
      * @param date
-     * @param title
      * @param appWidgetId
      * If your App Widget setup process can take several seconds
      * (perhaps while performing web requests) and you require that your process continues,
      * consider starting a Service in the onUpdate() method.
      */
-    private static void startService(Context context, String lang, Date date, String title, int appWidgetId) {
+    private static void setList(RemoteViews rv, Context context, String lang, Date date, int appWidgetId) {
         Log.d(TAG, "Starting service");
 
         SimpleDateFormat sdf = new SimpleDateFormat("MMdd");
         String dateS = sdf.format(date);
 
 
-        Intent intent = new Intent(context, UpdateService.class);
-        intent.putExtra(UpdateService.EXTRA_WIDGET_ID, appWidgetId);
-        intent.putExtra(UpdateService.EXTRA_WIDGET_LANG, lang);
-        intent.putExtra(UpdateService.EXTRA_WIDGET_DATE, dateS);
-        intent.putExtra(UpdateService.EXTRA_WIDGET_TITLE, title);
-        context.startService(intent);
+        Intent adapter = new Intent(context, CategoryListRemoteViewsFactory.class);
+        adapter.putExtra(UpdateService.EXTRA_WIDGET_ID, appWidgetId);
+        adapter.putExtra(UpdateService.EXTRA_WIDGET_LANG, lang);
+        adapter.putExtra(UpdateService.EXTRA_WIDGET_DATE, dateS);
+        rv.setRemoteAdapter(R.id.listView, adapter);
+
+
 
     }
 
-    public static RemoteViews getViewsRegular(Context context, String lang,  String titleText, ArrayList<Category> categories) {
-        OTDRemoteViews rv = new OTDRemoteViews(context, titleText, categories);
-        return rv.getViews();
-    }
 
     /**
      * Build localized (based on context!!!!) the page title for today, such as "March 21" or "21 Июля"
