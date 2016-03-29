@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="title">En este día</string>
+
     <string name="settings">Ajustes</string>
     <string name="settings_language">Idioma:</string>
     

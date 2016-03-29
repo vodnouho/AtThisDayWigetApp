@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="title">Ce jour là</string>
+
     <string name="settings">Paramètres</string>
     <string name="settings_language">Langue:</string>
     <string-array name="month_names">
