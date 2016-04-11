@@ -25,9 +25,8 @@
             </intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/atd_widget_info"/>
         </receiver>
-        <!--service android:name="ru.vodnouho.android.atthisdaywidgetapp.UpdateService"
-                 android:enabled="true"
-            android:permission="android.permission.BIND_REMOTEVIEWS"/-->
+        <service android:name="ru.vodnouho.android.atthisdaywidgetapp.CategoryListRemoteViewsFactory"
+            android:permission="android.permission.BIND_REMOTEVIEWS"/>
     </application>
 
 
