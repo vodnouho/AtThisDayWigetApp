@@ -39,5 +39,7 @@
         <!--item>zh</item-->
     </string-array>
 
+    <string name="plz_install_otd">Please install FREE \"On This Day\" application.</string>>
+    <string name="install">Install</string>
 
 </resources>

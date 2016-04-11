@@ -23,5 +23,6 @@
         <item>Декабря</item>
     </string-array>
 
-
+    <string name="plz_install_otd">Пожалуйста установите бесплатное приложение \"Сегодня\".</string>>
+    <string name="install">Установить</string>
 </resources>
