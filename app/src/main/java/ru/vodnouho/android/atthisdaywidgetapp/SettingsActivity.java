@@ -59,7 +59,7 @@ public class SettingsActivity extends AppCompatActivity {
             finish();
         }
 
-        //Set land and activate listener for lang spinner TODO:calc lang
+        //Set land and activate listener for lang spinner
         mLang = calcLang(this, mAppWidgetId);
         prepareLangSpinner(this, mLang);
 

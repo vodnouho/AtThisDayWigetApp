@@ -1,7 +1,7 @@
 package ru.vodnouho.android.atthisdaywidgetapp;
 
 import android.app.IntentService;
-import android.appwidget.AppWidgetManager;
+import android.content.ContentProviderClient;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -9,49 +9,22 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.util.Log;
 import android.widget.RemoteViews;
-import android.widget.RemoteViewsService;
 
 import java.util.ArrayList;
 
 /**
  * Created by petukhov on 18.08.2015.
  */
-public class UpdateService extends IntentService {
-    private static final String TAG = "UpdateService";
+public class DataFetcher  {
+    private static final String TAG = "DataFetcher";
     public static final String EXTRA_WIDGET_ID = "ru.vodnouho.android.atthisdaywigetapp.EXTRA_WIDGET_ID";
     public static final String EXTRA_WIDGET_LANG = "ru.vodnouho.android.atthisdaywigetapp.EXTRA_WIDGET_LANG";
     public static final String EXTRA_WIDGET_DATE = "ru.vodnouho.android.atthisdaywigetapp.EXTRA_WIDGET_DATE";
 
-    /**
-     * Creates an IntentService.  Invoked by your subclass's constructor.
-     *
-     * @param name Used to name the worker thread, important only for debugging.
-     */
-    public UpdateService(String name) {
-        super(name);
-    }
+    private static ContentProviderClient cClient;
 
 
-    @Override
-    protected void onHandleIntent(Intent intent) {
-        Log.d(TAG, "onGetViewFactory Update Service started");
-        if (intent != null) {
-            int wigetId = intent.getIntExtra(EXTRA_WIDGET_ID, -1);
-            if (wigetId != -1) {
-
-                String lang = intent.getStringExtra(EXTRA_WIDGET_LANG);
-                String dateS = intent.getStringExtra(EXTRA_WIDGET_DATE);
-
-                //get content
-                ArrayList<Category> categories = getCategories(this, lang, dateS);
-                fillCategoriesWithFavoriteFacts(this, categories);
-
-
-            }
-        }
-    }
-
-    private static void fillCategoriesWithFavoriteFacts(Context context, ArrayList<Category> categories) {
+    public static void fillCategoriesWithFavoriteFacts(Context context, ArrayList<Category> categories) {
         ContentResolver resolver = context.getContentResolver();
         String[] projection = new String[]{FactsContract.Facts._ID, FactsContract.Facts.TEXT};
 
@@ -89,6 +62,20 @@ public class UpdateService extends IntentService {
 
     }
 
+
+    public static boolean isProviderInstalled(Context context){
+        if(cClient != null){
+            return true;
+        }else{
+            ContentResolver resolver = context.getContentResolver();
+            ContentProviderClient client = resolver.acquireContentProviderClient(FactsContract.Categories.CONTENT_URI);
+            if(client == null){
+                return false;
+            }
+            return true;
+        }
+    }
+
     /**
      * @param context
      * @param lang
@@ -99,13 +86,15 @@ public class UpdateService extends IntentService {
         ArrayList<Category> result = new ArrayList<>();
 
         ContentResolver resolver = context.getContentResolver();
+
+
         String[] projection = new String[]{FactsContract.Categories._ID, FactsContract.Categories.NAME};
 
         //URI:content://ru.vodnouho.android.yourday.cp/categories/en/0818
         Uri contentUri = Uri.withAppendedPath(
                 FactsContract.Categories.CONTENT_URI,
                 lang + "/" + dateString);
-        Log.d(TAG, "Requesting URI:" + contentUri);
+        Log.d(TAG, "getCategories Requesting URI:" + contentUri);
 
 
         Cursor categoryCursor = resolver.query(contentUri,

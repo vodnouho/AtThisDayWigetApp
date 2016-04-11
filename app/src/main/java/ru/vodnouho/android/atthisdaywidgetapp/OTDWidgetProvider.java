@@ -1,5 +1,6 @@
 package ru.vodnouho.android.atthisdaywidgetapp;
 
+import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
@@ -7,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.net.Uri;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.widget.RemoteViews;
@@ -29,6 +31,8 @@ public class OTDWidgetProvider extends AppWidgetProvider {
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         Log.d(TAG, "onUpdate");
+
+
         final int N = appWidgetIds.length;
         // Perform this loop procedure for each App Widget that belongs to this provider
         for (int i=0; i<N; i++) {
@@ -56,7 +60,9 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         Log.d(TAG, "updateAppWidget ID:" + appWidgetId);
 
         boolean isContentProviderInstalled  =  isPackageInstalled(CONTENT_PROVIDER_PACKAGE,context);
-        Log.d(TAG, "isContentProviderInstalled:"+isContentProviderInstalled);
+        Log.d(TAG, "is On This Day installed:"+isContentProviderInstalled);
+        Log.d(TAG, "is ContentProviderInstalled:"+DataFetcher.isProviderInstalled(context));
+
 
         //save current Lang
         Resources res = context.getResources();
@@ -72,16 +78,39 @@ public class OTDWidgetProvider extends AppWidgetProvider {
 
         Date currentDate = new Date();
 
-        RemoteViews rv = new RemoteViews(context.getPackageName(),
-                R.layout.atd_widget_layout);
+        RemoteViews rv;
+        if(!isContentProviderInstalled){
+            rv = new RemoteViews(context.getPackageName(),
+                    R.layout.plz_install_widget_layout);
 
-        setTitle(rv, context, settingLang, currentDate);
+            // Create an Intent to launch Play Market
+            final String appPackageName = "ru.vodnouho.android.yourday";
+            Intent intent;
+            //TODO check is market:// parsed
+            try {
+                intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName));
+            } catch (android.content.ActivityNotFoundException anfe) {
+                intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + appPackageName));
+            }
+            PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
+            rv.setOnClickPendingIntent(R.id.installView, pendingIntent);
 
-        //start service for getData and create Views
-        setList(rv, context, settingLang, currentDate, appWidgetId);
+
+        }else{
+            rv = new RemoteViews(context.getPackageName(),
+                    R.layout.atd_widget_layout);
+
+            setTitle(rv, context, settingLang, currentDate);
+
+            //start service for getData and create Views
+            setList(rv, context, settingLang, currentDate, appWidgetId);
+        }
 
 
 
+        //
+        // Do additional processing specific to this app widget...
+        //
         appWidgetManager.updateAppWidget(appWidgetId, rv);
 
 
@@ -91,7 +120,7 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         PackageManager pm = context.getPackageManager();
         try {
             pm.getPackageInfo(packagename, PackageManager.GET_ACTIVITIES);
-            return true;
+            return DataFetcher.isProviderInstalled(context);
         } catch (PackageManager.NameNotFoundException e) {
             return false;
         }
@@ -137,16 +166,19 @@ public class OTDWidgetProvider extends AppWidgetProvider {
      * consider starting a Service in the onUpdate() method.
      */
     private static void setList(RemoteViews rv, Context context, String lang, Date date, int appWidgetId) {
-        Log.d(TAG, "Starting service");
+
 
         SimpleDateFormat sdf = new SimpleDateFormat("MMdd");
         String dateS = sdf.format(date);
 
 
+        // Set up the intent that starts the CategoryListRemoteViewsFactory service, which will
+        // provide the views for this collection.
         Intent adapter = new Intent(context, CategoryListRemoteViewsFactory.class);
         adapter.putExtra(UpdateService.EXTRA_WIDGET_ID, appWidgetId);
         adapter.putExtra(UpdateService.EXTRA_WIDGET_LANG, lang);
         adapter.putExtra(UpdateService.EXTRA_WIDGET_DATE, dateS);
+        Log.d(TAG, "setRemoteAdapter");
         rv.setRemoteAdapter(R.id.listView, adapter);
 
 
