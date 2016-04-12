@@ -16,10 +16,7 @@ import java.util.ArrayList;
  * Created by petukhov on 18.08.2015.
  */
 public class DataFetcher  {
-    private static final String TAG = "DataFetcher";
-    public static final String EXTRA_WIDGET_ID = "ru.vodnouho.android.atthisdaywigetapp.EXTRA_WIDGET_ID";
-    public static final String EXTRA_WIDGET_LANG = "ru.vodnouho.android.atthisdaywigetapp.EXTRA_WIDGET_LANG";
-    public static final String EXTRA_WIDGET_DATE = "ru.vodnouho.android.atthisdaywigetapp.EXTRA_WIDGET_DATE";
+    private static final String TAG = "vdnh.DataFetcher";
 
     private static ContentProviderClient cClient;
 

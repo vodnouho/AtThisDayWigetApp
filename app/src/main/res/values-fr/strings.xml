@@ -18,4 +18,6 @@
         <item>Novembre</item>
         <item>Décembre</item>
     </string-array>
+
+    <string name="loading_inprogress">Chargement...</string>
 </resources>

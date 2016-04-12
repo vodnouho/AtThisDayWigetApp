@@ -22,7 +22,7 @@ public class OTDRemoteViews {
         mViews.setTextViewText(R.id.titleTextView, titleText);
 
         Intent adapter = new Intent(context, CategoryListRemoteViewsFactory.class);
-        adapter.putExtra(UpdateService.EXTRA_WIDGET_ID, widgetId);
+        adapter.putExtra(CategoryListRemoteViewsFactory.EXTRA_WIDGET_ID, widgetId);
         Uri data = Uri.parse(adapter.toUri(Intent.URI_INTENT_SCHEME));
         adapter.setData(data);
         mViews.setRemoteAdapter(R.id.listView, adapter);

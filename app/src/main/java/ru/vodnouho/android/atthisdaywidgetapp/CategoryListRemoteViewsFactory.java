@@ -1,8 +1,10 @@
 package ru.vodnouho.android.atthisdaywidgetapp;
 
 
+import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.util.Log;
 import android.widget.RemoteViews;
@@ -15,10 +17,17 @@ import java.util.ArrayList;
  * Created by petukhov on 08.09.2015.
  */
 public class CategoryListRemoteViewsFactory extends RemoteViewsService implements RemoteViewsService.RemoteViewsFactory {
-    private static String TAG = "CategoryListRemoteViewsFactory";
+    private static String TAG = "vdnh.CategoryListRemoteViewsFactory";
+    public static final String EXTRA_WIDGET_ID = "ru.vodnouho.android.atthisdaywigetapp.EXTRA_WIDGET_ID";
+    public static final String EXTRA_WIDGET_LANG = "ru.vodnouho.android.atthisdaywigetapp.EXTRA_WIDGET_LANG";
+    public static final String EXTRA_WIDGET_DATE = "ru.vodnouho.android.atthisdaywigetapp.EXTRA_WIDGET_DATE";
+
     private Context mContext;
     private String mLang;
     private String mDateString;
+    private int mAppWidgetId;
+
+
     private ArrayList<Category> mCategories;
     private ArrayList<RemoteViewsHolder> mViewsHolder;
 
@@ -31,28 +40,22 @@ public class CategoryListRemoteViewsFactory extends RemoteViewsService implement
     public CategoryListRemoteViewsFactory(Context context, Intent intent){
         mContext = context;
 
-        mLang = intent.getStringExtra(UpdateService.EXTRA_WIDGET_LANG);
-        mDateString = intent.getStringExtra(UpdateService.EXTRA_WIDGET_DATE);
+        mLang = intent.getStringExtra(EXTRA_WIDGET_LANG);
+        mDateString = intent.getStringExtra(EXTRA_WIDGET_DATE);
+        mAppWidgetId = intent.getIntExtra(
+                AppWidgetManager.EXTRA_APPWIDGET_ID,
+                AppWidgetManager.INVALID_APPWIDGET_ID);
 
-        Log.d(TAG, "constructor lang:"+mLang+" date:"+mDateString);
+        Log.d(TAG, "constructor lang:" + mLang + " date:" + mDateString + " appWidgetId:" + mAppWidgetId);
 
     }
 
-    //TODO: remove it nahuy
-    CategoryListRemoteViewsFactory(String lang, String dateS){
-        Intent intent = new Intent(this, UpdateService.class);
-        intent.putExtra(UpdateService.EXTRA_WIDGET_LANG, lang);
-        intent.putExtra(UpdateService.EXTRA_WIDGET_DATE, dateS);
-
-        startService(intent);
-    }
 
 
     @Override
     public void onCreate() {
         Log.d(TAG, "onCreate()");
         mViewsHolder = new ArrayList<>();
-
     }
 
     @Override
@@ -64,7 +67,6 @@ public class CategoryListRemoteViewsFactory extends RemoteViewsService implement
         }
 
         if(!DataFetcher.isProviderInstalled(mContext)){
-            //TODO fill empty
             return;
         }
 
@@ -79,6 +81,9 @@ public class CategoryListRemoteViewsFactory extends RemoteViewsService implement
                 RemoteViews rView = new RemoteViews(mContext.getPackageName(),
                         R.layout.widget_item);
                 rView.setTextViewText(R.id.tvItemText,c.name);
+
+                setOnClickFillInIntent(rView, R.id.tvItemText, c.name);
+
                 mViewsHolder.add(new RemoteViewsHolder(rView, RemoteViewsHolder.TYPE_CATEGORY_NAME));
 
                 ArrayList<Fact> facts =  c.getFavFacts();
@@ -87,11 +92,23 @@ public class CategoryListRemoteViewsFactory extends RemoteViewsService implement
                     rView = new RemoteViews(mContext.getPackageName(),
                             R.layout.widget_item);
                     rView.setTextViewText(R.id.tvItemText, f.text);
-                    mViewsHolder.add(new RemoteViewsHolder(rView, RemoteViewsHolder.TYPE_CFACT));
 
+                    setOnClickFillInIntent(rView, R.id.tvItemText, f.text);
+
+                    mViewsHolder.add(new RemoteViewsHolder(rView, RemoteViewsHolder.TYPE_CFACT));
                 }
             }
         }
+    }
+
+    private void setOnClickFillInIntent(RemoteViews rv, int viewId, String extraString){
+        Bundle extras = new Bundle();
+        extras.putString(OTDWidgetProvider.EXTRA_ITEM, extraString);
+        Intent fillInIntent = new Intent();
+        fillInIntent.putExtras(extras);
+        // Make it possible to distinguish the individual on-click
+        // action of a given item
+        rv.setOnClickFillInIntent(viewId, fillInIntent);
     }
 
     @Override
@@ -103,6 +120,7 @@ public class CategoryListRemoteViewsFactory extends RemoteViewsService implement
     public int getCount() {
         Log.d(TAG, "getCount()");
         if(mViewsHolder != null){
+            Log.d(TAG, "getCount() size:"+mViewsHolder.size());
             return mViewsHolder.size();
         }
         return 0;

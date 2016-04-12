@@ -20,4 +20,6 @@
         <item>Diciembre</item>
     </string-array>
 
+    <string name="loading_inprogress">Cargando...</string>
+
 </resources>

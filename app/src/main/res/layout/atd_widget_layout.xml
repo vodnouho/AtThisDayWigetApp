@@ -18,10 +18,44 @@
         android:layout_gravity="center_horizontal"/>
 
     <ListView
+        android:id="@+id/listView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/listView"
+
         />
 
 </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/emptyView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:showDividers="middle"
+
+        >
+        <TextView
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text=" "
+            android:layout_gravity="center_horizontal"/>
+
+        <ProgressBar
+            android:id="@+id/loading_progressBar"
+            android:layout_width="91dp"
+            android:layout_height="91dp"
+            android:layout_gravity="center_horizontal"/>
+
+        <TextView
+            android:id="@+id/loading_textView"
+            android:layout_width="match_parent"
+            android:layout_height="75dp"
+            android:gravity="center_vertical|center_horizontal"
+            android:text="@string/loading_inprogress"
+            android:textAppearance="?android:attr/textAppearanceLarge"/>
+
+    </LinearLayout>
+
 </FrameLayout>

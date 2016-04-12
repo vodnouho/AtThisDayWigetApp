@@ -41,5 +41,6 @@
 
     <string name="plz_install_otd">Please install FREE \"On This Day\" application.</string>>
     <string name="install">Install</string>
+    <string name="loading_inprogress">Loading...</string>
 
 </resources>
