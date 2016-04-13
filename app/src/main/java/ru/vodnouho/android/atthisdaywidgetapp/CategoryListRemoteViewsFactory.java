@@ -82,7 +82,7 @@ public class CategoryListRemoteViewsFactory extends RemoteViewsService implement
                         R.layout.widget_item);
                 rView.setTextViewText(R.id.tvItemText,c.name);
 
-                setOnClickFillInIntent(rView, R.id.tvItemText, c.name);
+                setOnClickFillInIntent(rView, R.id.tvItemText, c.id, null);
 
                 mViewsHolder.add(new RemoteViewsHolder(rView, RemoteViewsHolder.TYPE_CATEGORY_NAME));
 
@@ -93,7 +93,7 @@ public class CategoryListRemoteViewsFactory extends RemoteViewsService implement
                             R.layout.widget_item);
                     rView.setTextViewText(R.id.tvItemText, f.text);
 
-                    setOnClickFillInIntent(rView, R.id.tvItemText, f.text);
+                    setOnClickFillInIntent(rView, R.id.tvItemText, c. id, f.id);
 
                     mViewsHolder.add(new RemoteViewsHolder(rView, RemoteViewsHolder.TYPE_CFACT));
                 }
@@ -101,9 +101,14 @@ public class CategoryListRemoteViewsFactory extends RemoteViewsService implement
         }
     }
 
-    private void setOnClickFillInIntent(RemoteViews rv, int viewId, String extraString){
+    private void setOnClickFillInIntent(RemoteViews rv, int viewId, String categoryId, String factId){
         Bundle extras = new Bundle();
-        extras.putString(OTDWidgetProvider.EXTRA_ITEM, extraString);
+        extras.putString(FactsContract.APP_DATE, mDateString);
+        extras.putString(FactsContract.APP_LANG, mLang);
+        extras.putString(FactsContract.APP_CATEGORY_ID, categoryId);
+        if(factId != null){
+            extras.putString(FactsContract.APP_FACT_ID, factId);
+        }
         Intent fillInIntent = new Intent();
         fillInIntent.putExtras(extras);
         // Make it possible to distinguish the individual on-click

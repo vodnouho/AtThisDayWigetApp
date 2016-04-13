@@ -105,13 +105,13 @@ public class OTDWidgetProvider extends AppWidgetProvider {
                     R.layout.plz_install_widget_layout);
 
             // Create an Intent to launch Play Market
-            final String appPackageName = "ru.vodnouho.android.yourday";
+
             Intent intent;
             //TODO check is market:// parsed
             try {
-                intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName));
+                intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + CONTENT_PROVIDER_PACKAGE));
             } catch (android.content.ActivityNotFoundException anfe) {
-                intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + appPackageName));
+                intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + CONTENT_PROVIDER_PACKAGE));
             }
             PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
             rv.setOnClickPendingIntent(R.id.installView, pendingIntent);
@@ -212,17 +212,14 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         // cannot set up their own pending intents. Instead, the collection as a whole sets
         // up a pending intent template, and the individual items set a fillInIntent
         // to create unique behavior on an item-by-item basis.
-        Intent toastIntent = new Intent(context, OTDWidgetProvider.class);
+        Intent appIntent = new Intent();
+        appIntent.setClassName(CONTENT_PROVIDER_PACKAGE, "ru.vodnouho.android.yourday.HomeActivity");
         // Set the action for the intent.
         // When the user touches a particular view, it will have the effect of
         // broadcasting TOAST_ACTION.
-        toastIntent.setAction(OTDWidgetProvider.RUN_ACTION);
-        toastIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
-//        adapter.setData(Uri.parse(adapter.toUri(Intent.URI_INTENT_SCHEME))); //TODO ????
-//TODO        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, toastIntent, 0);
-        PendingIntent toastPendingIntent = PendingIntent.getBroadcast(context, 0, toastIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT);
-        rv.setPendingIntentTemplate(R.id.listView, toastPendingIntent);
+        appIntent.setAction(Intent.ACTION_VIEW);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, appIntent, 0);
+        rv.setPendingIntentTemplate(R.id.listView, pendingIntent);
 
     }
 
