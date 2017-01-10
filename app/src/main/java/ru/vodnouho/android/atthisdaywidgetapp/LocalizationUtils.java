@@ -130,4 +130,27 @@ public class LocalizationUtils {
 
     }
 
+    public static String getLocalizedString(int stringId, String lang, Context context){
+        String result = null;
+        lang = restrictLanguage(lang);
+
+        //save current Lang
+        Resources res = context.getResources();
+        Configuration conf = res.getConfiguration();
+        String currentLang = conf.locale.getLanguage();
+
+        boolean isLangChaged = false;
+        if (!lang.equals(currentLang)){
+            LocalizationUtils.setLocate(context, lang);
+            isLangChaged = true;
+        }
+        result = context.getString(stringId);
+        if(isLangChaged){
+            LocalizationUtils.setLocate(context, currentLang);
+        }
+
+
+        return result;
+    }
+
 }

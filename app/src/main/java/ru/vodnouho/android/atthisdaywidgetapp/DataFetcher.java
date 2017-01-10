@@ -17,6 +17,7 @@ import java.util.ArrayList;
  */
 public class DataFetcher  {
     private static final String TAG = "vdnh.DataFetcher";
+    public static final int TYPE_CATEGORIES = 0;
 
     private static ContentProviderClient cClient;
 
@@ -73,6 +74,21 @@ public class DataFetcher  {
         }
     }
 
+
+    public static Uri createUriForCategories(String lang, String dateString){
+        //URI:content://ru.vodnouho.android.yourday.cp/categories/en/0818
+        Uri contentUri = Uri.withAppendedPath(
+                FactsContract.Categories.CONTENT_URI,
+                lang + "/" + dateString);
+        return contentUri;
+    }
+
+
+    public static String[] createProjectionsForCategories(){
+        return new String[]{FactsContract.Categories._ID, FactsContract.Categories.NAME};
+    }
+
+
     /**
      * @param context
      * @param lang
@@ -118,6 +134,25 @@ public class DataFetcher  {
 
         return result;
 
+    }
+
+    public static ArrayList<Category> fillCategories(Cursor categoriesCursor){
+        if (categoriesCursor == null || categoriesCursor.isClosed()) {
+            return null;
+        }
+        ArrayList<Category> result = new ArrayList<>();
+        categoriesCursor.moveToFirst();
+        while (!categoriesCursor.isAfterLast()) {
+            String id = categoriesCursor.getString(categoriesCursor.getColumnIndex(FactsContract.Categories._ID));
+            String name = categoriesCursor.getString(categoriesCursor.getColumnIndex(FactsContract.Categories.NAME));
+            result.add(new Category(id, name));
+
+            Log.d(TAG, "filled Category name = " + name);
+            categoriesCursor.moveToNext();
+        }
+        categoriesCursor.close();
+
+        return result;
     }
 
 

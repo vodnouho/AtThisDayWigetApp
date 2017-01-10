@@ -14,6 +14,7 @@ public class FactsContract {
     public static final String APP_LANG = "ru.vodnouho.android.yourday.APP_LANG";   //"ru" format
     public static final String APP_DATE = "ru.vodnouho.android.yourday.APP_DATE";    //ddmm format
     public static final String APP_CATEGORY_ID = "ru.vodnouho.android.yourday.APP_CATEGORY_ID";
+    public static final String APP_CATEGORY_NAME = "ru.vodnouho.android.yourday.APP_CATEGORY_NAME";
     public static final String APP_FACT_ID = "ru.vodnouho.android.yourday.APP_FACT_ID";
 
     /**

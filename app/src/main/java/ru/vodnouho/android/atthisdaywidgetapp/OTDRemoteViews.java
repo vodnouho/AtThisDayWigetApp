@@ -7,6 +7,7 @@ import android.util.Log;
 import android.widget.RemoteViews;
 
 import java.util.ArrayList;
+import ru.vodnouho.android.atthisdaywidgetapp.ATDAppWidgetService.CategoryListRemoteViewsFactory;
 
 /**
  * Created by petukhov on 01.09.2015.
@@ -22,7 +23,7 @@ public class OTDRemoteViews {
         mViews.setTextViewText(R.id.titleTextView, titleText);
 
         Intent adapter = new Intent(context, CategoryListRemoteViewsFactory.class);
-        adapter.putExtra(CategoryListRemoteViewsFactory.EXTRA_WIDGET_ID, widgetId);
+        adapter.putExtra(ATDAppWidgetService.EXTRA_WIDGET_ID, widgetId);
         Uri data = Uri.parse(adapter.toUri(Intent.URI_INTENT_SCHEME));
         adapter.setData(data);
         mViews.setRemoteAdapter(R.id.listView, adapter);

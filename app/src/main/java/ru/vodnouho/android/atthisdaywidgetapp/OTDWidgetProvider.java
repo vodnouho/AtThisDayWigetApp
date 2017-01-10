@@ -3,23 +3,20 @@ package ru.vodnouho.android.atthisdaywidgetapp;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.net.Uri;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Locale;
+import ru.vodnouho.android.atthisdaywidgetapp.ATDAppWidgetService.CategoryListRemoteViewsFactory;
 
 /**
  * Created on 13.08.2015.
@@ -28,21 +25,35 @@ public class OTDWidgetProvider extends AppWidgetProvider {
     private static final String TAG = "vdnh.OTDWidgetProvider";
     private static final String CONTENT_PROVIDER_PACKAGE = "ru.vodnouho.android.yourday";
     public static final String RUN_ACTION = "ru.vodnouho.android.RUN_ACTION"; //Action for run OTD app
+    public static final String ACTION_REFRESH = "ru.vodnouho.android.ACTION_REFRESH"; //Action for refresh widget
     public static final String EXTRA_ITEM = "ru.vodnouho.android.EXTRA_ITEM"; //Action for run OTD app
+    private static final boolean LOGD = true;
 
     // Called when the BroadcastReceiver receives an Intent broadcast.
     // Checks to see whether the intent's action is TOAST_ACTION. If it is, the app widget
     // displays a Toast message for the current item.
     @Override
     public void onReceive(Context context, Intent intent) {
+        if (LOGD)
+            Log.d(TAG, "OTDWidgetProvider got the intent: " + intent.toString());
+
         AppWidgetManager mgr = AppWidgetManager.getInstance(context);
         if (intent.getAction().equals(RUN_ACTION)) {
             int appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
                     AppWidgetManager.INVALID_APPWIDGET_ID);
             String extra = intent.getStringExtra(EXTRA_ITEM);
             Toast.makeText(context, "Touched view " + extra, Toast.LENGTH_SHORT).show();
+
+        }else if(intent.getAction().equals(ACTION_REFRESH)){
+            int appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
+                    AppWidgetManager.INVALID_APPWIDGET_ID);
+
+            AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+            updateAppWidget(context, appWidgetManager, appWidgetId);
+        } else {
+            super.onReceive(context, intent);
         }
-        super.onReceive(context, intent);
+
     }
 
     @Override
@@ -62,6 +73,14 @@ public class OTDWidgetProvider extends AppWidgetProvider {
     }
 
 
+
+    /**
+     * Build {@link ComponentName} describing this specific
+     * {@link AppWidgetProvider}
+     */
+    static ComponentName getComponentName(Context context) {
+        return new ComponentName(context, OTDWidgetProvider.class);
+    }
 
     private boolean isNeedUpdate(int appWidgetId, Context context) {
         String settingLang = SettingsActivity.loadPrefs(context, appWidgetId) ;
@@ -103,12 +122,17 @@ public class OTDWidgetProvider extends AppWidgetProvider {
 
             rv = new RemoteViews(context.getPackageName(),
                     R.layout.plz_install_widget_layout);
-
+            String plzInstallString = LocalizationUtils.getLocalizedString(R.string.plz_install_otd, settingLang, context);
+            rv.setTextViewText(R.id.plz_install_otd_TextView, plzInstallString);
+            plzInstallString = LocalizationUtils.getLocalizedString(R.string.install, settingLang, context);
+            rv.setTextViewText(R.id.installView, plzInstallString);
             // Create an Intent to launch Play Market
 
             Intent intent;
-            //TODO check is market:// parsed
+
             try {
+                //TODO link to BETA !!!
+                //intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/apps/testing/ru.vodnouho.android.yourday"));
                 intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + CONTENT_PROVIDER_PACKAGE));
             } catch (android.content.ActivityNotFoundException anfe) {
                 intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + CONTENT_PROVIDER_PACKAGE));
@@ -121,7 +145,8 @@ public class OTDWidgetProvider extends AppWidgetProvider {
             rv = new RemoteViews(context.getPackageName(),
                     R.layout.atd_widget_layout);
 
-            setTitle(rv, context, settingLang, currentDate);
+            setTitleText(rv, context, settingLang, currentDate);
+            rv.setOnClickPendingIntent(R.id.titleTextView, getPendingSelfIntent(context, ACTION_REFRESH, appWidgetId));
 
             //start service for getData and create Views
             setList(rv, context, settingLang, currentDate, appWidgetId);
@@ -137,6 +162,17 @@ public class OTDWidgetProvider extends AppWidgetProvider {
 
     }
 
+    protected static PendingIntent getPendingSelfIntent(Context context, String action, int widgetId) {
+        Intent intent = new Intent(context, OTDWidgetProvider.class);
+        intent.setAction(action);
+        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
+
+        if(LOGD)
+            Log.d(TAG, "getPendingSelfIntent widgetId="+widgetId+" intent"+intent);
+
+        return PendingIntent.getBroadcast(context, widgetId, intent, 0);
+    }
+
     private static boolean isPackageInstalled(String packagename, Context context) {
         PackageManager pm = context.getPackageManager();
         try {
@@ -147,7 +183,7 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         }
     }
 
-    private static void setTitle(RemoteViews rv, Context context, String settingLang, Date currentDate) {
+    private static void setTitleText(RemoteViews rv, Context context, String settingLang, Date currentDate) {
         //save current Lang
         Resources res = context.getResources();
         Configuration conf = res.getConfiguration();
@@ -171,8 +207,8 @@ public class OTDWidgetProvider extends AppWidgetProvider {
             }
         }
 
-
         rv.setTextViewText(R.id.titleTextView, titleText);
+
     }
 
 
@@ -193,13 +229,13 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         String dateS = sdf.format(date);
 
 
-        // Set up the intent that starts the CategoryListRemoteViewsFactory service, which will
+        // Set up the intent that starts the ATDAppWidgetService service, which will
         // provide the views for this collection.
-        Intent adapter = new Intent(context, CategoryListRemoteViewsFactory.class);
+        Intent adapter = new Intent(context, ATDAppWidgetService.class);
 //        adapter.putExtra(CategoryListRemoteViewsFactory.EXTRA_WIDGET_ID, appWidgetId);
         adapter.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);        //TODO???
-        adapter.putExtra(CategoryListRemoteViewsFactory.EXTRA_WIDGET_LANG, lang);
-        adapter.putExtra(CategoryListRemoteViewsFactory.EXTRA_WIDGET_DATE, dateS);
+        adapter.putExtra(ATDAppWidgetService.EXTRA_WIDGET_LANG, lang);
+        adapter.putExtra(ATDAppWidgetService.EXTRA_WIDGET_DATE, dateS);
         adapter.setData(Uri.parse(adapter.toUri(Intent.URI_INTENT_SCHEME)));
         Log.d(TAG, "setRemoteAdapter");
         rv.setRemoteAdapter(R.id.listView, adapter);
@@ -214,11 +250,13 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         // to create unique behavior on an item-by-item basis.
         Intent appIntent = new Intent();
         appIntent.setClassName(CONTENT_PROVIDER_PACKAGE, "ru.vodnouho.android.yourday.HomeActivity");
+
         // Set the action for the intent.
         // When the user touches a particular view, it will have the effect of
         // broadcasting TOAST_ACTION.
         appIntent.setAction(Intent.ACTION_VIEW);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, appIntent, 0);
+        // Use appWidgetId por prevent reuse of Intent on different appwidget instance
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, appWidgetId, appIntent, 0);
         rv.setPendingIntentTemplate(R.id.listView, pendingIntent);
 
     }
@@ -232,56 +270,11 @@ public class OTDWidgetProvider extends AppWidgetProvider {
     private static String createTitleText(Context context, Date date) {
         return LocalizationUtils.createLocalizedTitle(context, date);
 
-/*
-        // Find current month and day
-        Calendar calendar = new GregorianCalendar();
-        calendar.setTime(date);
-        int monthDay = calendar.get(Calendar.DAY_OF_MONTH);
-        int month = calendar.get(Calendar.MONTH);
-
-        Resources res = context.getResources();
-        Configuration conf = res.getConfiguration();
-        String lang = conf.locale.getLanguage();
-        String[] monthNames = res.getStringArray(R.array.month_names);
-
-        StringBuilder titleText = new StringBuilder();
-        titleText.append(res.getString(R.string.title));
-        if ("ru".equals(lang)) {
-            titleText.append(" ");
-            titleText.append(calendar.get(Calendar.DAY_OF_MONTH));
-            titleText.append(" ");
-            titleText.append(monthNames[month]);
-        } else {
-            titleText.append(" ");
-            titleText.append(monthNames[month]);
-            titleText.append(" ");
-            titleText.append(monthDay);
-        }
-
-
-
-        return titleText.toString();
-*/
-    }
-
-
-/*
-    private static void setLocate(Context context, String settingLang) {
-        Locale newLocale;
-        if ("ru".equals(settingLang)) {
-            newLocale = new Locale("ru", "RU");
-        } else {
-            newLocale = Locale.US;
-        }
-
-        Resources res = context.getResources();
-        DisplayMetrics dm = res.getDisplayMetrics();
-        Configuration conf = res.getConfiguration();
-        conf.locale = newLocale;
-        res.updateConfiguration(conf, dm);
 
     }
-*/
+
+
+
 
 
 
