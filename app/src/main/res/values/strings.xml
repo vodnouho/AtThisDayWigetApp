@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">"On this day ..." widget</string>
+    <string name="app_name">"On this day" widget</string>
 
 
     <string name="title">On this day</string>
@@ -39,8 +39,9 @@
         <!--item>zh</item-->
     </string-array>
 
-    <string name="plz_install_otd">Please install FREE \"On This Day\" application.</string>>
+    <string name="plz_install_otd">Please install FREE \"On This Day\" application.</string>
     <string name="install">Install</string>
     <string name="loading_inprogress">Loading...</string>
+    <string name="more">More...</string>
 
 </resources>

@@ -3,17 +3,14 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#88444444"
-    >
+    android:background="#88444444">
     <TextView
         android:id="@+id/tvItemText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:paddingLeft="4dp"
-        android:paddingRight="4dp"
-        android:paddingTop="6dp"
-        android:paddingBottom="6dp"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:padding="4dp"
+        android:text="@string/more"
         >
     </TextView>
 </RelativeLayout>

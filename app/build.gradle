@@ -7,8 +7,8 @@ android {
     defaultConfig {
         applicationId "ru.vodnouho.android.atthisdaywidgetapp"
         minSdkVersion 14
-        targetSdkVersion 21
-        versionCode 1
+        targetSdkVersion 23
+        versionCode 4
         versionName "0.4"
     }
     buildTypes {

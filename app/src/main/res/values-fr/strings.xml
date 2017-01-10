@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">"Ce jour là" widget</string>
     <string name="title">Ce jour là</string>
-
+    <string name="save">OK</string>
     <string name="settings">Paramètres</string>
     <string name="settings_language">Langue:</string>
     <string-array name="month_names">
@@ -19,5 +20,8 @@
         <item>Décembre</item>
     </string-array>
 
+    <string name="plz_install_otd">Veuillez installer \"Ce jour là\" application.</string>
+    <string name="install">Installer</string>
     <string name="loading_inprogress">Chargement...</string>
+    <string name="more">PLUS...</string>
 </resources>

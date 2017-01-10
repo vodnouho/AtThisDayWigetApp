@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">виджет "в этот день ..."</string>
+    <string name="app_name">Виджет \"в этот день\"</string>
 
     <string name="title">В этот день</string>
     <string name="save">Сохранить</string>
@@ -23,8 +23,9 @@
         <item>Декабря</item>
     </string-array>
 
-    <string name="plz_install_otd">Пожалуйста установите бесплатное приложение \"Сегодня\".</string>>
+    <string name="plz_install_otd">Пожалуйста установите бесплатное приложение \"Сегодня\".</string>
     <string name="install">Установить</string>
 
     <string name="loading_inprogress">Идёт загрузка...</string>
+    <string name="more">Ещё...</string>
 </resources>

@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">"An diesem Tag" widget</string>
     <string name="title">An diesem Tag</string>
-
+    <string name="save">OK</string>
     <string name="settings">Einstellungen</string>
     <string name="settings_language">Sprache:</string>
 
@@ -20,5 +21,8 @@
         <item>Dezember</item>
     </string-array>
 
+    <string name="plz_install_otd">Bitte installieren Sie die Anwendung \"An diesem Tag\".</string>
+    <string name="install">Installieren</string>
     <string name="loading_inprogress">Laden...</string>
+    <string name="more">Mehr...</string>
 </resources>
