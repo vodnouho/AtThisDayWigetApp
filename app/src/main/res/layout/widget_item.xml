@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#88444444"
     >
+    <ImageView
+        android:id="@+id/fact_ImageView"
+        android:layout_height="50dp"
+        android:layout_width="50dp"/>
     <TextView
         android:id="@+id/tvItemText"
         android:layout_width="match_parent"
@@ -16,4 +20,4 @@
         android:paddingBottom="6dp"
         >
     </TextView>
-</RelativeLayout>
+</LinearLayout>

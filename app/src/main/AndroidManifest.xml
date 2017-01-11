@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="ru.vodnouho.android.atthisdaywidgetapp" >
     <uses-permission android:name="ru.vodnouho.android.yourday.cp.READ"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
 
 
     <application
