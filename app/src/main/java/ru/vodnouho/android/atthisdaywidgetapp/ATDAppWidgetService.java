@@ -66,22 +66,22 @@ public class ATDAppWidgetService extends RemoteViewsService {
         private Thread mWatchDogThread;
 
 
-
         private Runnable mImageLoaderWatchDogRunnable = new Runnable() {
             @Override
             public void run() {
-                while (isWatchDogStarted) {
-                    if (LOGD)
-                        Log.d(TAG, "WatchDog alive.");
-                    if (isNeedNotificationWithoutDataChanging) {
-                        mWidgetManager.notifyAppWidgetViewDataChanged(mAppWidgetId, R.id.listView);
-                    }
-                    try {
-                        Thread.sleep(5000);
-                    } catch (InterruptedException e) {
-                        Log.e(TAG, "Interrupted", e);
-                    }
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    Log.e(TAG, "Interrupted", e);
                 }
+
+                if (LOGD)
+                    Log.d(TAG, "WatchDog alive.");
+                if (isNeedNotificationWithoutDataChanging) {
+                    mWidgetManager.notifyAppWidgetViewDataChanged(mAppWidgetId, R.id.listView);
+                }
+
+                mWatchDogThread = null;
             }
         };
 
@@ -117,7 +117,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
                 Log.d(TAG, "onCreate()");
             mViewsHolder = Collections.synchronizedList(new ArrayList<RemoteViewsHolder>());
             initCategoryLoader(DataFetcher.TYPE_CATEGORIES, null);
-            startWatchDogThread();
+
         }
 
         @Override
@@ -154,7 +154,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
                 }
             }
 
-            if(mCategories == null){
+            if (mCategories == null) {
                 //just created, loader not finished yet
                 if (LOGD)
                     Log.d(TAG, "onDataSetChanged() return cause mCategories == null");
@@ -225,7 +225,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
         }
 
         private String getImageUrl(Fact f) {
-            if(Integer.parseInt(f.id) % 2 == 0 ){
+            if (Integer.parseInt(f.id) % 2 == 0) {
                 return "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Bryan_Robson_Thailand_2009-11-01_%282%29.jpg/72px-Bryan_Robson_Thailand_2009-11-01_%282%29.jpg";
             }
             return "http://i.imgur.com/7spzG.png";
@@ -287,18 +287,22 @@ public class ATDAppWidgetService extends RemoteViewsService {
         //you can fetch some here !!!
         @Override
         public RemoteViews getViewAt(int position) {
+            if (mViewsHolder == null || mViewsHolder.size() < (position - 1)) {
+                return null;
+            }
+
             RemoteViewsHolder holder = mViewsHolder.get(position);
-            if (LOGD){
+            if (LOGD) {
                 Log.d(TAG, "getViewAt(" + position + ")"
-                +" url:"+holder.mImageUrl
+                        + " url:" + holder.mImageUrl
                 );
             }
 
-            if(holder.mImageUrl == null ||  holder.mImageBitmap == null){
-                holder.mViews.setViewVisibility (R.id.fact_ImageView, View.INVISIBLE);
-            }else{
+            if (holder.mImageUrl == null || holder.mImageBitmap == null) {
+                holder.mViews.setViewVisibility(R.id.fact_ImageView, View.INVISIBLE);
+            } else {
                 holder.mViews.setImageViewBitmap(R.id.fact_ImageView, holder.mImageBitmap);
-                holder.mViews.setViewVisibility (R.id.fact_ImageView, View.VISIBLE);
+                holder.mViews.setViewVisibility(R.id.fact_ImageView, View.VISIBLE);
             }
 
             return mViewsHolder.get(position).mViews;
@@ -366,6 +370,10 @@ public class ATDAppWidgetService extends RemoteViewsService {
 
                     synchronized (sLock) {
                         isNeedNotificationWithoutDataChanging = true;
+                    }
+
+                    if(mWatchDogThread == null){
+                        startWatchDogThread();
                     }
 
                     break;
