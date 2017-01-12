@@ -116,6 +116,8 @@ public class FactsContract {
         public static final String TEXT = "text"; //text
         public static final String CATEGORY_ID = "category_id"; //integer
         public static final String IS_FAVORITE = "is_favorite"; //integer 1 if true
+        public static final String THUMB_URL = "thumb_url"; //
+        public static final String LANG = "lang"; //
 
 
         /**
@@ -123,7 +125,7 @@ public class FactsContract {
          * in the category table.
          */
         public static final String[] PROJECTION_ALL =
-                {_ID, TEXT, CATEGORY_ID, IS_FAVORITE};
+                {_ID, TEXT, CATEGORY_ID, IS_FAVORITE, THUMB_URL, LANG};
 
         /**
          * The default sort order

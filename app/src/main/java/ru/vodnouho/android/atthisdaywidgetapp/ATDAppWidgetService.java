@@ -16,9 +16,14 @@ import android.view.View;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -84,6 +89,9 @@ public class ATDAppWidgetService extends RemoteViewsService {
                 mWatchDogThread = null;
             }
         };
+        private Map<String, ArrayList<Fact>> mImageUrlRequests
+                = Collections.synchronizedMap(new HashMap<String,  ArrayList<Fact>>());
+
 
 
         public CategoryListRemoteViewsFactory() {
@@ -173,7 +181,8 @@ public class ATDAppWidgetService extends RemoteViewsService {
                 mViewsHolder.clear();
             }
 
-            DataFetcher.fillCategoriesWithFavoriteFacts(mContext, mCategories);
+            //TODO lang must be set by ContentProvider
+            DataFetcher.fillCategoriesWithFavoriteFacts(mContext, mCategories, mLang);
 
             for (Category c : mCategories) {
                 //category name
@@ -187,17 +196,29 @@ public class ATDAppWidgetService extends RemoteViewsService {
 
                 ArrayList<Fact> facts = c.getFavFacts();
                 for (Fact f : facts) {
+
+
+
                     rView = new RemoteViews(mContext.getPackageName(),
                             R.layout.widget_item);
                     rView.setTextViewText(R.id.tvItemText, Html.fromHtml(f.text));
                     setOnClickFillInIntent(rView, R.id.tvItemText, c.id, f.id);
 
-                    RemoteViewsHolder factViewHolder = new RemoteViewsHolder(rView, RemoteViewsHolder.TYPE_CFACT);
-                    factViewHolder.mImageUrl = getImageUrl(f);
+                    RemoteViewsHolder factViewHolder = new RemoteViewsHolder(rView, RemoteViewsHolder.TYPE_FACT);
+                    factViewHolder.mFact = f;
                     mViewsHolder.add(factViewHolder);
 
-                    if (factViewHolder.mImageUrl != null && !factViewHolder.mImageUrl.isEmpty()) {
-                        mNetworkFetcher.requestImage(factViewHolder.mImageUrl, this);
+                    //better start parallel request after mViewsHolder.add()
+                    if (factViewHolder.mFact != null && factViewHolder.mFact.getThumbnailUrl() != null) {
+                        mNetworkFetcher.requestImage(factViewHolder.mFact.getThumbnailUrl(), this);
+                    }else if(f.mayHasThumbnail()){
+                        ArrayList<String> titles =  f.getTitlesForPicture();
+                        if(titles != null){
+                            for(String titleUrl : titles){
+                                addImageUrlRequest(titleUrl, f);
+                                mNetworkFetcher.requestJsonObject(titleUrl, this);
+                            }
+                        }
                     }
                 }
 
@@ -208,10 +229,24 @@ public class ATDAppWidgetService extends RemoteViewsService {
 
                 rView.setTextViewText(R.id.tvItemText, localizedMoreString);
                 setOnClickFillInIntent(rView, R.id.tvItemText, c.id, "-1");
-                mViewsHolder.add(new RemoteViewsHolder(rView, RemoteViewsHolder.TYPE_CFACT));
+                mViewsHolder.add(new RemoteViewsHolder(rView, RemoteViewsHolder.TYPE_FACT));
 
 
             }
+        }
+
+        /**
+         * Save request
+         * @param titleUrl
+         * @param f
+         */
+        private void addImageUrlRequest(String titleUrl, Fact f) {
+            ArrayList<Fact> prevRequests = mImageUrlRequests.get(titleUrl);
+            if(prevRequests == null){
+                prevRequests = new ArrayList<>();
+            }
+            prevRequests.add(f);
+            mImageUrlRequests.put(titleUrl, prevRequests);
         }
 
         private boolean isEmptyCategories(ArrayList<Category> categories) {
@@ -225,10 +260,13 @@ public class ATDAppWidgetService extends RemoteViewsService {
         }
 
         private String getImageUrl(Fact f) {
+            return f.getThumbnailUrl();
+/*
             if (Integer.parseInt(f.id) % 2 == 0) {
                 return "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Bryan_Robson_Thailand_2009-11-01_%282%29.jpg/72px-Bryan_Robson_Thailand_2009-11-01_%282%29.jpg";
             }
             return "http://i.imgur.com/7spzG.png";
+*/
         }
 
         /**
@@ -292,13 +330,13 @@ public class ATDAppWidgetService extends RemoteViewsService {
             }
 
             RemoteViewsHolder holder = mViewsHolder.get(position);
+/*
             if (LOGD) {
-                Log.d(TAG, "getViewAt(" + position + ")"
-                        + " url:" + holder.mImageUrl
-                );
+                Log.d(TAG, "getViewAt(" + position + ")" );
             }
+*/
 
-            if (holder.mImageUrl == null || holder.mImageBitmap == null) {
+            if (holder.mFact == null || holder.mFact.getThumbnailUrl() == null || holder.mImageBitmap == null) {
                 holder.mViews.setViewVisibility(R.id.fact_ImageView, View.INVISIBLE);
             } else {
                 holder.mViews.setImageViewBitmap(R.id.fact_ImageView, holder.mImageBitmap);
@@ -364,28 +402,73 @@ public class ATDAppWidgetService extends RemoteViewsService {
 
             for (int i = 0; i < mViewsHolder.size(); i++) {
                 RemoteViewsHolder holder = mViewsHolder.get(i);
-                if (holder.mImageUrl != null && holder.mImageBitmap == null && holder.mImageUrl.equals(url)) {
+                Fact fact = holder.mFact;
+
+                if(fact == null){
+                    continue;
+                }
+
+                if (holder.mImageBitmap == null
+                        && fact.getThumbnailUrl() != null
+                        && fact.getThumbnailUrl().equals(url)) {
 
                     holder.mImageBitmap = bitmap;
 
-                    synchronized (sLock) {
-                        isNeedNotificationWithoutDataChanging = true;
-                    }
-
-                    if(mWatchDogThread == null){
-                        startWatchDogThread();
-                    }
-
-                    break;
+                    notifyWithoutDataChanging();
                 }
             }
 
         }
 
         @Override
+        public void onJsonObjectLoaded(String url, JSONObject jsonResponse){
+            if (LOGD)
+                Log.d(TAG, "onJsonObjectLoaded():" + jsonResponse.toString());
+
+
+            if(jsonResponse == null){
+                return;
+            }
+
+            ArrayList<Fact> facts = mImageUrlRequests.get(url);
+            if(facts == null || facts.size() == 0){
+                //nobody need this info
+                return;
+            }
+            mImageUrlRequests.remove(url);
+
+            JSONObject thumbnail;
+            try {
+                if(!jsonResponse.isNull("thumbnail")){
+                    thumbnail = jsonResponse.getJSONObject("thumbnail");
+                    String thumbnailUrl = thumbnail.getString("source");
+
+                    if(thumbnailUrl != null && !thumbnailUrl.isEmpty()){
+                        for(Fact f: facts){
+                            f.setThumbnailUrl(thumbnailUrl, url);
+                        }
+                        mNetworkFetcher.requestImage(thumbnailUrl, this);
+                    }
+                }
+            } catch (JSONException e) {
+                Log.e(TAG, "onJsonObjectLoaded:", e);
+            }
+        }
+
+        @Override
         public void onError(String url, Object error) {
             if (LOGD)
                 Log.d(TAG, "onError() reason:" + error.toString());
+        }
+
+        private void notifyWithoutDataChanging(){
+            synchronized (sLock) {
+                isNeedNotificationWithoutDataChanging = true;
+            }
+
+            if(mWatchDogThread == null){
+                startWatchDogThread();
+            }
         }
 
         private void startWatchDogThread() {
@@ -401,11 +484,11 @@ public class ATDAppWidgetService extends RemoteViewsService {
 
         private class RemoteViewsHolder {
             static final int TYPE_CATEGORY_NAME = 1;
-            static final int TYPE_CFACT = 2;
+            static final int TYPE_FACT = 2;
 
             RemoteViews mViews;
             int mType;
-            String mImageUrl;
+            Fact mFact;
             Bitmap mImageBitmap;
 
             RemoteViewsHolder(RemoteViews rv, int type) {

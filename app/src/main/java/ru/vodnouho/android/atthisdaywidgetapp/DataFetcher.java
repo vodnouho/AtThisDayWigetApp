@@ -22,7 +22,7 @@ public class DataFetcher  {
     private static ContentProviderClient cClient;
 
 
-    public static void fillCategoriesWithFavoriteFacts(Context context, ArrayList<Category> categories) {
+    public static void fillCategoriesWithFavoriteFacts(Context context, ArrayList<Category> categories, String lang) {
         ContentResolver resolver = context.getContentResolver();
         String[] projection = new String[]{FactsContract.Facts._ID, FactsContract.Facts.TEXT};
 
@@ -50,7 +50,29 @@ public class DataFetcher  {
             while (!categoryCursor.isAfterLast()) {
                 String id = categoryCursor.getString(categoryCursor.getColumnIndex(FactsContract.Facts._ID));
                 String text = categoryCursor.getString(categoryCursor.getColumnIndex(FactsContract.Facts.TEXT));
-                category.add(new Fact(id, text));
+
+                //for new contract
+                int isExist = categoryCursor.getColumnIndex(FactsContract.Facts.LANG);
+                if(isExist > -1 ){
+                    String cpLang = categoryCursor.getString(categoryCursor.getColumnIndex(FactsContract.Facts.LANG));
+                    if(cpLang != null){
+                        lang = cpLang;
+                    }
+                }
+
+                Fact fact = new Fact(id, text, lang);
+
+                //for new contract
+                isExist = categoryCursor.getColumnIndex(FactsContract.Facts.THUMB_URL);
+                if(isExist > -1){
+                    String thumbnailUrl = categoryCursor.getString(categoryCursor.getColumnIndex(FactsContract.Facts.THUMB_URL));
+                    if(thumbnailUrl != null){
+                        fact.setThumbnailUrl(thumbnailUrl, null);
+                    }
+                }
+
+
+                category.add(fact);
 
                 categoryCursor.moveToNext();
             }

@@ -10,7 +10,10 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.ImageRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+
+import org.json.JSONObject;
 
 /**
  * Created by petukhov on 11.01.2017.
@@ -55,6 +58,11 @@ public class NetworkFetcher {
     }
 
 
+    /**
+     * Used for download image and return it to listener.
+     * @param url - URL of Image
+     * @param listener - Listener
+     */
     public void requestImage(final String url, final OnLoadListener listener) {
 
         // Retrieves an image specified by the URL, displays it in the UI.
@@ -66,12 +74,38 @@ public class NetworkFetcher {
                         listener.onImageLoaded(url, bitmap);
                     }
                 }
-                , 0, 0, null, null,
+                , 100, 100, null, null,
                 new Response.ErrorListener() {
                     public void onErrorResponse(VolleyError error) {
                         listener.onError(url, error);
                     }
                 });
+        // Access the RequestQueue through your singleton class.
+        addToRequestQueue(request);
+    }
+
+    /**
+     * Used for download JSON object and return it to listener.
+     * @param url - URL of Image
+     * @param listener - Listener
+     */
+    public void requestJsonObject(final String url, final OnLoadListener listener) {
+
+        JsonObjectRequest request = new JsonObjectRequest
+                (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        listener.onJsonObjectLoaded(url, response);
+                    }
+                }, new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        listener.onError(url, error);
+                    }
+                });
+
         // Access the RequestQueue through your singleton class.
         addToRequestQueue(request);
     }
@@ -94,6 +128,10 @@ public class NetworkFetcher {
         getRequestQueue().add(req);
     }
 
+    /**
+     * not used yet, may be later
+     * @return
+     */
     private ImageLoader getImageLoader() {
         return mImageLoader;
     }
@@ -104,7 +142,8 @@ public class NetworkFetcher {
     }
 
     public interface OnLoadListener {
-        public void onImageLoaded(String url, Bitmap bitmap);
-        public void onError(String url, Object error);
+        void onImageLoaded(String url, Bitmap bitmap);
+        void onError(String url, Object error);
+        void onJsonObjectLoaded(String url, JSONObject jsonResponse);
     }
 }
