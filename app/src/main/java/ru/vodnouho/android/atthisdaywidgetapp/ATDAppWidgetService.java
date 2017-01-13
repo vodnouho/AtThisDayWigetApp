@@ -75,7 +75,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
             @Override
             public void run() {
                 try {
-                    Thread.sleep(5000);
+                    Thread.sleep(2500);
                 } catch (InterruptedException e) {
                     Log.e(TAG, "Interrupted", e);
                 }
@@ -212,12 +212,10 @@ public class ATDAppWidgetService extends RemoteViewsService {
                     if (factViewHolder.mFact != null && factViewHolder.mFact.getThumbnailUrl() != null) {
                         mNetworkFetcher.requestImage(factViewHolder.mFact.getThumbnailUrl(), this);
                     }else if(f.mayHasThumbnail()){
-                        ArrayList<String> titles =  f.getTitlesForPicture();
-                        if(titles != null){
-                            for(String titleUrl : titles){
-                                addImageUrlRequest(titleUrl, f);
-                                mNetworkFetcher.requestJsonObject(titleUrl, this);
-                            }
+                        String findPictureUrlAt = f.getTitleForPicture();
+                        if(findPictureUrlAt != null){
+                            addImageUrlRequest(findPictureUrlAt, f);
+                            mNetworkFetcher.requestJsonObject(findPictureUrlAt, this);
                         }
                     }
                 }
@@ -439,7 +437,17 @@ public class ATDAppWidgetService extends RemoteViewsService {
 
             JSONObject thumbnail;
             try {
-                if(!jsonResponse.isNull("thumbnail")){
+                if(jsonResponse.isNull("thumbnail")){
+                    for(Fact f: facts){
+                        f.setThumbnailUrl("", url);
+                        String findPictureUrlAt = f.getTitleForPicture();
+                        if(findPictureUrlAt != null){
+                            addImageUrlRequest(findPictureUrlAt, f);
+                            mNetworkFetcher.requestJsonObject(findPictureUrlAt, this);
+                        }
+                    }
+
+                }else{
                     thumbnail = jsonResponse.getJSONObject("thumbnail");
                     String thumbnailUrl = thumbnail.getString("source");
 
@@ -459,6 +467,11 @@ public class ATDAppWidgetService extends RemoteViewsService {
         public void onError(String url, Object error) {
             if (LOGD)
                 Log.d(TAG, "onError() reason:" + error.toString());
+
+            ArrayList<Fact> isUrlRequest = mImageUrlRequests.get(url);
+            if(isUrlRequest != null){
+                //mNetworkFetcher.requestJsonObject(url, this);
+            }
         }
 
         private void notifyWithoutDataChanging(){

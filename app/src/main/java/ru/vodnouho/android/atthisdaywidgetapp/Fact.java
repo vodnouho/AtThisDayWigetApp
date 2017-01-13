@@ -1,5 +1,6 @@
 package ru.vodnouho.android.atthisdaywidgetapp;
 
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import java.io.UnsupportedEncodingException;
@@ -106,13 +107,29 @@ public class Fact {
         return mSummaryUrls;
     }
 
+    @Nullable
+    public String getTitleForPicture() {
+        if(mSummaryUrls == null || mSummaryUrls.size() == 0){
+            return null;
+        }else{
+            return mSummaryUrls.get(0);
+        }
+    }
+
+
     public String getThumbnailUrl() {
         return mThumbnailUrl;
     }
 
+    /**
+     * Set the thumbnailUrl or remove title without thumbnail from queue
+     * @param thumbnailUrl - set URL of image or "" for remove title
+     * @param url - title url
+     */
     public void setThumbnailUrl(String thumbnailUrl, String url) {
         if (thumbnailUrl != null) {
             if (thumbnailUrl.isEmpty() && url != null) {
+                //remove title summary url from queue
                 mSummaryUrls.remove(url);
             } else {
                 mSummaryUrls.clear();
@@ -124,4 +141,5 @@ public class Fact {
     public void setLang(String lang) {
         mLang = lang;
     }
+
 }

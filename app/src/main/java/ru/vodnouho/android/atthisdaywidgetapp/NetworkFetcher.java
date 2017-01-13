@@ -4,15 +4,20 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.support.v4.util.LruCache;
 
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
+import com.android.volley.RetryPolicy;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -80,6 +85,8 @@ public class NetworkFetcher {
                         listener.onError(url, error);
                     }
                 });
+
+        request.setRetryPolicy(new DefaultRetryPolicy(7500, 3, 1f));
         // Access the RequestQueue through your singleton class.
         addToRequestQueue(request);
     }
@@ -90,6 +97,8 @@ public class NetworkFetcher {
      * @param listener - Listener
      */
     public void requestJsonObject(final String url, final OnLoadListener listener) {
+
+
 
         JsonObjectRequest request = new JsonObjectRequest
                 (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
@@ -106,6 +115,7 @@ public class NetworkFetcher {
                     }
                 });
 
+        request.setRetryPolicy(new DefaultRetryPolicy(7500, 3, 1f));
         // Access the RequestQueue through your singleton class.
         addToRequestQueue(request);
     }
@@ -119,7 +129,7 @@ public class NetworkFetcher {
         if (mRequestQueue == null) {
             // getApplicationContext() is key, it keeps you from leaking the
             // Activity or BroadcastReceiver if someone passes one in.
-            mRequestQueue = Volley.newRequestQueue(sContext.getApplicationContext());
+            mRequestQueue = Volley.newRequestQueue(sContext.getApplicationContext(), new OkHttpStack());
         }
         return mRequestQueue;
     }
