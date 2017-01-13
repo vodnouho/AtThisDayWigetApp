@@ -30,4 +30,10 @@ public class Category {
     public ArrayList<Fact> getFavFacts() {
         return mFacts;
     }
+
+    public void clearFavFacts() {
+        if(mFacts != null){
+            mFacts.clear();
+        }
+    }
 }

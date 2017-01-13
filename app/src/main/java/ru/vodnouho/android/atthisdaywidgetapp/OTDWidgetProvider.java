@@ -9,6 +9,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.util.Log;
 import android.widget.RemoteViews;
@@ -16,6 +18,7 @@ import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
 import ru.vodnouho.android.atthisdaywidgetapp.ATDAppWidgetService.CategoryListRemoteViewsFactory;
 
 /**
@@ -26,6 +29,7 @@ public class OTDWidgetProvider extends AppWidgetProvider {
     private static final String CONTENT_PROVIDER_PACKAGE = "ru.vodnouho.android.yourday";
     public static final String RUN_ACTION = "ru.vodnouho.android.RUN_ACTION"; //Action for run OTD app
     public static final String ACTION_REFRESH = "ru.vodnouho.android.ACTION_REFRESH"; //Action for refresh widget
+
     public static final String EXTRA_ITEM = "ru.vodnouho.android.EXTRA_ITEM"; //Action for run OTD app
     private static final boolean LOGD = true;
 
@@ -44,17 +48,18 @@ public class OTDWidgetProvider extends AppWidgetProvider {
             String extra = intent.getStringExtra(EXTRA_ITEM);
             Toast.makeText(context, "Touched view " + extra, Toast.LENGTH_SHORT).show();
 
-        }else if(intent.getAction().equals(ACTION_REFRESH)){
+        } else if (intent.getAction().equals(ACTION_REFRESH)) {
             int appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
                     AppWidgetManager.INVALID_APPWIDGET_ID);
 
             AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
             updateAppWidget(context, appWidgetManager, appWidgetId);
-        } else {
+        }  else {
             super.onReceive(context, intent);
         }
 
     }
+
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
@@ -63,15 +68,14 @@ public class OTDWidgetProvider extends AppWidgetProvider {
 
         final int N = appWidgetIds.length;
         // Perform this loop procedure for each App Widget that belongs to this provider
-        for (int i=0; i<N; i++) {
+        for (int i = 0; i < N; i++) {
             int appWidgetId = appWidgetIds[i];
 
-            if(isNeedUpdate(appWidgetId, context)){
+            if (isNeedUpdate(appWidgetId, context)) {
                 updateAppWidget(context, appWidgetManager, appWidgetId);
             }
         }
     }
-
 
 
     /**
@@ -83,19 +87,18 @@ public class OTDWidgetProvider extends AppWidgetProvider {
     }
 
     private boolean isNeedUpdate(int appWidgetId, Context context) {
-        String settingLang = SettingsActivity.loadPrefs(context, appWidgetId) ;
-        if(settingLang == null || settingLang.isEmpty()){
+        String settingLang = SettingsActivity.loadPrefs(context, appWidgetId);
+        if (settingLang == null || settingLang.isEmpty()) {
             return false;
         }
         return true;
     }
 
 
-
     static void updateAppWidget(Context context, AppWidgetManager appWidgetManager, int appWidgetId) {
         Log.d(TAG, "updateAppWidget ID:" + appWidgetId);
 
-        boolean isContentProviderInstalled  =  isPackageInstalled(CONTENT_PROVIDER_PACKAGE,context);
+        boolean isContentProviderInstalled = isPackageInstalled(CONTENT_PROVIDER_PACKAGE, context);
 /*
         Log.d(TAG, "is On This Day installed:"+isContentProviderInstalled);
         Log.d(TAG, "is ContentProviderInstalled:"+DataFetcher.isProviderInstalled(context));
@@ -110,14 +113,14 @@ public class OTDWidgetProvider extends AppWidgetProvider {
 
         //get settings lang
         String settingLang = SettingsActivity.loadPrefs(context, appWidgetId);
-        if(settingLang == null || settingLang.isEmpty()){
+        if (settingLang == null || settingLang.isEmpty()) {
             settingLang = currentLang;
         }
 
         Date currentDate = new Date();
 
         RemoteViews rv;
-        if(!isContentProviderInstalled){
+        if (!isContentProviderInstalled) {
             //no content provider
 
             rv = new RemoteViews(context.getPackageName(),
@@ -141,7 +144,7 @@ public class OTDWidgetProvider extends AppWidgetProvider {
             rv.setOnClickPendingIntent(R.id.installView, pendingIntent);
 
 
-        }else{
+        } else {
             rv = new RemoteViews(context.getPackageName(),
                     R.layout.atd_widget_layout);
 
@@ -151,7 +154,6 @@ public class OTDWidgetProvider extends AppWidgetProvider {
             //start service for getData and create Views
             setList(rv, context, settingLang, currentDate, appWidgetId);
         }
-
 
 
         //
@@ -167,8 +169,8 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         intent.setAction(action);
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
 
-        if(LOGD)
-            Log.d(TAG, "getPendingSelfIntent widgetId="+widgetId+" intent"+intent);
+        if (LOGD)
+            Log.d(TAG, "getPendingSelfIntent widgetId=" + widgetId + " intent" + intent);
 
         return PendingIntent.getBroadcast(context, widgetId, intent, 0);
     }
@@ -193,16 +195,16 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         String titleText;
         //get title by setting lang. Use context lang, so synchronize it
         //noinspection SynchronizationOnLocalVariableOrMethodParameter
-        synchronized (context){
-            Log.d(TAG, "currentLang:"+currentLang+" settingLang:"+settingLang);
+        synchronized (context) {
+            Log.d(TAG, "currentLang:" + currentLang + " settingLang:" + settingLang);
 
             boolean isLangChaged = false;
-            if (!settingLang.equals(currentLang)){
+            if (!settingLang.equals(currentLang)) {
                 LocalizationUtils.setLocate(context, settingLang);
                 isLangChaged = true;
             }
             titleText = createTitleText(context, currentDate);
-            if(isLangChaged){
+            if (isLangChaged) {
                 LocalizationUtils.setLocate(context, currentLang);
             }
         }
@@ -213,14 +215,12 @@ public class OTDWidgetProvider extends AppWidgetProvider {
 
 
     /**
-     *
      * @param context
      * @param lang
      * @param date
-     * @param appWidgetId
-     * If your App Widget setup process can take several seconds
-     * (perhaps while performing web requests) and you require that your process continues,
-     * consider starting a Service in the onUpdate() method.
+     * @param appWidgetId If your App Widget setup process can take several seconds
+     *                    (perhaps while performing web requests) and you require that your process continues,
+     *                    consider starting a Service in the onUpdate() method.
      */
     private static void setList(RemoteViews rv, Context context, String lang, Date date, int appWidgetId) {
 
@@ -264,6 +264,7 @@ public class OTDWidgetProvider extends AppWidgetProvider {
 
     /**
      * Build localized (based on context!!!!) the page title for today, such as "March 21" or "21 Июля"
+     *
      * @param context
      * @return
      */
@@ -272,13 +273,6 @@ public class OTDWidgetProvider extends AppWidgetProvider {
 
 
     }
-
-
-
-
-
-
-
 
 
 }

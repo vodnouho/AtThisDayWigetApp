@@ -2,12 +2,16 @@ package ru.vodnouho.android.atthisdaywidgetapp;
 
 
 import android.appwidget.AppWidgetManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.text.Html;
@@ -24,6 +28,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 /**
@@ -37,6 +43,8 @@ public class ATDAppWidgetService extends RemoteViewsService {
     public static final String EXTRA_WIDGET_LANG = "ru.vodnouho.android.atthisdaywigetapp.EXTRA_WIDGET_LANG";
     public static final String EXTRA_WIDGET_DATE = "ru.vodnouho.android.atthisdaywigetapp.EXTRA_WIDGET_DATE";
 
+    public static final String ACTION_CONNECTIVITY_CHANGE = "android.net.conn.CONNECTIVITY_CHANGE";
+
     private static Object sLock = new Object();
 
 
@@ -47,8 +55,8 @@ public class ATDAppWidgetService extends RemoteViewsService {
         return new CategoryListRemoteViewsFactory(this.getApplicationContext(), intent);
     }
 
-    public static class CategoryListRemoteViewsFactory
-            implements RemoteViewsService.RemoteViewsFactory, Loader.OnLoadCompleteListener<Cursor>,
+    public static class CategoryListRemoteViewsFactory extends BroadcastReceiver
+            implements RemoteViewsFactory, Loader.OnLoadCompleteListener<Cursor>,
             NetworkFetcher.OnLoadListener {
 
         private Context mContext;
@@ -70,6 +78,45 @@ public class ATDAppWidgetService extends RemoteViewsService {
         private boolean isWatchDogStarted = false;
         private Thread mWatchDogThread;
 
+        private boolean wasErrorOnUrlLoad = false;
+        private boolean wasErrorOnImageLoad = false;
+        private final ExecutorService executor = Executors.newSingleThreadExecutor();
+        private final Handler mHandler = new Handler();
+
+        private Runnable createResumeLoadingRunnable() {
+            return new Runnable() {
+                @Override
+                public void run() {
+                    if (LOGD)
+                        Log.d(TAG, "Resume loading...");
+
+                    if (wasErrorOnUrlLoad) {
+                        if (LOGD)
+                            Log.d(TAG, "fixing wasErrorOnUrlLoad:" + wasErrorOnUrlLoad);
+
+                        wasErrorOnUrlLoad = false;
+
+                        for (String url : mImageUrlRequests.keySet()) {
+                            mNetworkFetcher.requestJsonObject(url, CategoryListRemoteViewsFactory.this);
+                        }
+                    }
+
+                    if (wasErrorOnImageLoad) {
+                        if (LOGD)
+                            Log.d(TAG, "fixing wasErrorOnImageLoad:" + wasErrorOnImageLoad);
+                        wasErrorOnImageLoad = false;
+
+
+                        for (RemoteViewsHolder h : mViewsHolder) {
+                            if (h.mFact != null && h.mFact.getThumbnailUrl() != null && h.mImageBitmap == null) {
+                                mNetworkFetcher.requestImage(h.mFact.getThumbnailUrl(), CategoryListRemoteViewsFactory.this);
+                            }
+                        }
+                    }
+
+                }
+            };
+        }
 
         private Runnable mImageLoaderWatchDogRunnable = new Runnable() {
             @Override
@@ -90,8 +137,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
             }
         };
         private Map<String, ArrayList<Fact>> mImageUrlRequests
-                = Collections.synchronizedMap(new HashMap<String,  ArrayList<Fact>>());
-
+                = Collections.synchronizedMap(new HashMap<String, ArrayList<Fact>>());
 
 
         public CategoryListRemoteViewsFactory() {
@@ -118,6 +164,33 @@ public class ATDAppWidgetService extends RemoteViewsService {
 
         }
 
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (LOGD)
+                Log.d(TAG, "Service got the intent: " + intent.toString());
+            mContext = context;
+
+            if (intent.getAction().equals(ACTION_CONNECTIVITY_CHANGE)) {
+                if (isOnline(context)) {
+                    if (LOGD)
+                        Log.d(TAG, "We have an internet!");
+
+                    mWidgetManager =  AppWidgetManager.getInstance(mContext);
+                    int[] ids = mWidgetManager.getAppWidgetIds(OTDWidgetProvider
+                            .getComponentName(mContext));
+                    mWidgetManager.notifyAppWidgetViewDataChanged(ids, R.id.listView);
+                }
+            }
+        }
+
+
+        public boolean isOnline(Context context) {
+            ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo netInfo = cm.getActiveNetworkInfo();
+            //should check null because in airplane mode it will be null
+            return (netInfo != null && netInfo.isConnected());
+        }
 
         @Override
         public void onCreate() {
@@ -167,7 +240,35 @@ public class ATDAppWidgetService extends RemoteViewsService {
                 if (LOGD)
                     Log.d(TAG, "onDataSetChanged() return cause mCategories == null");
 
+                return;
+            }
 
+            if(wasErrorOnUrlLoad || wasErrorOnImageLoad){
+                if (wasErrorOnUrlLoad) {
+                    if (LOGD)
+                        Log.d(TAG, "fixing wasErrorOnUrlLoad:" + wasErrorOnUrlLoad);
+
+                    wasErrorOnUrlLoad = false;
+
+                    for (String url : mImageUrlRequests.keySet()) {
+                        mNetworkFetcher.requestJsonObject(url, CategoryListRemoteViewsFactory.this);
+                    }
+                }
+
+                if (wasErrorOnImageLoad) {
+                    if (LOGD)
+                        Log.d(TAG, "fixing wasErrorOnImageLoad:" + wasErrorOnImageLoad);
+                    wasErrorOnImageLoad = false;
+
+
+                    for (RemoteViewsHolder h : mViewsHolder) {
+                        if (h.mFact != null && h.mFact.getThumbnailUrl() != null && h.mImageBitmap == null) {
+                            mNetworkFetcher.requestImage(h.mFact.getThumbnailUrl(), CategoryListRemoteViewsFactory.this);
+                        }
+                    }
+                }
+                if (LOGD)
+                    Log.d(TAG, "onDataSetChanged() return cause wasErrorOnUrlLoad || wasErrorOnImageLoad");
                 return;
             }
 
@@ -179,6 +280,11 @@ public class ATDAppWidgetService extends RemoteViewsService {
                 mViewsHolder = Collections.synchronizedList(new ArrayList<RemoteViewsHolder>());
             } else {
                 mViewsHolder.clear();
+            }
+
+            //clear favFacts
+            for (Category c : mCategories) {
+                c.clearFavFacts();
             }
 
             //TODO lang must be set by ContentProvider
@@ -198,7 +304,6 @@ public class ATDAppWidgetService extends RemoteViewsService {
                 for (Fact f : facts) {
 
 
-
                     rView = new RemoteViews(mContext.getPackageName(),
                             R.layout.widget_item);
                     rView.setTextViewText(R.id.tvItemText, Html.fromHtml(f.text));
@@ -211,9 +316,9 @@ public class ATDAppWidgetService extends RemoteViewsService {
                     //better start parallel request after mViewsHolder.add()
                     if (factViewHolder.mFact != null && factViewHolder.mFact.getThumbnailUrl() != null) {
                         mNetworkFetcher.requestImage(factViewHolder.mFact.getThumbnailUrl(), this);
-                    }else if(f.mayHasThumbnail()){
+                    } else if (f.mayHasThumbnail()) {
                         String findPictureUrlAt = f.getTitleForPicture();
-                        if(findPictureUrlAt != null){
+                        if (findPictureUrlAt != null) {
                             addImageUrlRequest(findPictureUrlAt, f);
                             mNetworkFetcher.requestJsonObject(findPictureUrlAt, this);
                         }
@@ -235,12 +340,13 @@ public class ATDAppWidgetService extends RemoteViewsService {
 
         /**
          * Save request
+         *
          * @param titleUrl
          * @param f
          */
         private void addImageUrlRequest(String titleUrl, Fact f) {
             ArrayList<Fact> prevRequests = mImageUrlRequests.get(titleUrl);
-            if(prevRequests == null){
+            if (prevRequests == null) {
                 prevRequests = new ArrayList<>();
             }
             prevRequests.add(f);
@@ -402,7 +508,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
                 RemoteViewsHolder holder = mViewsHolder.get(i);
                 Fact fact = holder.mFact;
 
-                if(fact == null){
+                if (fact == null) {
                     continue;
                 }
 
@@ -419,17 +525,17 @@ public class ATDAppWidgetService extends RemoteViewsService {
         }
 
         @Override
-        public void onJsonObjectLoaded(String url, JSONObject jsonResponse){
+        public void onJsonObjectLoaded(String url, JSONObject jsonResponse) {
             if (LOGD)
                 Log.d(TAG, "onJsonObjectLoaded():" + jsonResponse.toString());
 
 
-            if(jsonResponse == null){
+            if (jsonResponse == null) {
                 return;
             }
 
             ArrayList<Fact> facts = mImageUrlRequests.get(url);
-            if(facts == null || facts.size() == 0){
+            if (facts == null || facts.size() == 0) {
                 //nobody need this info
                 return;
             }
@@ -437,22 +543,22 @@ public class ATDAppWidgetService extends RemoteViewsService {
 
             JSONObject thumbnail;
             try {
-                if(jsonResponse.isNull("thumbnail")){
-                    for(Fact f: facts){
+                if (jsonResponse.isNull("thumbnail")) {
+                    for (Fact f : facts) {
                         f.setThumbnailUrl("", url);
                         String findPictureUrlAt = f.getTitleForPicture();
-                        if(findPictureUrlAt != null){
+                        if (findPictureUrlAt != null) {
                             addImageUrlRequest(findPictureUrlAt, f);
                             mNetworkFetcher.requestJsonObject(findPictureUrlAt, this);
                         }
                     }
 
-                }else{
+                } else {
                     thumbnail = jsonResponse.getJSONObject("thumbnail");
                     String thumbnailUrl = thumbnail.getString("source");
 
-                    if(thumbnailUrl != null && !thumbnailUrl.isEmpty()){
-                        for(Fact f: facts){
+                    if (thumbnailUrl != null && !thumbnailUrl.isEmpty()) {
+                        for (Fact f : facts) {
                             f.setThumbnailUrl(thumbnailUrl, url);
                         }
                         mNetworkFetcher.requestImage(thumbnailUrl, this);
@@ -469,17 +575,27 @@ public class ATDAppWidgetService extends RemoteViewsService {
                 Log.d(TAG, "onError() reason:" + error.toString());
 
             ArrayList<Fact> isUrlRequest = mImageUrlRequests.get(url);
-            if(isUrlRequest != null){
-                //mNetworkFetcher.requestJsonObject(url, this);
+            if (isUrlRequest != null) {
+                wasErrorOnUrlLoad = true;
+
+                if (LOGD)
+                    Log.d(TAG, "wasErrorOnUrlLoad:" + wasErrorOnUrlLoad);
+
+            } else {
+                //if not URL error, so it error on image loading
+                wasErrorOnImageLoad = true;
+
+                if (LOGD)
+                    Log.d(TAG, "wasErrorOnImageLoad:" + wasErrorOnImageLoad);
             }
         }
 
-        private void notifyWithoutDataChanging(){
+        private void notifyWithoutDataChanging() {
             synchronized (sLock) {
                 isNeedNotificationWithoutDataChanging = true;
             }
 
-            if(mWatchDogThread == null){
+            if (mWatchDogThread == null) {
                 startWatchDogThread();
             }
         }
