@@ -9,6 +9,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
+import java.util.Objects;
 
 /**
  * Created by petukhov on 24.03.2016.
@@ -130,7 +131,7 @@ public class LocalizationUtils {
 
     }
 
-    public static String getLocalizedString(int stringId, String lang, Context context){
+    public static String getLocalizedString(int stringId, String lang, Context context, Object... formatArgs){
         String result = null;
         lang = restrictLanguage(lang);
 
@@ -144,7 +145,8 @@ public class LocalizationUtils {
             LocalizationUtils.setLocate(context, lang);
             isLangChaged = true;
         }
-        result = context.getString(stringId);
+        result = context.getString(stringId, formatArgs);
+        //result = context.getString(stringId);
         if(isLangChaged){
             LocalizationUtils.setLocate(context, currentLang);
         }

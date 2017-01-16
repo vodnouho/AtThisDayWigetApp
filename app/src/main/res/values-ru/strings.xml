@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Виджет \"в этот день\"</string>
+    <string name="app_name">Виджет \"В этот день\"</string>
 
     <string name="title">В этот день</string>
     <string name="save">Сохранить</string>
@@ -28,4 +28,6 @@
 
     <string name="loading_inprogress">Идёт загрузка...</string>
     <string name="more">Ещё...</string>
+
+    <string name="years_ago">%1$s лет назад</string>
 </resources>

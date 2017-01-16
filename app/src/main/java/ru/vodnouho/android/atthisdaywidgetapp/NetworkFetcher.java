@@ -79,7 +79,7 @@ public class NetworkFetcher {
                         listener.onImageLoaded(url, bitmap);
                     }
                 }
-                , 100, 100, null, null,
+                , 90, 90, null, null,
                 new Response.ErrorListener() {
                     public void onErrorResponse(VolleyError error) {
                         listener.onError(url, error);

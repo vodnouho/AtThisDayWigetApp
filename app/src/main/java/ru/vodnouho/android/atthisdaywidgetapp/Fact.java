@@ -1,11 +1,13 @@
 package ru.vodnouho.android.atthisdaywidgetapp;
 
 import android.support.annotation.Nullable;
+import android.text.Html;
 import android.util.Log;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 /**
  * Created by petukhov on 01.09.2015.
@@ -20,6 +22,7 @@ public class Fact {
     String mThumbnailUrl;
     ArrayList<String> mSummaryUrls = new ArrayList<>(3);
     private String mLang;
+    private String mYearsAgoString;
 
 
     public Fact(String id, String text, String lang) {
@@ -37,6 +40,8 @@ public class Fact {
         if(LOGD)
             Log.d(TAG, "parseText : "+text);
 
+        findYearsAgoString(text);
+
         int indexHrefStart = text.indexOf("href=\"");
         while (indexHrefStart > -1) {
             indexHrefStart += "href=\"".length();
@@ -44,6 +49,13 @@ public class Fact {
             if (indexHrefEnd == -1) {
                 break;
             }
+
+            int indexFirstDot = text.indexOf(".", indexHrefStart);
+            String linkLang = mLang;
+            if(indexFirstDot > 2){
+                linkLang = text.substring(indexFirstDot-2, indexFirstDot);
+            }
+
 
             int indexSlash = text.lastIndexOf("/", indexHrefEnd);
             if (indexSlash == -1) {
@@ -68,7 +80,7 @@ public class Fact {
                 }
 
                 mSummaryUrls.add("https://"
-                        + mLang
+                        + linkLang
                         + SUMMARY_ENDPOINT
                         + URLEncoder.encode(titleSubstring, "UTF-8")
                         //+ titleSubstring
@@ -79,6 +91,31 @@ public class Fact {
 
             indexHrefStart = text.indexOf("href=\"", indexHrefEnd);
         }
+    }
+
+    private void findYearsAgoString(String text) {
+        if(text == null){
+            return;
+        }
+
+        Log.d(TAG, "findYearsAgoString: "+ text);
+        String plain = Html.fromHtml(text).toString();
+        Log.d(TAG, "plain: "+plain);
+        String[] splitedStrings = plain.split("\\s+");
+        if(splitedStrings.length > 0 ){
+            String firstSub = splitedStrings[0];
+            if(firstSub.endsWith(":")){
+                firstSub = firstSub.replace(":","");
+            }
+            if(isNumeric(firstSub)){
+                int eventYear = Integer.parseInt(firstSub);
+                int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+                //once get localized MORE string
+
+                mYearsAgoString = String.valueOf((currentYear - eventYear));
+            }
+        }
+
     }
 
     public static boolean isNumeric(String str)
@@ -142,4 +179,7 @@ public class Fact {
         mLang = lang;
     }
 
+    public String getYearsAgoString() {
+        return mYearsAgoString;
+    }
 }

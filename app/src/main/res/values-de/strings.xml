@@ -25,4 +25,5 @@
     <string name="install">Installieren</string>
     <string name="loading_inprogress">Laden...</string>
     <string name="more">Mehr...</string>
+    <string name="years_ago">Vor %1$s Jahren</string>
 </resources>

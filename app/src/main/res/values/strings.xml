@@ -43,5 +43,6 @@
     <string name="install">Install</string>
     <string name="loading_inprogress">Loading...</string>
     <string name="more">More...</string>
+    <string name="years_ago">%1$s years ago</string>
 
 </resources>

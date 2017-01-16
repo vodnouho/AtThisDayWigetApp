@@ -83,46 +83,13 @@ public class ATDAppWidgetService extends RemoteViewsService {
         private final ExecutorService executor = Executors.newSingleThreadExecutor();
         private final Handler mHandler = new Handler();
 
-        private Runnable createResumeLoadingRunnable() {
-            return new Runnable() {
-                @Override
-                public void run() {
-                    if (LOGD)
-                        Log.d(TAG, "Resume loading...");
 
-                    if (wasErrorOnUrlLoad) {
-                        if (LOGD)
-                            Log.d(TAG, "fixing wasErrorOnUrlLoad:" + wasErrorOnUrlLoad);
-
-                        wasErrorOnUrlLoad = false;
-
-                        for (String url : mImageUrlRequests.keySet()) {
-                            mNetworkFetcher.requestJsonObject(url, CategoryListRemoteViewsFactory.this);
-                        }
-                    }
-
-                    if (wasErrorOnImageLoad) {
-                        if (LOGD)
-                            Log.d(TAG, "fixing wasErrorOnImageLoad:" + wasErrorOnImageLoad);
-                        wasErrorOnImageLoad = false;
-
-
-                        for (RemoteViewsHolder h : mViewsHolder) {
-                            if (h.mFact != null && h.mFact.getThumbnailUrl() != null && h.mImageBitmap == null) {
-                                mNetworkFetcher.requestImage(h.mFact.getThumbnailUrl(), CategoryListRemoteViewsFactory.this);
-                            }
-                        }
-                    }
-
-                }
-            };
-        }
 
         private Runnable mImageLoaderWatchDogRunnable = new Runnable() {
             @Override
             public void run() {
                 try {
-                    Thread.sleep(2500);
+                    Thread.sleep(1500);
                 } catch (InterruptedException e) {
                     Log.e(TAG, "Interrupted", e);
                 }
@@ -327,12 +294,14 @@ public class ATDAppWidgetService extends RemoteViewsService {
 
                 //add MORE section
 
+/*
                 rView = new RemoteViews(mContext.getPackageName(),
                         R.layout.widget_item);
 
                 rView.setTextViewText(R.id.tvItemText, localizedMoreString);
                 setOnClickFillInIntent(rView, R.id.tvItemText, c.id, "-1");
                 mViewsHolder.add(new RemoteViewsHolder(rView, RemoteViewsHolder.TYPE_FACT));
+*/
 
 
             }
@@ -429,7 +398,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
         //you can fetch some here !!!
         @Override
         public RemoteViews getViewAt(int position) {
-            if (mViewsHolder == null || mViewsHolder.size() < (position - 1)) {
+            if (mViewsHolder == null || mViewsHolder.size() == 0 || mViewsHolder.size() < (position - 1)) {
                 return null;
             }
 
@@ -440,11 +409,22 @@ public class ATDAppWidgetService extends RemoteViewsService {
             }
 */
 
+            // show/hide image
             if (holder.mFact == null || holder.mFact.getThumbnailUrl() == null || holder.mImageBitmap == null) {
-                holder.mViews.setViewVisibility(R.id.fact_ImageView, View.INVISIBLE);
+                holder.mViews.setViewVisibility(R.id.fact_ImageView, View.GONE);
             } else {
                 holder.mViews.setImageViewBitmap(R.id.fact_ImageView, holder.mImageBitmap);
                 holder.mViews.setViewVisibility(R.id.fact_ImageView, View.VISIBLE);
+            }
+
+            // show/hide year textView
+            if (holder.mFact == null || holder.mFact.getYearsAgoString() == null ) {
+                holder.mViews.setViewVisibility(R.id.yearItemText, View.GONE);
+            }else {
+                String localizedYearsAgoString = LocalizationUtils.getLocalizedString(
+                        R.string.years_ago, mLang, mContext, holder.mFact.getYearsAgoString());
+                holder.mViews.setTextViewText(R.id.yearItemText, localizedYearsAgoString);
+                holder.mViews.setViewVisibility(R.id.yearItemText, View.VISIBLE);
             }
 
             return mViewsHolder.get(position).mViews;

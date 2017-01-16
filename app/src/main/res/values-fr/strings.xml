@@ -24,4 +24,7 @@
     <string name="install">Installer</string>
     <string name="loading_inprogress">Chargement...</string>
     <string name="more">PLUS...</string>
+
+    <string name="years_ago">Il y a %1$s ans</string>
+
 </resources>

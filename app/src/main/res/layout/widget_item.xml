@@ -2,22 +2,56 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="100dp"
     android:background="#88444444"
+    android:orientation="horizontal"
     >
-    <ImageView
-        android:id="@+id/fact_ImageView"
-        android:layout_height="50dp"
-        android:layout_width="50dp"/>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        >
+        <TextView
+            android:id="@+id/yearItemText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|left"
+
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="150 лет назад"
+            >
+        </TextView>
+
     <TextView
         android:id="@+id/tvItemText"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="top|left"
+
+        android:paddingBottom="12dp"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:paddingLeft="4dp"
-        android:paddingRight="4dp"
-        android:paddingTop="6dp"
-        android:paddingBottom="6dp"
         >
     </TextView>
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/fact_ImageView"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_gravity="top|right"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:scaleType="fitCenter"
+
+        android:background="#11020202"
+        />
+
 </LinearLayout>
