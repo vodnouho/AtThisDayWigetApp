@@ -8,6 +8,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by petukhov on 01.09.2015.
@@ -16,6 +18,9 @@ public class Fact {
     public static final boolean LOGD = true;
     public static final String TAG = "vdnh.Fact";
     public static final String SUMMARY_ENDPOINT = ".m.wikipedia.org/api/rest_v1/page/summary/";
+    public static final Pattern PATTERN_ANCHOR = Pattern.compile("<a[^<]+</a>");
+    public static final Pattern PATTERN_HREF = Pattern.compile("href=\"(.+)\"");
+    public static final Pattern PATTERN_BODY = Pattern.compile(">(.+)</a");
 
     String id;
     String text;
@@ -37,77 +42,92 @@ public class Fact {
     }
 
     private void parseText(String text) {
-        if(LOGD)
-            Log.d(TAG, "parseText : "+text);
+        if (LOGD)
+            Log.d(TAG, "parseText : " + text);
 
-        findYearsAgoString(text);
+        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
 
-        int indexHrefStart = text.indexOf("href=\"");
-        while (indexHrefStart > -1) {
-            indexHrefStart += "href=\"".length();
-            int indexHrefEnd = text.indexOf("\"", indexHrefStart);
-            if (indexHrefEnd == -1) {
-                break;
-            }
+        Matcher anchorMatcher = PATTERN_ANCHOR.matcher(text);
 
-            int indexFirstDot = text.indexOf(".", indexHrefStart);
-            String linkLang = mLang;
-            if(indexFirstDot > 2){
-                linkLang = text.substring(indexFirstDot-2, indexFirstDot);
-            }
+        int anchorCount = 0;
+        while (anchorMatcher.find()) {
+            //for all <a href="https://ru.m.wikipedia.org/wiki/2007 год">2007</a>
+
+            anchorCount++;
+
+            String aTag = anchorMatcher.group();
+            Matcher hrefMatcher = PATTERN_HREF.matcher(aTag);
+            Matcher bodyMatcher = PATTERN_BODY.matcher(aTag);
+            if (hrefMatcher.find() && bodyMatcher.find()) {
+
+                String href = hrefMatcher.group().substring(6, hrefMatcher.group().length() - 1);
+                String wikiTitle = href.substring(href.lastIndexOf("/") + 1);
+                String body = bodyMatcher.group().substring(1, bodyMatcher.group().length() - 3);
+
+                Log.d(TAG, "match a:" + aTag
+                        + " href:" + href
+                        + " wikiTitle:" + wikiTitle
+                        + " body:" + body);
 
 
-            int indexSlash = text.lastIndexOf("/", indexHrefEnd);
-            if (indexSlash == -1) {
-                break;
-            }else{
-                indexSlash++;
-            }
+                if (isNumeric(body)) {
+                    if (anchorCount == 1) {
+                        //dated event
+                        int eventYear = Integer.parseInt(body);
+                        mYearsAgoString = String.valueOf((currentYear - eventYear));
+                    }
 
-            String titleSubstring = text.substring(indexSlash, indexHrefEnd);
-
-            //if text start with number link it is a year of event. Ignore it.
-            if(isNumeric(titleSubstring.trim())){
-                indexHrefStart = text.indexOf("href=\"", indexHrefEnd);
-                continue;
-            }
-
-            titleSubstring = titleSubstring.replace(" ", "_");
-
-            try {
-                if(mLang == null){
-                    throw new IllegalStateException("Lang is not setted.");
+                    continue; //we no need year picture
                 }
 
-                mSummaryUrls.add("https://"
-                        + linkLang
-                        + SUMMARY_ENDPOINT
-                        + URLEncoder.encode(titleSubstring, "UTF-8")
-                        //+ titleSubstring
-                );
-            } catch (Throwable e) {
-                Log.d(TAG, "Can't add summary endpoint.", e);
+                //get lang from link https://ru.m.wikipedia.org/wiki/2001
+                int indexFirstDot = href.indexOf(".");
+                String linkLang = mLang;
+                if (indexFirstDot > 2) {
+                    linkLang = href.substring(indexFirstDot - 2, indexFirstDot);
+                }
+
+                //replace spaces by underscore
+                if(wikiTitle.contains(" ")){
+                    wikiTitle = wikiTitle.replace(" ", "_");
+                }
+
+
+                try {
+                    if (linkLang == null) {
+                        throw new IllegalStateException("Lang is not setted.");
+                    }
+
+                    mSummaryUrls.add("https://"
+                                    + linkLang
+                                    + SUMMARY_ENDPOINT
+                                    + URLEncoder.encode(wikiTitle, "UTF-8")
+                            //+ titleSubstring
+                    );
+                } catch (Throwable e) {
+                    Log.d(TAG, "Can't add summary endpoint.", e);
+                }
+
             }
 
-            indexHrefStart = text.indexOf("href=\"", indexHrefEnd);
         }
     }
 
     private void findYearsAgoString(String text) {
-        if(text == null){
+        if (text == null) {
             return;
         }
 
-        Log.d(TAG, "findYearsAgoString: "+ text);
+        Log.d(TAG, "findYearsAgoString: " + text);
         String plain = Html.fromHtml(text).toString();
-        Log.d(TAG, "plain: "+plain);
+        Log.d(TAG, "plain: " + plain);
         String[] splitedStrings = plain.split("\\s+");
-        if(splitedStrings.length > 0 ){
+        if (splitedStrings.length > 0) {
             String firstSub = splitedStrings[0];
-            if(firstSub.endsWith(":")){
-                firstSub = firstSub.replace(":","");
+            if (firstSub.endsWith(":")) {
+                firstSub = firstSub.replace(":", "");
             }
-            if(isNumeric(firstSub)){
+            if (isNumeric(firstSub)) {
                 int eventYear = Integer.parseInt(firstSub);
                 int currentYear = Calendar.getInstance().get(Calendar.YEAR);
                 //once get localized MORE string
@@ -118,8 +138,7 @@ public class Fact {
 
     }
 
-    public static boolean isNumeric(String str)
-    {
+    public static boolean isNumeric(String str) {
         return str.matches("-?\\d+(\\.\\d+)?");  //match a number with optional '-' and decimal.
     }
 
@@ -146,9 +165,9 @@ public class Fact {
 
     @Nullable
     public String getTitleForPicture() {
-        if(mSummaryUrls == null || mSummaryUrls.size() == 0){
+        if (mSummaryUrls == null || mSummaryUrls.size() == 0) {
             return null;
-        }else{
+        } else {
             return mSummaryUrls.get(0);
         }
     }
@@ -160,8 +179,9 @@ public class Fact {
 
     /**
      * Set the thumbnailUrl or remove title without thumbnail from queue
+     *
      * @param thumbnailUrl - set URL of image or "" for remove title
-     * @param url - title url
+     * @param url          - title url
      */
     public void setThumbnailUrl(String thumbnailUrl, String url) {
         if (thumbnailUrl != null) {
