@@ -30,6 +30,10 @@ public class NetworkFetcher {
 
     private static NetworkFetcher sInstance;
     private static Context sContext;
+
+    private static LruCache<String, JSONObject> sSummaryCache = new LruCache<String, JSONObject>(84); //title is key, path is value
+    private static LruCache<String, Bitmap> sImageCache = new LruCache<String, Bitmap>(21); //title is key, path is value
+
     private RequestQueue mRequestQueue;
     private ImageLoader mImageLoader;
 
@@ -70,12 +74,20 @@ public class NetworkFetcher {
      */
     public void requestImage(final String url, final OnLoadListener listener) {
 
+        //lets find in cache
+        Bitmap cachedBitmap = sImageCache.get(url);
+        if(cachedBitmap != null){
+            listener.onImageLoaded(url, cachedBitmap);
+            return;
+        }
+
         // Retrieves an image specified by the URL, displays it in the UI.
         ImageRequest request = new ImageRequest(
                 url,
                 new Response.Listener<Bitmap>() {
                     @Override
                     public void onResponse(Bitmap bitmap) {
+                        sImageCache.put(url, bitmap);
                         listener.onImageLoaded(url, bitmap);
                     }
                 }
@@ -97,7 +109,12 @@ public class NetworkFetcher {
      * @param listener - Listener
      */
     public void requestJsonObject(final String url, final OnLoadListener listener) {
-
+        //lets find in cache
+        JSONObject cachedSummary = sSummaryCache.get(url);
+        if(cachedSummary != null){
+            listener.onJsonObjectLoaded(url, cachedSummary);
+            return;
+        }
 
 
         JsonObjectRequest request = new JsonObjectRequest
@@ -105,6 +122,7 @@ public class NetworkFetcher {
 
                     @Override
                     public void onResponse(JSONObject response) {
+                        sSummaryCache.put(url, response);
                         listener.onJsonObjectLoaded(url, response);
                     }
                 }, new Response.ErrorListener() {
