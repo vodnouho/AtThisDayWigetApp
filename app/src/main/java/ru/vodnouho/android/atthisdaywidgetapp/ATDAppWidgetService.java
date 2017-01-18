@@ -5,6 +5,7 @@ import android.appwidget.AppWidgetManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
@@ -14,6 +15,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.content.LocalBroadcastManager;
 import android.text.Html;
 import android.util.Log;
 import android.view.View;
@@ -34,6 +36,8 @@ import java.util.concurrent.Executors;
 
 /**
  * Created by petukhov on 08.09.2015.
+ * RemoteViewsFactory -> AppWidgetProvider
+ * The communication from the RemoteViewsFactory to the AppWidgetProvider can be done using Broadcasts
  */
 public class ATDAppWidgetService extends RemoteViewsService {
     private static String TAG = "vdnh.WidgetService";
@@ -43,6 +47,8 @@ public class ATDAppWidgetService extends RemoteViewsService {
     public static final String EXTRA_WIDGET_LANG = "ru.vodnouho.android.atthisdaywigetapp.EXTRA_WIDGET_LANG";
     public static final String EXTRA_WIDGET_DATE = "ru.vodnouho.android.atthisdaywigetapp.EXTRA_WIDGET_DATE";
 
+    public static final String ACTION_IMAGE_LOADED = "ru.vodnouho.android.atthisdaywidgetapp.ACTION_IMAGE_LOADED";
+    public static final String ACTION_NO_DATA = "ru.vodnouho.android.atthisdaywidgetapp.ACTION_NO_DATA";
     public static final String ACTION_CONNECTIVITY_CHANGE = "android.net.conn.CONNECTIVITY_CHANGE";
 
     private static Object sLock = new Object();
@@ -97,7 +103,10 @@ public class ATDAppWidgetService extends RemoteViewsService {
                 if (LOGD)
                     Log.d(TAG, "WatchDog alive.");
                 if (isNeedNotificationWithoutDataChanging) {
-                    mWidgetManager.notifyAppWidgetViewDataChanged(mAppWidgetId, R.id.listView);
+                    Intent intent = new Intent(ACTION_IMAGE_LOADED);
+                    intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
+                    LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
+                    //mWidgetManager.notifyAppWidgetViewDataChanged(mAppWidgetId, R.id.listView);
                 }
 
                 mWatchDogThread = null;
@@ -105,6 +114,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
         };
         private Map<String, ArrayList<Fact>> mImageUrlRequests
                 = Collections.synchronizedMap(new HashMap<String, ArrayList<Fact>>());
+        private boolean isLoaderCompleteNotification = false;
 
 
         public CategoryListRemoteViewsFactory() {
@@ -126,6 +136,8 @@ public class ATDAppWidgetService extends RemoteViewsService {
                     .getComponentName(mContext));
 
             mNetworkFetcher = NetworkFetcher.getInstance(mContext);
+
+
             if (LOGD)
                 Log.d(TAG, "constructor lang:" + mLang + " date:" + mDateString + " appWidgetId:" + mAppWidgetId);
 
@@ -146,6 +158,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
                     mWidgetManager =  AppWidgetManager.getInstance(mContext);
                     int[] ids = mWidgetManager.getAppWidgetIds(OTDWidgetProvider
                             .getComponentName(mContext));
+
                     mWidgetManager.notifyAppWidgetViewDataChanged(ids, R.id.listView);
                 }
             }
@@ -202,10 +215,14 @@ public class ATDAppWidgetService extends RemoteViewsService {
                 }
             }
 
-            if (mCategories == null) {
+            if (mCategories == null ) {
+
                 //just created, loader not finished yet
                 if (LOGD)
-                    Log.d(TAG, "onDataSetChanged() return cause mCategories == null");
+                    Log.d(TAG, "onDataSetChanged() mCategoryLoader.isStarted()" + mCategoryLoader.isStarted());
+                if (LOGD)
+                    Log.d(TAG, "onDataSetChanged() mCategoryLoader.isAbandoned()" + mCategoryLoader.isAbandoned());
+                               mCategoryLoader.forceLoad();
 
                 return;
             }
@@ -234,11 +251,14 @@ public class ATDAppWidgetService extends RemoteViewsService {
                         }
                     }
                 }
-                if (LOGD)
-                    Log.d(TAG, "onDataSetChanged() return cause wasErrorOnUrlLoad || wasErrorOnImageLoad");
-                return;
+
+
             }
 
+
+        }
+
+        private void fillData() {
             //once get localized MORE string
             String localizedMoreString = LocalizationUtils.getLocalizedString(R.string.more, mLang, mContext);
 
@@ -247,6 +267,11 @@ public class ATDAppWidgetService extends RemoteViewsService {
                 mViewsHolder = Collections.synchronizedList(new ArrayList<RemoteViewsHolder>());
             } else {
                 mViewsHolder.clear();
+            }
+
+            if(mCategories == null){
+                Log.wtf(TAG, "no mCategories on fillData called");
+                return;
             }
 
             //clear favFacts
@@ -292,6 +317,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
                     }
                 }
 
+
                 //add MORE section
 
 /*
@@ -305,6 +331,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
 
 
             }
+
         }
 
         /**
@@ -362,6 +389,8 @@ public class ATDAppWidgetService extends RemoteViewsService {
             mCategoryLoader.startLoading();
 
 
+
+
             if (LOGD)
                 Log.d(TAG, "Start loading " + uri);
 
@@ -403,11 +432,11 @@ public class ATDAppWidgetService extends RemoteViewsService {
             }
 
             RemoteViewsHolder holder = mViewsHolder.get(position);
-/*
+
             if (LOGD) {
                 Log.d(TAG, "getViewAt(" + position + ")" );
             }
-*/
+
 
             // show/hide image
             if (holder.mFact == null || holder.mFact.getThumbnailUrl() == null || holder.mImageBitmap == null) {
@@ -465,6 +494,13 @@ public class ATDAppWidgetService extends RemoteViewsService {
             if (DataFetcher.TYPE_CATEGORIES == loaderType) {
                 mCategories = DataFetcher.fillCategories(data);
 
+                if(mCategories == null || mCategories.size() == 0){
+                    notifyWidgedProviderHasNoData();
+                    return;
+                }
+
+                fillData();
+
                 if (mAppWidgetId == -1) {
                     int[] ids = mWidgetManager.getAppWidgetIds(OTDWidgetProvider
                             .getComponentName(mContext));
@@ -473,6 +509,12 @@ public class ATDAppWidgetService extends RemoteViewsService {
                     mWidgetManager.notifyAppWidgetViewDataChanged(mAppWidgetId, R.id.listView);
                 }
             }
+        }
+
+        private void notifyWidgedProviderHasNoData() {
+            Intent intent = new Intent(ACTION_NO_DATA);
+            intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
+            LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
         }
 
         @Override
@@ -571,6 +613,10 @@ public class ATDAppWidgetService extends RemoteViewsService {
         }
 
         private void notifyWithoutDataChanging() {
+
+
+            //set flag and start delayed notification in separate thread
+
             synchronized (sLock) {
                 isNeedNotificationWithoutDataChanging = true;
             }
@@ -578,6 +624,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
             if (mWatchDogThread == null) {
                 startWatchDogThread();
             }
+
         }
 
         private void startWatchDogThread() {

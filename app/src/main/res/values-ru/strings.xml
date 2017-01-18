@@ -30,4 +30,6 @@
     <string name="more">Ещё...</string>
 
     <string name="years_ago">%1$s лет назад</string>
+
+    <string name="loading_error">Информация недоступна</string>
 </resources>

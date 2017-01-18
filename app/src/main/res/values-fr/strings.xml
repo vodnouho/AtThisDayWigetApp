@@ -27,4 +27,6 @@
 
     <string name="years_ago">Il y a %1$s ans</string>
 
+    <string name="loading_error">L\'information n\'est pas disponible</string>
+
 </resources>

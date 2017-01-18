@@ -6,12 +6,14 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.Toast;
@@ -33,6 +35,7 @@ public class OTDWidgetProvider extends AppWidgetProvider {
     public static final String EXTRA_ITEM = "ru.vodnouho.android.EXTRA_ITEM"; //Action for run OTD app
     private static final boolean LOGD = true;
 
+
     // Called when the BroadcastReceiver receives an Intent broadcast.
     // Checks to see whether the intent's action is TOAST_ACTION. If it is, the app widget
     // displays a Toast message for the current item.
@@ -53,8 +56,22 @@ public class OTDWidgetProvider extends AppWidgetProvider {
                     AppWidgetManager.INVALID_APPWIDGET_ID);
 
             AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
-            updateAppWidget(context, appWidgetManager, appWidgetId);
-        }  else {
+            updateAppWidget(context, appWidgetManager, appWidgetId, false);
+        } else if (intent.getAction().equals(ATDAppWidgetService.ACTION_IMAGE_LOADED)) {
+            if (LOGD)
+                Log.d(TAG, " Image loaded ! widgetId:" + intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID));
+            int appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
+                    AppWidgetManager.INVALID_APPWIDGET_ID);
+            AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+            updateAppWidget(context, appWidgetManager, appWidgetId, false);
+        } else if (intent.getAction().equals(ATDAppWidgetService.ACTION_NO_DATA)) {
+            if (LOGD)
+                Log.d(TAG, "No data received" + intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID));
+            int appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
+                    AppWidgetManager.INVALID_APPWIDGET_ID);
+            AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+            updateAppWidget(context, appWidgetManager, appWidgetId, true);
+        } else {
             super.onReceive(context, intent);
         }
 
@@ -64,7 +81,8 @@ public class OTDWidgetProvider extends AppWidgetProvider {
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         Log.d(TAG, "onUpdate");
-
+        LocalBroadcastManager.getInstance(context).registerReceiver(this, new IntentFilter(ATDAppWidgetService.ACTION_IMAGE_LOADED));
+        LocalBroadcastManager.getInstance(context).registerReceiver(this, new IntentFilter(ATDAppWidgetService.ACTION_NO_DATA));
 
         final int N = appWidgetIds.length;
         // Perform this loop procedure for each App Widget that belongs to this provider
@@ -72,7 +90,7 @@ public class OTDWidgetProvider extends AppWidgetProvider {
             int appWidgetId = appWidgetIds[i];
 
             if (isNeedUpdate(appWidgetId, context)) {
-                updateAppWidget(context, appWidgetManager, appWidgetId);
+                updateAppWidget(context, appWidgetManager, appWidgetId, false);
             }
         }
     }
@@ -95,7 +113,7 @@ public class OTDWidgetProvider extends AppWidgetProvider {
     }
 
 
-    static void updateAppWidget(Context context, AppWidgetManager appWidgetManager, int appWidgetId) {
+    static void updateAppWidget(Context context, AppWidgetManager appWidgetManager, int appWidgetId, boolean isNoData) {
         Log.d(TAG, "updateAppWidget ID:" + appWidgetId);
 
         boolean isContentProviderInstalled = isPackageInstalled(CONTENT_PROVIDER_PACKAGE, context);
@@ -152,7 +170,7 @@ public class OTDWidgetProvider extends AppWidgetProvider {
             rv.setOnClickPendingIntent(R.id.titleTextView, getPendingSelfIntent(context, ACTION_REFRESH, appWidgetId));
 
             //start service for getData and create Views
-            setList(rv, context, settingLang, currentDate, appWidgetId);
+            setList(rv, context, settingLang, currentDate, appWidgetId, isNoData);
         }
 
 
@@ -196,7 +214,7 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         //get title by setting lang. Use context lang, so synchronize it
         //noinspection SynchronizationOnLocalVariableOrMethodParameter
         synchronized (context) {
-            Log.d(TAG, "currentLang:" + currentLang + " settingLang:" + settingLang);
+            Log.d(TAG, "setTitleText currentLang:" + currentLang + " settingLang:" + settingLang);
 
             boolean isLangChaged = false;
             if (!settingLang.equals(currentLang)) {
@@ -222,7 +240,7 @@ public class OTDWidgetProvider extends AppWidgetProvider {
      *                    (perhaps while performing web requests) and you require that your process continues,
      *                    consider starting a Service in the onUpdate() method.
      */
-    private static void setList(RemoteViews rv, Context context, String lang, Date date, int appWidgetId) {
+    private static void setList(RemoteViews rv, Context context, String lang, Date date, int appWidgetId, boolean isNoData) {
 
 
         SimpleDateFormat sdf = new SimpleDateFormat("MMdd");
@@ -243,6 +261,12 @@ public class OTDWidgetProvider extends AppWidgetProvider {
 
         rv.setEmptyView(R.id.listView, R.id.emptyView);
 
+        if (isNoData) {
+            String localizedNoDataString = LocalizationUtils.getLocalizedString(R.string.loading_error, lang, context);
+            rv.setTextViewText(R.id.loading_textView, localizedNoDataString);
+        }
+
+
         // This section makes it possible for items to have individualized behavior.
         // It does this by setting up a pending intent template. Individuals items of a collection
         // cannot set up their own pending intents. Instead, the collection as a whole sets
@@ -258,6 +282,11 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         // Use appWidgetId por prevent reuse of Intent on different appwidget instance
         PendingIntent pendingIntent = PendingIntent.getActivity(context, appWidgetId, appIntent, 0);
         rv.setPendingIntentTemplate(R.id.listView, pendingIntent);
+
+        if(!isNoData){
+            AppWidgetManager.getInstance(context).notifyAppWidgetViewDataChanged(appWidgetId, R.id.listView);
+        }
+
 
     }
 

@@ -29,4 +29,6 @@
     <string name="more">Más...</string>
 
     <string name="years_ago">Hace %1$s años</string>
+
+    <string name="loading_error">La información no está disponible</string>
 </resources>

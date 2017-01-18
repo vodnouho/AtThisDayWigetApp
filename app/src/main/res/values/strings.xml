@@ -45,4 +45,6 @@
     <string name="more">More...</string>
     <string name="years_ago">%1$s years ago</string>
 
+    <string name="loading_error">Information is not available</string>
+
 </resources>

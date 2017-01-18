@@ -92,7 +92,7 @@ public class SettingsActivity extends AppCompatActivity {
             savePrefs(context, mAppWidgetId);
 
             // Push widget update to surface with newly set prefix
-            OTDWidgetProvider.updateAppWidget(context, AppWidgetManager.getInstance(getApplication()), mAppWidgetId);
+            OTDWidgetProvider.updateAppWidget(context, AppWidgetManager.getInstance(getApplication()), mAppWidgetId, false);
 
             // Make sure we pass back the original appWidgetId
             Intent resultValue = new Intent();

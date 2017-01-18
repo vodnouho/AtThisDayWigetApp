@@ -32,7 +32,8 @@
             >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
-
+                <action android:name="ru.vodnouho.android.atthisdaywidgetapp.ACTION_IMAGE_LOADED"/>
+                <action android:name="ru.vodnouho.android.atthisdaywidgetapp.ACTION_NO_DATA"/>
             </intent-filter>
             <meta-data  android:name="android.appwidget.provider" android:resource="@xml/atd_widget_info"/>
         </receiver>
