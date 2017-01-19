@@ -36,6 +36,7 @@ public class OTDWidgetProvider extends AppWidgetProvider {
     private static final boolean LOGD = true;
 
 
+
     // Called when the BroadcastReceiver receives an Intent broadcast.
     // Checks to see whether the intent's action is TOAST_ACTION. If it is, the app widget
     // displays a Toast message for the current item.
@@ -81,8 +82,6 @@ public class OTDWidgetProvider extends AppWidgetProvider {
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         Log.d(TAG, "onUpdate");
-        LocalBroadcastManager.getInstance(context).registerReceiver(this, new IntentFilter(ATDAppWidgetService.ACTION_IMAGE_LOADED));
-        LocalBroadcastManager.getInstance(context).registerReceiver(this, new IntentFilter(ATDAppWidgetService.ACTION_NO_DATA));
 
         final int N = appWidgetIds.length;
         // Perform this loop procedure for each App Widget that belongs to this provider
