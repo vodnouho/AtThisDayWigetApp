@@ -36,4 +36,11 @@ public class Category {
             mFacts.clear();
         }
     }
+
+    public void removeFavFact(Fact f) {
+        if(mFacts != null){
+            mFacts.remove(f);
+        }
+
+    }
 }

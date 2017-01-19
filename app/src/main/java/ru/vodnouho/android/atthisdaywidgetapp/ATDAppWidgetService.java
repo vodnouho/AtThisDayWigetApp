@@ -266,18 +266,22 @@ public class ATDAppWidgetService extends RemoteViewsService {
                         R.layout.widget_item_category);
                 rView.setTextViewText(R.id.tvItemText, c.name);
 
-                setOnClickFillInIntent(rView, R.id.tvItemText, c.id, null);
+                setOnClickFillInIntent(rView, R.id.list_item_ViewGroup, c.id, null);
 
                 mViewsHolder.add(new RemoteViewsHolder(rView, RemoteViewsHolder.TYPE_CATEGORY_NAME));
 
                 ArrayList<Fact> facts = c.getFavFacts();
-                for (Fact f : facts) {
-
+                for (int i=0; i<facts.size();) {
+                    Fact f  = facts.get(i);
+                    if(isFilteredFacts(f)){
+                        c.removeFavFact(f);
+                        continue;
+                    }
 
                     rView = new RemoteViews(mContext.getPackageName(),
                             R.layout.widget_item);
                     rView.setTextViewText(R.id.tvItemText, Html.fromHtml(f.text));
-                    setOnClickFillInIntent(rView, R.id.tvItemText, c.id, f.id);
+                    setOnClickFillInIntent(rView, R.id.list_item_ViewGroup, c.id, f.id);
 
                     RemoteViewsHolder factViewHolder = new RemoteViewsHolder(rView, RemoteViewsHolder.TYPE_FACT);
                     factViewHolder.mFact = f;
@@ -293,6 +297,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
                             mNetworkFetcher.requestJsonObject(findPictureUrlAt, this);
                         }
                     }
+                    i++;
                 }
 
 
@@ -311,6 +316,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
             }
 
         }
+
 
         /**
          * Save request
@@ -469,6 +475,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
 
             if (DataFetcher.TYPE_CATEGORIES == loaderType) {
                 mCategories = DataFetcher.fillCategories(data);
+                filterCategories(mCategories);
 
                 if (mCategories == null || mCategories.size() == 0) {
                     notifyWidgedProviderHasNoData();
@@ -487,6 +494,40 @@ public class ATDAppWidgetService extends RemoteViewsService {
                 }
             }
         }
+
+        private void filterCategories(ArrayList<Category> categories) {
+            for (int i = 0; i < mCategories.size(); ) {
+                Category category = mCategories.get(i);
+                if ("Véase también".equals(category.name)
+                        || "Enlaces externos".equals(category.name)
+                        || "Referencias".equals(category.name)
+                        || "Toponymie".equals(category.name)
+                        || "Bibliographie".equals(category.name)
+                        || "Articles connexes".equals(category.name)
+                        ) {
+                    mCategories.remove(i);
+                    continue;
+                }
+                i++;
+            }
+        }
+
+        /**
+         *
+         * @param f
+         * @return true if fact is bad
+         */
+        private boolean isFilteredFacts(Fact f) {
+            if(f.text == null
+                    || f.text.isEmpty()
+                    || f.text.contains("См. также")
+                    ){
+
+                return true;
+            }
+            return false;
+        }
+
 
         private void notifyWidgedProviderHasNoData() {
             Intent intent = new Intent(ACTION_NO_DATA);

@@ -2,34 +2,35 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
              android:layout_width="match_parent"
              android:layout_height="match_parent"
-    android:padding="1dp">
-<LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="#88444444"
-    >
+             android:padding="1dp">
 
-
-    <TextView
-        android:id="@+id/titleTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="@string/title"
-        android:layout_gravity="center_horizontal"/>
-
-    <ListView
-        android:id="@+id/listView"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:dividerHeight="4dp"
-        android:divider="#00444444"
-        android:fadeScrollbars="false"
-        android:padding="0dp"
-        />
+        android:layout_height="match_parent"
+        android:background="#88444444"
+        android:orientation="vertical"
+        >
 
-</LinearLayout>
+
+        <TextView
+            android:id="@+id/titleTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/title"
+            android:textAppearance="?android:attr/textAppearanceLarge"/>
+
+        <ListView
+            android:id="@+id/listView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:divider="#00444444"
+            android:dividerHeight="4dp"
+            android:fadeScrollbars="false"
+            android:padding="0dp"
+            />
+
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/emptyView"
@@ -39,13 +40,14 @@
         android:showDividers="middle"
 
         >
+
         <TextView
 
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:layout_gravity="center_horizontal"
             android:text=" "
-            android:layout_gravity="center_horizontal"/>
+            android:textAppearance="?android:attr/textAppearanceLarge"/>
 
 
         <TextView
