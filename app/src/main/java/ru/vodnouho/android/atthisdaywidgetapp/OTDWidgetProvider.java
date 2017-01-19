@@ -27,7 +27,7 @@ public class OTDWidgetProvider extends AppWidgetProvider {
     public static final String ACTION_REFRESH = "ru.vodnouho.android.ACTION_REFRESH"; //Action for refresh widget
 
     public static final String EXTRA_ITEM = "ru.vodnouho.android.EXTRA_ITEM"; //Action for run OTD app
-    private static final boolean LOGD = true;
+    private static final boolean LOGD = false;
 
 
 

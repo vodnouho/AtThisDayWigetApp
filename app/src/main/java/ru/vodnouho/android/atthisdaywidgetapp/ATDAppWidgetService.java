@@ -41,7 +41,7 @@ import java.util.concurrent.Executors;
  */
 public class ATDAppWidgetService extends RemoteViewsService {
     private static String TAG = "vdnh.WidgetService";
-    private static final boolean LOGD = true;
+    private static final boolean LOGD = false;
 
     public static final String EXTRA_WIDGET_ID = "ru.vodnouho.android.atthisdaywigetapp.EXTRA_WIDGET_ID";
     public static final String EXTRA_WIDGET_LANG = "ru.vodnouho.android.atthisdaywigetapp.EXTRA_WIDGET_LANG";
