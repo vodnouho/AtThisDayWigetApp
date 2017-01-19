@@ -6,22 +6,16 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
-import ru.vodnouho.android.atthisdaywidgetapp.ATDAppWidgetService.CategoryListRemoteViewsFactory;
 
 /**
  * Created on 13.08.2015.
@@ -104,7 +98,7 @@ public class OTDWidgetProvider extends AppWidgetProvider {
     }
 
     private boolean isNeedUpdate(int appWidgetId, Context context) {
-        String settingLang = SettingsActivity.loadPrefs(context, appWidgetId);
+        String settingLang = SettingsActivity.loadPrefLang(context, appWidgetId);
         if (settingLang == null || settingLang.isEmpty()) {
             return false;
         }
@@ -129,9 +123,27 @@ public class OTDWidgetProvider extends AppWidgetProvider {
 
 
         //get settings lang
-        String settingLang = SettingsActivity.loadPrefs(context, appWidgetId);
+        String settingLang = SettingsActivity.loadPrefLang(context, appWidgetId);
         if (settingLang == null || settingLang.isEmpty()) {
             settingLang = currentLang;
+        }
+
+        String settingTheme = SettingsActivity.loadPrefTheme(context, appWidgetId);
+        if (settingTheme == null || settingTheme.isEmpty()) {
+            settingTheme = SettingsActivity.THEME_LIGHT;
+        }
+
+        int bgColor = -1;
+        int headerBgColor = -1;
+        int textColor = -1;
+        if(SettingsActivity.THEME_LIGHT.equals(settingTheme)){
+            bgColor = context.getResources().getColor(R.color.bgColor);
+            headerBgColor = context.getResources().getColor(R.color.headerBgColor);
+            textColor = context.getResources().getColor(R.color.textColor);
+        }else{
+            bgColor = context.getResources().getColor(R.color.bgBlackColor);
+            headerBgColor = context.getResources().getColor(R.color.headerBgBlackColor);
+            textColor = context.getResources().getColor(R.color.textBlackColor);
         }
 
         Date currentDate = new Date();
@@ -142,10 +154,17 @@ public class OTDWidgetProvider extends AppWidgetProvider {
 
             rv = new RemoteViews(context.getPackageName(),
                     R.layout.plz_install_widget_layout);
+
+            rv.setInt(R.id.plz_install_ViewGroup, "setBackgroundColor", bgColor);
+
+
             String plzInstallString = LocalizationUtils.getLocalizedString(R.string.plz_install_otd, settingLang, context);
             rv.setTextViewText(R.id.plz_install_otd_TextView, plzInstallString);
+            rv.setInt(R.id.plz_install_otd_TextView, "setTextColor", textColor);
+
             plzInstallString = LocalizationUtils.getLocalizedString(R.string.install, settingLang, context);
             rv.setTextViewText(R.id.installView, plzInstallString);
+            rv.setInt(R.id.installView, "setTextColor", textColor);
             // Create an Intent to launch Play Market
 
             Intent intent;
@@ -164,8 +183,16 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         } else {
             rv = new RemoteViews(context.getPackageName(),
                     R.layout.atd_widget_layout);
+            rv.setInt(R.id.loading_textView, "setTextColor", textColor);
+            rv.setInt(R.id.emptyView, "setBackgroundColor", bgColor);
+
+            rv.setInt(R.id.widget_container_ViewGroup, "setBackgroundColor", bgColor);
+
 
             setTitleText(rv, context, settingLang, currentDate);
+            rv.setInt(R.id.titleTextView, "setTextColor", textColor);
+            rv.setInt(R.id.title_ViewGroup, "setBackgroundColor", headerBgColor);
+
             rv.setOnClickPendingIntent(R.id.titleTextView, getPendingSelfIntent(context, ACTION_REFRESH, appWidgetId));
 
             //start service for getData and create Views
@@ -209,6 +236,8 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         String currentLang = conf.locale.getLanguage();
 
 
+
+
         String titleText;
         //get title by setting lang. Use context lang, so synchronize it
         //noinspection SynchronizationOnLocalVariableOrMethodParameter
@@ -246,6 +275,22 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         String dateS = sdf.format(date);
 
 
+        String settingTheme = SettingsActivity.loadPrefTheme(context, appWidgetId);
+        if (settingTheme == null || settingTheme.isEmpty()) {
+            settingTheme = SettingsActivity.THEME_LIGHT;
+        }
+
+        int bgColor = -1;
+        int textColor = -1;
+        if(SettingsActivity.THEME_LIGHT.equals(settingTheme)){
+            bgColor = context.getResources().getColor(R.color.bgColor);
+            textColor = context.getResources().getColor(R.color.textColor);
+        }else{
+            bgColor = context.getResources().getColor(R.color.bgBlackColor);
+            textColor = context.getResources().getColor(R.color.textBlackColor);
+        }
+
+
         // Set up the intent that starts the ATDAppWidgetService service, which will
         // provide the views for this collection.
         Intent adapter = new Intent(context, ATDAppWidgetService.class);
@@ -256,13 +301,16 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         adapter.setData(Uri.parse(adapter.toUri(Intent.URI_INTENT_SCHEME)));
         Log.d(TAG, "setRemoteAdapter");
         rv.setRemoteAdapter(R.id.listView, adapter);
+        rv.setInt(R.id.listView, "setBackgroundColor", bgColor);
 
 
         rv.setEmptyView(R.id.listView, R.id.emptyView);
+        rv.setInt(R.id.emptyView, "setBackgroundColor", bgColor);
 
         if (isNoData) {
             String localizedNoDataString = LocalizationUtils.getLocalizedString(R.string.loading_error, lang, context);
             rv.setTextViewText(R.id.loading_textView, localizedNoDataString);
+            rv.setInt(R.id.loading_textView, "setTextColor", textColor);
         }
 
 

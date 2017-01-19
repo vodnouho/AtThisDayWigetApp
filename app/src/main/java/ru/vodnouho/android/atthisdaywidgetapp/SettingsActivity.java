@@ -25,14 +25,18 @@ public class SettingsActivity extends AppCompatActivity {
 
 
 
+
     private static final String PREFS_NAME
             = "ru.vodnouho.android.atthisdaywigetapp.ATDWidgetProvider";
     private static final String PREF_LANG_KEY = "lang_widget_";
-
+    private static final String PREF_THEME_KEY = "theme_widget_";
+    public static final String THEME_LIGHT = "1";
+    public static final String THEME_BLACK = "2";
 
     int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
 
     private String mLang;
+    private String mTheme;
 
 
     @Override
@@ -63,6 +67,12 @@ public class SettingsActivity extends AppCompatActivity {
         mLang = calcLang(this, mAppWidgetId);
         prepareLangSpinner(this, mLang);
 
+        //Set theme and activate listener for theme spinner
+        mTheme = calcTheme(this, mAppWidgetId);
+        prepareThemeSpinner(this, mTheme);
+
+
+
         // Bind the action for the save button.
         findViewById(R.id.saveButton).setOnClickListener(mOnClickListener);
 
@@ -81,6 +91,14 @@ public class SettingsActivity extends AppCompatActivity {
         lang =  prefs.getString(PREF_LANG_KEY + appWidgetId, lang);
         return lang;
     }
+
+    private String calcTheme(Context context, int appWidgetId) {
+        //search in preference
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
+        String theme =  prefs.getString(PREF_LANG_KEY + appWidgetId, THEME_LIGHT);
+        return theme;
+    }
+
 
 
     View.OnClickListener mOnClickListener = new View.OnClickListener() {
@@ -134,12 +152,43 @@ public class SettingsActivity extends AppCompatActivity {
 
     }
 
+    void prepareThemeSpinner(Context context, String theme){
+        Spinner spinner = (Spinner) findViewById(R.id.settings_themeSpinner);
+
+// Create an ArrayAdapter using the string array and a default spinner layout
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(context,
+                R.array.themes_array, android.R.layout.simple_spinner_item);
+// Specify the layout to use when the list of choices appears
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+// Apply the adapter to the spinner
+        spinner.setAdapter(adapter);
+
+
+        final String[] themeCodes = context.getResources().getStringArray(R.array.themes_code_array);
+
+        spinner.setSelection(calcSelectedTheme(theme, themeCodes));
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                mTheme = themeCodes[position];
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+    }
+
+
     // Write settings to the SharedPreferences object for this widget
     void savePrefs(Context context, int appWidgetId) {
 
         //save
         SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
         prefs.putString(PREF_LANG_KEY + appWidgetId, mLang);
+        prefs.putString(PREF_THEME_KEY + appWidgetId, mTheme);
         prefs.apply();
     }
 
@@ -147,6 +196,16 @@ public class SettingsActivity extends AppCompatActivity {
         if(lang == null) return 0; //just NullPointException protection
         for(int i=0; i<langCodes.length; i++){
             if (lang.equals(langCodes[i])){
+                return i;
+            }
+        }
+        return 0;
+    }
+
+    private int calcSelectedTheme(String theme, String[] themeCodes) {
+        if(theme == null) return 0; //just NullPointException protection
+        for(int i=0; i<themeCodes.length; i++){
+            if (theme.equals(themeCodes[i])){
                 return i;
             }
         }
@@ -179,10 +238,18 @@ public class SettingsActivity extends AppCompatActivity {
 
     // Read the lang from the SharedPreferences object for this widget.
     // If there is no preference saved, get the default from a resource
-    static String loadPrefs(Context context, int appWidgetId) {
+    static String loadPrefLang(Context context, int appWidgetId) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
 
         return prefs.getString(PREF_LANG_KEY + appWidgetId, null);
+    }
+
+    // Read the lang from the SharedPreferences object for this widget.
+    // If there is no preference saved, get the default from a resource
+    static String loadPrefTheme(Context context, int appWidgetId) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
+
+        return prefs.getString(PREF_THEME_KEY + appWidgetId, null);
     }
 
 }

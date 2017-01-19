@@ -32,4 +32,11 @@
     <string name="years_ago">%1$s лет назад</string>
 
     <string name="loading_error">Информация недоступна</string>
+
+    <string name="settings_theme">Оформление:</string>
+    <string-array name="themes_array">
+        <item>Светлое</item>
+        <item>Тёмное</item>
+    </string-array>
+
 </resources>

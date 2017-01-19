@@ -65,6 +65,9 @@ public class ATDAppWidgetService extends RemoteViewsService {
             implements RemoteViewsFactory, Loader.OnLoadCompleteListener<Cursor>,
             NetworkFetcher.OnLoadListener {
 
+        private int mTextColor;
+        private int mLinkTextColor;
+        private int mBgColor;
         private Context mContext;
         private String mLang;
         private String mDateString;
@@ -135,6 +138,24 @@ public class ATDAppWidgetService extends RemoteViewsService {
                     .getComponentName(mContext));
 
             mNetworkFetcher = NetworkFetcher.getInstance(mContext);
+
+            String settingTheme = SettingsActivity.loadPrefTheme(context, mAppWidgetId);
+            if (settingTheme == null || settingTheme.isEmpty()) {
+                settingTheme = SettingsActivity.THEME_LIGHT;
+            }
+
+            mBgColor = -1;
+            mTextColor = -1;
+            mLinkTextColor = -1;
+            if(SettingsActivity.THEME_LIGHT.equals(settingTheme)){
+                mBgColor = context.getResources().getColor(R.color.bgColor);
+                mTextColor = context.getResources().getColor(R.color.textColor);
+                mLinkTextColor = context.getResources().getColor(R.color.linkTextColor);
+            }else{
+                mBgColor = context.getResources().getColor(R.color.bgBlackColor);
+                mTextColor = context.getResources().getColor(R.color.textBlackColor);
+                mLinkTextColor = context.getResources().getColor(R.color.linkTextBlackColor);
+            }
 
 
             if (LOGD)
@@ -264,7 +285,10 @@ public class ATDAppWidgetService extends RemoteViewsService {
                 //category name
                 RemoteViews rView = new RemoteViews(mContext.getPackageName(),
                         R.layout.widget_item_category);
+
+
                 rView.setTextViewText(R.id.tvItemText, c.name);
+                rView.setInt(R.id.tvItemText, "setTextColor", mTextColor);
 
                 setOnClickFillInIntent(rView, R.id.list_item_ViewGroup, c.id, null);
 
@@ -280,7 +304,12 @@ public class ATDAppWidgetService extends RemoteViewsService {
 
                     rView = new RemoteViews(mContext.getPackageName(),
                             R.layout.widget_item);
+                    rView.setInt(R.id.list_item_ViewGroup, "setBackgroundColor", mBgColor);
                     rView.setTextViewText(R.id.tvItemText, Html.fromHtml(f.text));
+                    rView.setInt(R.id.tvItemText, "setTextColor", mTextColor);
+                    rView.setInt(R.id.tvItemText, "setLinkTextColor", mLinkTextColor);
+
+
                     setOnClickFillInIntent(rView, R.id.list_item_ViewGroup, c.id, f.id);
 
                     RemoteViewsHolder factViewHolder = new RemoteViewsHolder(rView, RemoteViewsHolder.TYPE_FACT);
@@ -426,16 +455,19 @@ public class ATDAppWidgetService extends RemoteViewsService {
             } else {
                 holder.mViews.setImageViewBitmap(R.id.fact_ImageView, holder.mImageBitmap);
                 holder.mViews.setViewVisibility(R.id.fact_ImageView, View.VISIBLE);
+                holder.mViews.setInt(R.id.fact_ImageView, "setBackgroundColor", mBgColor);
             }
 
             // show/hide year textView
             if (holder.mFact == null || holder.mFact.getYearsAgoString() == null) {
                 holder.mViews.setViewVisibility(R.id.yearItemText, View.GONE);
+
             } else {
                 String localizedYearsAgoString = LocalizationUtils.getLocalizedString(
                         R.string.years_ago, mLang, mContext, holder.mFact.getYearsAgoString());
                 holder.mViews.setTextViewText(R.id.yearItemText, localizedYearsAgoString);
                 holder.mViews.setViewVisibility(R.id.yearItemText, View.VISIBLE);
+                holder.mViews.setInt(R.id.yearItemText, "setTextColor", mTextColor);
             }
 
             return mViewsHolder.get(position).mViews;

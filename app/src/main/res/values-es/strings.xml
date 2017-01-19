@@ -31,4 +31,11 @@
     <string name="years_ago">Hace %1$s años</string>
 
     <string name="loading_error">La información no está disponible</string>
+
+    <string name="settings_theme">Tema:</string>
+    <string-array name="themes_array">
+        <item>Claro</item>
+        <item>Oscuro</item>
+    </string-array>
+
 </resources>

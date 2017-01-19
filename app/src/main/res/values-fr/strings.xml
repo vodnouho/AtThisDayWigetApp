@@ -29,4 +29,11 @@
 
     <string name="loading_error">L\'information n\'est pas disponible</string>
 
+    <string name="settings_theme">Thème:</string>
+    <string-array name="themes_array">
+        <item>Clair</item>
+        <item>Sombre</item>
+    </string-array>
+
+
 </resources>

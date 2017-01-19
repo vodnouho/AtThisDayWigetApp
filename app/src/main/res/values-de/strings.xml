@@ -28,4 +28,10 @@
     <string name="years_ago">Vor %1$s Jahren</string>
 
     <string name="loading_error">Keine Informationen verfügbar</string>
+    <string name="settings_theme">Theme:</string>
+    <string-array name="themes_array">
+        <item>Hell</item>
+        <item>Dunkel</item>
+    </string-array>
+
 </resources>
