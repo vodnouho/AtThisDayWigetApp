@@ -13,6 +13,7 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.content.LocalBroadcastManager;
@@ -147,14 +148,14 @@ public class ATDAppWidgetService extends RemoteViewsService {
             mBgColor = -1;
             mTextColor = -1;
             mLinkTextColor = -1;
-            if(SettingsActivity.THEME_LIGHT.equals(settingTheme)){
-                mBgColor = context.getResources().getColor(R.color.bgColor);
-                mTextColor = context.getResources().getColor(R.color.textColor);
-                mLinkTextColor = context.getResources().getColor(R.color.linkTextColor);
-            }else{
-                mBgColor = context.getResources().getColor(R.color.bgBlackColor);
-                mTextColor = context.getResources().getColor(R.color.textBlackColor);
-                mLinkTextColor = context.getResources().getColor(R.color.linkTextBlackColor);
+            if (SettingsActivity.THEME_LIGHT.equals(settingTheme)) {
+                mBgColor = ContextCompat.getColor(context, R.color.bgColor);
+                mTextColor = ContextCompat.getColor(context, R.color.textColor);
+                mLinkTextColor = ContextCompat.getColor(context, R.color.linkTextColor);
+            } else {
+                mBgColor = ContextCompat.getColor(context, R.color.bgBlackColor);
+                mTextColor = ContextCompat.getColor(context, R.color.textBlackColor);
+                mLinkTextColor = ContextCompat.getColor(context, R.color.linkTextBlackColor);
             }
 
 
@@ -235,9 +236,10 @@ public class ATDAppWidgetService extends RemoteViewsService {
                     Log.d(TAG, "fixing wasErrorOnUrlLoad:" + wasErrorOnUrlLoad);
 
                 wasErrorOnUrlLoad = false;
-
-                for (String url : mImageUrlRequests.keySet()) {
-                    mNetworkFetcher.requestJsonObject(url, CategoryListRemoteViewsFactory.this);
+                synchronized (sLock) {
+                    for (String url : mImageUrlRequests.keySet()) {
+                        mNetworkFetcher.requestJsonObject(url, CategoryListRemoteViewsFactory.this);
+                    }
                 }
             }
 
@@ -295,9 +297,9 @@ public class ATDAppWidgetService extends RemoteViewsService {
                 mViewsHolder.add(new RemoteViewsHolder(rView, RemoteViewsHolder.TYPE_CATEGORY_NAME));
 
                 ArrayList<Fact> facts = c.getFavFacts();
-                for (int i=0; i<facts.size();) {
-                    Fact f  = facts.get(i);
-                    if(isFilteredFacts(f)){
+                for (int i = 0; i < facts.size(); ) {
+                    Fact f = facts.get(i);
+                    if (isFilteredFacts(f)) {
                         c.removeFavFact(f);
                         continue;
                     }
@@ -359,7 +361,9 @@ public class ATDAppWidgetService extends RemoteViewsService {
                 prevRequests = new ArrayList<>();
             }
             prevRequests.add(f);
-            mImageUrlRequests.put(titleUrl, prevRequests);
+            synchronized (sLock) {
+                mImageUrlRequests.put(titleUrl, prevRequests);
+            }
         }
 
         private boolean isEmptyCategories(ArrayList<Category> categories) {
@@ -545,15 +549,14 @@ public class ATDAppWidgetService extends RemoteViewsService {
         }
 
         /**
-         *
          * @param f
          * @return true if fact is bad
          */
         private boolean isFilteredFacts(Fact f) {
-            if(f.text == null
+            if (f.text == null
                     || f.text.isEmpty()
                     || f.text.contains("См. также")
-                    ){
+                    ) {
 
                 return true;
             }
@@ -611,7 +614,9 @@ public class ATDAppWidgetService extends RemoteViewsService {
                 //nobody need this info
                 return;
             }
-            mImageUrlRequests.remove(url);
+            synchronized (sLock) {
+                mImageUrlRequests.remove(url);
+            }
 
             JSONObject thumbnail;
             try {

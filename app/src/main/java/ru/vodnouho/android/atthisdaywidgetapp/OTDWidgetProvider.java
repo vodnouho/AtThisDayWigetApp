@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.net.Uri;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.Toast;
@@ -137,13 +138,14 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         int headerBgColor = -1;
         int textColor = -1;
         if(SettingsActivity.THEME_LIGHT.equals(settingTheme)){
-            bgColor = context.getResources().getColor(R.color.bgColor);
-            headerBgColor = context.getResources().getColor(R.color.headerBgColor);
-            textColor = context.getResources().getColor(R.color.textColor);
+
+            bgColor = ContextCompat.getColor(context, R.color.bgColor);
+            headerBgColor = ContextCompat.getColor(context, R.color.headerBgColor);
+            textColor = ContextCompat.getColor(context, R.color.textColor);
         }else{
-            bgColor = context.getResources().getColor(R.color.bgBlackColor);
-            headerBgColor = context.getResources().getColor(R.color.headerBgBlackColor);
-            textColor = context.getResources().getColor(R.color.textBlackColor);
+            bgColor = ContextCompat.getColor(context, R.color.bgBlackColor);
+            headerBgColor = ContextCompat.getColor(context, R.color.headerBgBlackColor);
+            textColor = ContextCompat.getColor(context, R.color.textBlackColor);
         }
 
         Date currentDate = new Date();
@@ -283,11 +285,11 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         int bgColor = -1;
         int textColor = -1;
         if(SettingsActivity.THEME_LIGHT.equals(settingTheme)){
-            bgColor = context.getResources().getColor(R.color.bgColor);
-            textColor = context.getResources().getColor(R.color.textColor);
+            bgColor = ContextCompat.getColor(context,R.color.bgColor);
+            textColor = ContextCompat.getColor(context,R.color.textColor);
         }else{
-            bgColor = context.getResources().getColor(R.color.bgBlackColor);
-            textColor = context.getResources().getColor(R.color.textBlackColor);
+            bgColor = ContextCompat.getColor(context,R.color.bgBlackColor);
+            textColor = ContextCompat.getColor(context,R.color.textBlackColor);
         }
 
 
