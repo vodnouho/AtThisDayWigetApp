@@ -169,6 +169,11 @@ public class NetworkFetcher {
         mRequestQueue.cancelAll(tag);
     }
 
+    private void loadCacheFromFiles(){
+
+    }
+
+
     public interface OnLoadListener {
         void onImageLoaded(String url, Bitmap bitmap);
         void onError(String url, Object error);
