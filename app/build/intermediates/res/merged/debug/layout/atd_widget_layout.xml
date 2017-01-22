@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+             android:id="@+id/widget_container_ViewGroup"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             android:padding="1dp"
+            android:background="@color/bgBlackColor"
+    >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        >
+
+        <LinearLayout
+            android:id="@+id/title_ViewGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+
+                android:padding="8dp"
+
+                android:src="@drawable/ic_widget"
+                />
+
+            <TextView
+                android:id="@+id/titleTextView"
+                android:layout_width="match_parent"
+                android:layout_weight="1"
+
+                android:layout_height="match_parent"
+                android:text="@string/title"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:gravity="center"
+
+                />
+        </LinearLayout>
+
+        <ListView
+            android:id="@+id/listView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:divider="#00444444"
+            android:dividerHeight="4dp"
+            android:fadeScrollbars="false"
+            android:padding="0dp"
+            />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/emptyView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:showDividers="middle"
+
+        >
+
+        <TextView
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text=" "
+            android:textAppearance="?android:attr/textAppearanceLarge"/>
+
+
+        <TextView
+            android:id="@+id/loading_textView"
+            android:layout_width="match_parent"
+            android:layout_height="75dp"
+            android:gravity="center_vertical|center_horizontal"
+            android:text="@string/loading_inprogress"
+            android:textColor="@color/textBlackColor"
+            android:textAppearance="?android:attr/textAppearanceLarge"/>
+
+    </LinearLayout>
+
+</FrameLayout>
