@@ -352,5 +352,9 @@ public class OTDWidgetProvider extends AppWidgetProvider {
 
     }
 
-
+    @Override
+    public void onDisabled(Context context) {
+        NetworkFetcher.release();
+        super.onDisabled(context);
+    }
 }

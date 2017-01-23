@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
  * Created by petukhov on 01.09.2015.
  */
 public class Fact {
-    public static final boolean LOGD = true;
+    public static final boolean LOGD = false;
     public static final String TAG = "vdnh.Fact";
     public static final String SUMMARY_ENDPOINT = ".m.wikipedia.org/api/rest_v1/page/summary/";
     public static final Pattern PATTERN_ANCHOR = Pattern.compile("<a[^<]+</a>");

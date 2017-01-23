@@ -200,6 +200,9 @@ public class ATDAppWidgetService extends RemoteViewsService {
             mViewsHolder = Collections.synchronizedList(new ArrayList<RemoteViewsHolder>());
             initCategoryLoader(DataFetcher.TYPE_CATEGORIES, null);
 
+            //init NetworkFetcher
+            NetworkFetcher.getInstance(mContext);
+
         }
 
         @Override
@@ -212,6 +215,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
             }
 
             stopWatchDogThread();
+            NetworkFetcher.release();
         }
 
         @Override

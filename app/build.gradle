@@ -8,8 +8,8 @@ android {
         applicationId "ru.vodnouho.android.atthisdaywidgetapp"
         minSdkVersion 14
         targetSdkVersion 23
-        versionCode 7
-        versionName "0.5.6"
+        versionCode 8
+        versionName "0.5.8"
     }
     buildTypes {
         release {
