@@ -536,6 +536,9 @@ public class ATDAppWidgetService extends RemoteViewsService {
         }
 
         private void filterCategories(ArrayList<Category> categories) {
+            if(categories == null){
+                return;
+            }
             for (int i = 0; i < mCategories.size(); ) {
                 Category category = mCategories.get(i);
                 if ("Véase también".equals(category.name)
