@@ -5,7 +5,6 @@ import android.appwidget.AppWidgetManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
@@ -16,7 +15,6 @@ import android.os.Handler;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v4.content.LocalBroadcastManager;
 import android.text.Html;
 import android.util.Log;
 import android.view.View;
@@ -109,8 +107,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
                 Intent intent = new Intent(ACTION_IMAGE_LOADED);
                 intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
                 mContext.sendBroadcast(intent);
-                //mWidgetManager.notifyAppWidgetViewDataChanged(mAppWidgetId, R.id.listView);
-
+                NetworkFetcher.saveState();
 
                 mWatchDogThread = null;
             }
@@ -215,7 +212,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
             }
 
             stopWatchDogThread();
-            NetworkFetcher.release();
+            NetworkFetcher.saveState();
         }
 
         @Override

@@ -48,20 +48,25 @@ import static android.R.attr.keySet;
 
 public class NetworkFetcher {
     private static String TAG = "vdnh.NetworkFetcher";
-    private static final boolean LOGD = false;
+    private static final boolean LOGD = true;
     private static final String CACHE_JSON_FILE_NAME = "cacheJsonSummary";
     private static final String CACHE_BITMAP_FILE_NAME = "cacheJsonBitmaps";
     private static final String CACHE_BITMAP_DIRECTORY_NAME = "cache/bitmaps";
-
+    private static final Object sLock = new Object();
 
     private static NetworkFetcher sInstance;
     private static Context sContext;
+
+
+    private static boolean isNewImageLoaded = false;
 
     private static LruCache<String, JSONObject> sSummaryCache = new LruCache<String, JSONObject>(84); //title is key, path is value
     private static LruCache<String, Bitmap> sImageCache = new LruCache<String, Bitmap>(21); //title is key, path is value
 
     private RequestQueue mRequestQueue;
     private ImageLoader mImageLoader;
+
+
 
 
     public static synchronized NetworkFetcher getInstance(Context context) {
@@ -72,12 +77,16 @@ public class NetworkFetcher {
         return sInstance;
     }
 
-    public static void release() {
+    public static void saveState() {
         if (LOGD)
-            Log.d(TAG, "release");
+            Log.d(TAG, "saveState");
 
-        if (sInstance != null && sContext != null) {
-            sInstance.saveCacheToFiles(sContext);
+
+        if (isNewImageLoaded && sInstance != null && sContext != null) {
+            synchronized (sLock){
+                sInstance.saveCacheToFiles(sContext);
+            }
+            isNewImageLoaded = false;
         }
     }
 
@@ -131,6 +140,7 @@ public class NetworkFetcher {
 
                         sImageCache.put(url, bitmap);
                         listener.onImageLoaded(url, bitmap);
+                        isNewImageLoaded = true;
                     }
                 }
                 , 90, 90, null, null,
