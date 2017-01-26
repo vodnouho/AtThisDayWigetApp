@@ -235,9 +235,12 @@ public class NetworkFetcher {
                 writeJson(jsonObject, CACHE_JSON_FILE_NAME, context);
             } catch (IOException e) {
                 Log.e(TAG, "Can't write json:" + jsonObject.toString());
+                context.deleteFile(CACHE_JSON_FILE_NAME);
+                return;
             }
         }
 
+        boolean isFilesWroteCorrectly = true;
         if(sImageCache != null){
             Map<String, Bitmap> snapshot = sImageCache.snapshot();
             JSONObject jsonObject = new JSONObject();
@@ -252,16 +255,27 @@ public class NetworkFetcher {
                     jsonObject.put(key, imageFileName);
                     i++;
 
-                } catch (JSONException e) {
+                } catch (Throwable e) {
                     Log.e(TAG, "Can't put key:"+key);
 
+                    isFilesWroteCorrectly = false;
                 }
             }
+
 
             try {
                 writeJson(jsonObject, CACHE_BITMAP_FILE_NAME, context);
             } catch (IOException e) {
                 Log.e(TAG, "saveCacheToFiles: ", e );
+                isFilesWroteCorrectly = false;
+            }
+
+            if(!isFilesWroteCorrectly){
+                //clear all imageFiles
+                for(;i>=0;i--){
+                    deleteBitmapFile(i + ".jpg", sContext);
+                }
+                context.deleteFile(CACHE_BITMAP_FILE_NAME);
             }
         }
 
@@ -366,7 +380,20 @@ public class NetworkFetcher {
         }
     }
 
-    public static void saveBitmapToFile(Bitmap bitmap, String fileName, Context context) {
+    public static void deleteBitmapFile(String fileName, Context context){
+        File appDir = null;
+        appDir = new File(context.getFilesDir(), CACHE_BITMAP_DIRECTORY_NAME);
+        if (!appDir.exists()) {
+            //no dirs - no file
+           return;
+        }
+
+        File deletingFile = new File(appDir, fileName);
+        deletingFile.delete();
+    }
+
+    public static void saveBitmapToFile(Bitmap bitmap, String fileName, Context context) throws Throwable{
+        Throwable error = null;
         File imageFile = null;
         OutputStream outputStream = null;
         try {
@@ -388,6 +415,7 @@ public class NetworkFetcher {
         } catch (Throwable e) {
             // Several error may come out with file handling or OOM
             Log.e(TAG, "Can't save bitmap to file:", e);
+            error = e;
 
         } finally {
             if (outputStream != null) {
@@ -395,9 +423,13 @@ public class NetworkFetcher {
                     outputStream.close();
                 } catch (IOException e) {
                     Log.e(TAG, "Can't close file:", e);
-
+                    error = e;
                 }
             }
+        }
+
+        if(error != null){
+            throw error;
         }
 
     }
