@@ -4,6 +4,10 @@ import android.support.annotation.Nullable;
 import android.text.Html;
 import android.util.Log;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -24,10 +28,13 @@ public class Fact {
 
     String id;
     String text;
-    String mThumbnailUrl;
-    ArrayList<String> mSummaryUrls = new ArrayList<>(3);
     private String mLang;
+
+    String mThumbnailUrl;
     private String mYearsAgoString;
+    ArrayList<String> mSummaryUrls = new ArrayList<>(3);
+
+
 
 
     public Fact(String id, String text, String lang) {
@@ -39,6 +46,54 @@ public class Fact {
             parseText(text);
         }
 
+    }
+
+    public Fact(JSONObject json){
+        try {
+            id = json.getString("id");
+            text = json.getString("text");
+            mLang = json.getString("lang");
+
+            if(!json.isNull("thumbnailUrl")){
+                mThumbnailUrl =  json.getString("thumbnailUrl");
+            }
+            if(!json.isNull("yearsAgoString")){
+                mYearsAgoString =  json.getString("yearsAgoString");
+            }
+            if(!json.isNull("summaryUrls")){
+                JSONArray summaryUrls = json.getJSONArray("summaryUrls");
+                mSummaryUrls = new ArrayList<String>();
+                for(int i=0; i<summaryUrls.length();i++){
+                    mSummaryUrls.add(summaryUrls.getString(i)) ;
+                }
+
+            }
+        } catch (JSONException e) {
+            Log.e(TAG, "can't create Fact from JSON", e);
+        }
+    }
+
+    public JSONObject toJSON(){
+        JSONObject result = new JSONObject();
+        try {
+            result.put("id", id);
+            result.put("text", text);
+            result.put("lang", mLang);
+            if(mThumbnailUrl != null){
+                result.put("thumbnailUrl", mThumbnailUrl);
+            }
+            if(mYearsAgoString != null){
+                result.put("yearsAgoString", mYearsAgoString);
+            }
+            if(mSummaryUrls != null && mSummaryUrls.size() > 0){
+                JSONArray summaryUrls = new JSONArray(mSummaryUrls);
+                result.put("summaryUrls", summaryUrls);
+            }
+        } catch (JSONException e) {
+            Log.e(TAG, "can't convert Fact to JSON", e);
+            return null;
+        }
+        return result;
     }
 
     private void parseText(String text) {

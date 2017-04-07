@@ -23,18 +23,18 @@ import java.util.Date;
  */
 public class OTDWidgetProvider extends AppWidgetProvider {
     private static final String TAG = "vdnh.OTDWidgetProvider";
+    public static final boolean LOGD = true;
+
     private static final String CONTENT_PROVIDER_PACKAGE = "ru.vodnouho.android.yourday";
     public static final String RUN_ACTION = "ru.vodnouho.android.RUN_ACTION"; //Action for run OTD app
     public static final String ACTION_REFRESH = "ru.vodnouho.android.ACTION_REFRESH"; //Action for refresh widget
 
     public static final String EXTRA_ITEM = "ru.vodnouho.android.EXTRA_ITEM"; //Action for run OTD app
-    private static final boolean LOGD = false;
+
 
 
 
     // Called when the BroadcastReceiver receives an Intent broadcast.
-    // Checks to see whether the intent's action is TOAST_ACTION. If it is, the app widget
-    // displays a Toast message for the current item.
     @Override
     public void onReceive(Context context, Intent intent) {
         if (LOGD)

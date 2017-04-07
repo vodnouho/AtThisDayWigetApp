@@ -41,6 +41,8 @@ import java.util.Map;
 import java.util.Set;
 
 import static android.R.attr.keySet;
+import static ru.vodnouho.android.atthisdaywidgetapp.SaveLoadHelper.readJson;
+import static ru.vodnouho.android.atthisdaywidgetapp.SaveLoadHelper.writeJson;
 
 /**
  * Created by petukhov on 11.01.2017.
@@ -281,52 +283,7 @@ public class NetworkFetcher {
 
     }
 
-    private void writeJson(JSONObject json, String fileName, Context context) throws IOException {
-        Writer w = null;
-        OutputStream out;
 
-        try {
-            out = context.openFileOutput(fileName, Context.MODE_PRIVATE);
-            w = new OutputStreamWriter(out);
-            w.write(json.toString());
-        } finally {
-            if (w != null)
-                w.close();
-        }
-    }
-
-    @Nullable
-    private JSONObject readJson(String fileName, Context context) throws IOException, JSONException {
-        JSONObject result = null;
-        BufferedReader reader = null;
-        ArrayList<Category> categoryList = new ArrayList<>();
-
-        try {
-            InputStream in = context.openFileInput(fileName);
-            reader = new BufferedReader(new InputStreamReader(in));
-            StringBuilder jsonStringBuilder = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                jsonStringBuilder.append(line);
-            }
-
-            if (jsonStringBuilder.length() == 0) {
-                return null;
-            } else {
-                result = new JSONObject(jsonStringBuilder.toString());
-            }
-
-
-        } catch (FileNotFoundException e) {
-            Log.d(TAG, "Can't find file:" + fileName);
-
-        } finally {
-            if (reader != null)
-                reader.close();
-        }
-
-        return result;
-    }
 
 
     private void loadCacheFromFiles() {

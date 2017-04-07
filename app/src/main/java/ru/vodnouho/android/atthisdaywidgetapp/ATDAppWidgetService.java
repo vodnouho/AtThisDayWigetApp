@@ -5,16 +5,12 @@ import android.appwidget.AppWidgetManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.content.CursorLoader;
-import android.support.v4.content.Loader;
 import android.text.Html;
 import android.util.Log;
 import android.view.View;
@@ -29,8 +25,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import static ru.vodnouho.android.atthisdaywidgetapp.OTDWidgetProvider.LOGD;
 
 
 /**
@@ -40,9 +39,12 @@ import java.util.concurrent.Executors;
  */
 public class ATDAppWidgetService extends RemoteViewsService {
     private static String TAG = "vdnh.WidgetService";
-    private static final boolean LOGD = false;
+    //храним живые сервисы по EXTRA_APPWIDGET_ID
+    private static ConcurrentHashMap<String, CategoryListRemoteViewsFactory> mapByWidgetId = new ConcurrentHashMap<String, CategoryListRemoteViewsFactory>(3);
+    //храним коллекции по дата+язык формат MMdd_la пример 0728_ru
+    private static ConcurrentHashMap<String, ArrayList<CategoryListRemoteViewsFactory>> mapByDateLang = new ConcurrentHashMap<String, ArrayList<CategoryListRemoteViewsFactory>>(3);
 
-    public static final String EXTRA_WIDGET_ID = "ru.vodnouho.android.atthisdaywigetapp.EXTRA_WIDGET_ID";
+
     public static final String EXTRA_WIDGET_LANG = "ru.vodnouho.android.atthisdaywigetapp.EXTRA_WIDGET_LANG";
     public static final String EXTRA_WIDGET_DATE = "ru.vodnouho.android.atthisdaywigetapp.EXTRA_WIDGET_DATE";
 
@@ -57,28 +59,52 @@ public class ATDAppWidgetService extends RemoteViewsService {
     public RemoteViewsFactory onGetViewFactory(Intent intent) {
         if (LOGD)
             Log.d(TAG, "onGetViewFactory()");
-        return new CategoryListRemoteViewsFactory(this.getApplicationContext(), intent);
+
+        CategoryListRemoteViewsFactory categoryListRemoteViewsFactory = null;
+
+        String lang = intent.getStringExtra(EXTRA_WIDGET_LANG);
+        String dateString = intent.getStringExtra(EXTRA_WIDGET_DATE);
+        String appWidgetId = "" + intent.getIntExtra(
+                AppWidgetManager.EXTRA_APPWIDGET_ID,
+                AppWidgetManager.INVALID_APPWIDGET_ID);
+
+        //сохраним для виджета
+        categoryListRemoteViewsFactory = mapByWidgetId.get(appWidgetId);
+        if (categoryListRemoteViewsFactory == null) {
+            categoryListRemoteViewsFactory = new CategoryListRemoteViewsFactory(this.getApplicationContext(), intent);
+            mapByWidgetId.put(appWidgetId, categoryListRemoteViewsFactory);
+        }
+
+        //сохраним для даты и языка
+        String key = dateString + "_" + lang;
+        ArrayList<CategoryListRemoteViewsFactory> factoriesByDateLang = mapByDateLang.get(key);
+        if (factoriesByDateLang == null) {
+            factoriesByDateLang = new ArrayList<>();
+            mapByDateLang.put(key, factoriesByDateLang);
+        }
+        factoriesByDateLang.add(categoryListRemoteViewsFactory);
+
+
+        return categoryListRemoteViewsFactory;
     }
 
+
     public static class CategoryListRemoteViewsFactory extends BroadcastReceiver
-            implements RemoteViewsFactory, Loader.OnLoadCompleteListener<Cursor>,
-            NetworkFetcher.OnLoadListener {
+            implements RemoteViewsFactory,
+            NetworkFetcher.OnLoadListener, OnThisDayLogic.ModelChangedListener {
 
         private int mTextColor;
         private int mLinkTextColor;
         private int mBgColor;
         private Context mContext;
         private String mLang;
-        private String mDateString;
+        private String mDateString; //format "MMdd"
         private int mAppWidgetId;
 
-        private ArrayList<Category> mCategories;
+        private OnThisDayModel mModel;
         private List<RemoteViewsHolder> mViewsHolder;
 
-        private CursorLoader mCategoryLoader;
-        private boolean isLoaderCategoriesFilled = false;
 
-        private int[] mWidgetIds;
         AppWidgetManager mWidgetManager;
 
         private NetworkFetcher mNetworkFetcher;
@@ -91,6 +117,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
         private final ExecutorService executor = Executors.newSingleThreadExecutor();
         private final Handler mHandler = new Handler();
 
+        private OnThisDayLogic mLogic;
 
         private Runnable mImageLoaderWatchDogRunnable = new Runnable() {
             @Override
@@ -114,7 +141,6 @@ public class ATDAppWidgetService extends RemoteViewsService {
         };
         private Map<String, ArrayList<Fact>> mImageUrlRequests
                 = Collections.synchronizedMap(new HashMap<String, ArrayList<Fact>>());
-        private boolean isLoaderCompleteNotification = false;
 
 
         public CategoryListRemoteViewsFactory() {
@@ -127,13 +153,13 @@ public class ATDAppWidgetService extends RemoteViewsService {
 
             mLang = intent.getStringExtra(EXTRA_WIDGET_LANG);
             mDateString = intent.getStringExtra(EXTRA_WIDGET_DATE);
+
+
             mAppWidgetId = intent.getIntExtra(
                     AppWidgetManager.EXTRA_APPWIDGET_ID,
                     AppWidgetManager.INVALID_APPWIDGET_ID);
 
             mWidgetManager = AppWidgetManager.getInstance(mContext);
-            mWidgetIds = mWidgetManager.getAppWidgetIds(OTDWidgetProvider
-                    .getComponentName(mContext));
 
             mNetworkFetcher = NetworkFetcher.getInstance(mContext);
 
@@ -169,7 +195,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
             mContext = context;
 
             if (intent.getAction().equals(ACTION_CONNECTIVITY_CHANGE)) {
-                if (isOnline(context)) {
+                if (isOnline(context) && isNeedReloading()) {
                     if (LOGD)
                         Log.d(TAG, "We have an internet!");
 
@@ -180,6 +206,22 @@ public class ATDAppWidgetService extends RemoteViewsService {
                     mWidgetManager.notifyAppWidgetViewDataChanged(ids, R.id.listView);
                 }
             }
+        }
+
+        private boolean isNeedReloading() {
+            //если нет модели
+            if (mModel == null) {
+                return true;
+            }
+
+            //если модель с пустой коллекцией и не загружается
+            if ((mModel.categories == null
+                    || mModel.categories.size() < 2) && !mModel.isLoading) {
+
+                return true;
+            }
+
+            return false;
         }
 
 
@@ -195,21 +237,34 @@ public class ATDAppWidgetService extends RemoteViewsService {
             if (LOGD)
                 Log.d(TAG, "onCreate()");
             mViewsHolder = Collections.synchronizedList(new ArrayList<RemoteViewsHolder>());
-            initCategoryLoader(DataFetcher.TYPE_CATEGORIES, null);
+
+            mLogic = OnThisDayLogic.getInstance(mDateString, mLang, mContext);
+            mLogic.registerModelChangedListener(this);
+
+            mLogic.loadData();
 
             //init NetworkFetcher
             NetworkFetcher.getInstance(mContext);
 
         }
 
+
+        //TODO realize method
+
+        /**
+         * check is data cached
+         *
+         * @return
+         */
+        private void loadFromCache() {
+
+        }
+
+
         @Override
         public void onDestroy() {
             if (LOGD)
                 Log.d(TAG, "onDestroy()");
-
-            if (mCategoryLoader != null) {
-                mCategoryLoader.reset();
-            }
 
             stopWatchDogThread();
             NetworkFetcher.saveState();
@@ -226,9 +281,9 @@ public class ATDAppWidgetService extends RemoteViewsService {
             }
 
 
-            if (mCategories == null && wasNoData) {
-                wasNoData = false;
-                mCategoryLoader.forceLoad();
+            if (mModel == null || mModel.categories == null || mModel.categories.size() < 2) {
+
+                mLogic.loadData();
                 return;
             }
 
@@ -260,31 +315,24 @@ public class ATDAppWidgetService extends RemoteViewsService {
 
         }
 
-        private void fillData() {
+        private void updateViews() {
             //once get localized MORE string
             String localizedMoreString = LocalizationUtils.getLocalizedString(R.string.more, mLang, mContext);
 
 
             if (mViewsHolder == null) {
-                mViewsHolder = Collections.synchronizedList(new ArrayList<RemoteViewsHolder>());
+                mViewsHolder = Collections.synchronizedList(new ArrayList<ATDAppWidgetService.CategoryListRemoteViewsFactory.RemoteViewsHolder>());
             } else {
                 mViewsHolder.clear();
             }
 
-            if (mCategories == null) {
-                Log.wtf(TAG, "no mCategories on fillData called");
+            if (mModel.categories == null) {
+                Log.wtf(TAG, "no mCategories on updateViews called");
                 return;
             }
 
-            //clear favFacts
-            for (Category c : mCategories) {
-                c.clearFavFacts();
-            }
 
-            //TODO lang must be set by ContentProvider
-            DataFetcher.fillCategoriesWithFavoriteFacts(mContext, mCategories, mLang);
-
-            for (Category c : mCategories) {
+            for (Category c : mModel.categories) {
                 //category name
                 RemoteViews rView = new RemoteViews(mContext.getPackageName(),
                         R.layout.widget_item_category);
@@ -295,15 +343,11 @@ public class ATDAppWidgetService extends RemoteViewsService {
 
                 setOnClickFillInIntent(rView, R.id.list_item_ViewGroup, c.id, null);
 
-                mViewsHolder.add(new RemoteViewsHolder(rView, RemoteViewsHolder.TYPE_CATEGORY_NAME));
+                mViewsHolder.add(new ATDAppWidgetService.CategoryListRemoteViewsFactory.RemoteViewsHolder(rView, ATDAppWidgetService.CategoryListRemoteViewsFactory.RemoteViewsHolder.TYPE_CATEGORY_NAME));
 
                 ArrayList<Fact> facts = c.getFavFacts();
-                for (int i = 0; i < facts.size(); ) {
+                for (int i = 0; i < facts.size(); i++) {
                     Fact f = facts.get(i);
-                    if (isFilteredFacts(f)) {
-                        c.removeFavFact(f);
-                        continue;
-                    }
 
                     rView = new RemoteViews(mContext.getPackageName(),
                             R.layout.widget_item);
@@ -315,7 +359,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
 
                     setOnClickFillInIntent(rView, R.id.list_item_ViewGroup, c.id, f.id);
 
-                    RemoteViewsHolder factViewHolder = new RemoteViewsHolder(rView, RemoteViewsHolder.TYPE_FACT);
+                    ATDAppWidgetService.CategoryListRemoteViewsFactory.RemoteViewsHolder factViewHolder = new ATDAppWidgetService.CategoryListRemoteViewsFactory.RemoteViewsHolder(rView, ATDAppWidgetService.CategoryListRemoteViewsFactory.RemoteViewsHolder.TYPE_FACT);
                     factViewHolder.mFact = f;
                     mViewsHolder.add(factViewHolder);
 
@@ -329,20 +373,8 @@ public class ATDAppWidgetService extends RemoteViewsService {
                             mNetworkFetcher.requestJsonObject(findPictureUrlAt, this);
                         }
                     }
-                    i++;
+
                 }
-
-
-                //add MORE section
-
-/*
-                rView = new RemoteViews(mContext.getPackageName(),
-                        R.layout.widget_item);
-
-                rView.setTextViewText(R.id.tvItemText, localizedMoreString);
-                setOnClickFillInIntent(rView, R.id.tvItemText, c.id, "-1");
-                mViewsHolder.add(new RemoteViewsHolder(rView, RemoteViewsHolder.TYPE_FACT));
-*/
 
 
             }
@@ -367,50 +399,6 @@ public class ATDAppWidgetService extends RemoteViewsService {
             }
         }
 
-        private boolean isEmptyCategories(ArrayList<Category> categories) {
-            for (int i = 0; i < categories.size(); i++) {
-                ArrayList<Fact> favFacts = categories.get(i).getFavFacts();
-                if (favFacts != null && favFacts.size() > 0) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        private String getImageUrl(Fact f) {
-            return f.getThumbnailUrl();
-/*
-            if (Integer.parseInt(f.id) % 2 == 0) {
-                return "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Bryan_Robson_Thailand_2009-11-01_%282%29.jpg/72px-Bryan_Robson_Thailand_2009-11-01_%282%29.jpg";
-            }
-            return "http://i.imgur.com/7spzG.png";
-*/
-        }
-
-        /**
-         * Query Data
-         *
-         * @param selection The selection string for the loader to filter the query with.
-         */
-        public void initCategoryLoader(int type, String selection) {
-            if (LOGD)
-                Log.d(TAG, "Querying for widget events...");
-            // Search for events from now until some time in the future
-            Uri uri = null;
-            String[] projection = null;
-
-            uri = DataFetcher.createUriForCategories(mLang, mDateString);
-            projection = DataFetcher.createProjectionsForCategories();
-
-            mCategoryLoader = new CursorLoader(mContext, uri, projection, selection, null, null);
-            mCategoryLoader.registerListener(type, this);
-            mCategoryLoader.startLoading();
-
-
-            if (LOGD)
-                Log.d(TAG, "Start loading " + uri);
-
-        }
 
         private void setOnClickFillInIntent(RemoteViews rv, int viewId, String categoryId, String factId) {
             Bundle extras = new Bundle();
@@ -504,71 +492,8 @@ public class ATDAppWidgetService extends RemoteViewsService {
             return false;
         }
 
-        @Override
-        public void onLoadComplete(Loader<Cursor> loader, Cursor data) {
-            if (LOGD)
-                Log.d(TAG, "onLoadComplete() id=" + loader.getId());
-            int loaderType = loader.getId();
 
-            if (DataFetcher.TYPE_CATEGORIES == loaderType) {
-                mCategories = DataFetcher.fillCategories(data);
-                filterCategories(mCategories);
-
-                if (mCategories == null || mCategories.size() == 0) {
-                    notifyWidgedProviderHasNoData();
-                    wasNoData = true;
-                    return;
-                }
-
-                fillData();
-
-                if (mAppWidgetId == -1) {
-                    int[] ids = mWidgetManager.getAppWidgetIds(OTDWidgetProvider
-                            .getComponentName(mContext));
-                    mWidgetManager.notifyAppWidgetViewDataChanged(ids, R.id.listView);
-                } else {
-                    mWidgetManager.notifyAppWidgetViewDataChanged(mAppWidgetId, R.id.listView);
-                }
-            }
-        }
-
-        private void filterCategories(ArrayList<Category> categories) {
-            if(categories == null){
-                return;
-            }
-            for (int i = 0; i < mCategories.size(); ) {
-                Category category = mCategories.get(i);
-                if ("Véase también".equals(category.name)
-                        || "Enlaces externos".equals(category.name)
-                        || "Referencias".equals(category.name)
-                        || "Toponymie".equals(category.name)
-                        || "Bibliographie".equals(category.name)
-                        || "Articles connexes".equals(category.name)
-                        ) {
-                    mCategories.remove(i);
-                    continue;
-                }
-                i++;
-            }
-        }
-
-        /**
-         * @param f
-         * @return true if fact is bad
-         */
-        private boolean isFilteredFacts(Fact f) {
-            if (f.text == null
-                    || f.text.isEmpty()
-                    || f.text.contains("См. также")
-                    ) {
-
-                return true;
-            }
-            return false;
-        }
-
-
-        private void notifyWidgedProviderHasNoData() {
+        public void notifyWidgedProviderHasNoData() {
             Intent intent = new Intent(ACTION_NO_DATA);
             intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
             mContext.sendBroadcast(intent);
@@ -688,6 +613,36 @@ public class ATDAppWidgetService extends RemoteViewsService {
             isWatchDogStarted = false;
         }
 
+        public void notifyOnDataChanged() {
+            if (mAppWidgetId == -1 || AppWidgetManager.INVALID_APPWIDGET_ID == mAppWidgetId) {
+                int[] ids = mWidgetManager.getAppWidgetIds(OTDWidgetProvider
+                        .getComponentName(mContext));
+                mWidgetManager.notifyAppWidgetViewDataChanged(ids, R.id.listView);
+            } else {
+                mWidgetManager.notifyAppWidgetViewDataChanged(mAppWidgetId, R.id.listView);
+            }
+        }
+
+
+        //говорят, что данные изменились
+        @Override
+        public void onModelChanged(OnThisDayModel newModel) {
+            if (LOGD)
+                Log.d(TAG, "onModelChanged...");
+            if (newModel != mModel) {
+                mModel = newModel;
+                if (mModel.isError) {
+                    notifyWidgedProviderHasNoData();
+                } else {
+                    //заполним вьюхи
+                    updateViews();
+
+                    //расскажем виджету, что пора обновиться
+                    notifyOnDataChanged();
+                }
+            }
+        }
+
 
         private class RemoteViewsHolder {
             static final int TYPE_CATEGORY_NAME = 1;
@@ -705,4 +660,6 @@ public class ATDAppWidgetService extends RemoteViewsService {
 
         }
     }
+
+
 }
