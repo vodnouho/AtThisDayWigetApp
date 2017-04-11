@@ -41,8 +41,6 @@ public class ATDAppWidgetService extends RemoteViewsService {
     private static String TAG = "vdnh.WidgetService";
     //храним живые сервисы по EXTRA_APPWIDGET_ID
     private static ConcurrentHashMap<String, CategoryListRemoteViewsFactory> mapByWidgetId = new ConcurrentHashMap<String, CategoryListRemoteViewsFactory>(3);
-    //храним коллекции по дата+язык формат MMdd_la пример 0728_ru
-    private static ConcurrentHashMap<String, ArrayList<CategoryListRemoteViewsFactory>> mapByDateLang = new ConcurrentHashMap<String, ArrayList<CategoryListRemoteViewsFactory>>(3);
 
 
     public static final String EXTRA_WIDGET_LANG = "ru.vodnouho.android.atthisdaywigetapp.EXTRA_WIDGET_LANG";
@@ -70,24 +68,21 @@ public class ATDAppWidgetService extends RemoteViewsService {
 
         //сохраним для виджета
         categoryListRemoteViewsFactory = mapByWidgetId.get(appWidgetId);
-        if (categoryListRemoteViewsFactory == null) {
+        if (categoryListRemoteViewsFactory == null
+                || !dateString.equals(categoryListRemoteViewsFactory.getDateString())) {
             categoryListRemoteViewsFactory = new CategoryListRemoteViewsFactory(this.getApplicationContext(), intent);
             mapByWidgetId.put(appWidgetId, categoryListRemoteViewsFactory);
         }
-
-        //сохраним для даты и языка
-        String key = dateString + "_" + lang;
-        ArrayList<CategoryListRemoteViewsFactory> factoriesByDateLang = mapByDateLang.get(key);
-        if (factoriesByDateLang == null) {
-            factoriesByDateLang = new ArrayList<>();
-            mapByDateLang.put(key, factoriesByDateLang);
-        }
-        factoriesByDateLang.add(categoryListRemoteViewsFactory);
 
 
         return categoryListRemoteViewsFactory;
     }
 
+    @Override
+    public void onDestroy() {
+        SaveLoadHelper.deleteOldFiles(getApplicationContext());
+        super.onDestroy();
+    }
 
     public static class CategoryListRemoteViewsFactory extends BroadcastReceiver
             implements RemoteViewsFactory,
@@ -139,6 +134,17 @@ public class ATDAppWidgetService extends RemoteViewsService {
                 mWatchDogThread = null;
             }
         };
+
+        private Runnable mFileClearer = new Runnable() {
+            @Override
+            public void run() {
+                if (LOGD)
+                    Log.d(TAG, "mFileClearer alive.");
+
+
+            }
+        };
+
         private Map<String, ArrayList<Fact>> mImageUrlRequests
                 = Collections.synchronizedMap(new HashMap<String, ArrayList<Fact>>());
 
@@ -146,6 +152,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
         public CategoryListRemoteViewsFactory() {
             super();
         }
+
 
 
         public CategoryListRemoteViewsFactory(Context context, Intent intent) {
@@ -187,6 +194,9 @@ public class ATDAppWidgetService extends RemoteViewsService {
 
         }
 
+        public String getDateString() {
+            return mDateString;
+        }
 
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -316,6 +326,8 @@ public class ATDAppWidgetService extends RemoteViewsService {
         }
 
         private void updateViews() {
+            if(LOGD) Log.d(TAG, "updateViews()");
+
             //once get localized MORE string
             String localizedMoreString = LocalizationUtils.getLocalizedString(R.string.more, mLang, mContext);
 
@@ -437,9 +449,9 @@ public class ATDAppWidgetService extends RemoteViewsService {
 
             RemoteViewsHolder holder = mViewsHolder.get(position);
 
-            if (LOGD) {
+            /*if (LOGD) {
                 Log.d(TAG, "getViewAt(" + position + ")");
-            }
+            }*/
 
 
             // show/hide image

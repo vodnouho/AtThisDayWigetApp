@@ -8,6 +8,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,6 +17,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+
+import static ru.vodnouho.android.atthisdaywidgetapp.OTDWidgetProvider.LOGD;
 
 /**
  * Created by petukhov on 05.04.2017.
@@ -40,6 +43,8 @@ public class SaveLoadHelper {
 
     @Nullable
     public static  JSONObject readJson(String fileName, Context context) throws IOException, JSONException {
+        if(LOGD) Log.d(TAG, "readJson:"+fileName);
+
         JSONObject result = null;
         BufferedReader reader = null;
         ArrayList<Category> categoryList = new ArrayList<>();
@@ -79,5 +84,19 @@ public class SaveLoadHelper {
             }
         }
         return false;
+    }
+
+    public static void deleteOldFiles(Context context){
+        long oldBorder = System.currentTimeMillis() - 1000*60*60*24*3;
+        String[] files = context.fileList();
+        for(int i=0; i<files.length; i++){
+            File file = new File(files[i]);
+            long lastModified = file.lastModified();
+            if(lastModified < oldBorder){
+                if(file.delete()){
+                    Log.d(TAG, "File:" + files[i] + " deleted");
+                }
+            }
+        }
     }
 }

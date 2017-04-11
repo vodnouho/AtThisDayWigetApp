@@ -8,10 +8,17 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.util.Log;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static ru.vodnouho.android.atthisdaywidgetapp.OTDWidgetProvider.LOGD;
+import static ru.vodnouho.android.atthisdaywidgetapp.SaveLoadHelper.isFileExist;
+import static ru.vodnouho.android.atthisdaywidgetapp.SaveLoadHelper.readJson;
+import static ru.vodnouho.android.atthisdaywidgetapp.SaveLoadHelper.writeJson;
 
 /**
  * Created by petukhov on 06.04.2017.
@@ -72,12 +79,48 @@ public class OnThisDayLogic implements Loader.OnLoadCompleteListener<Cursor> {
     }
 
     public void loadData() {
-        if(mCategoryLoader == null){
-            initCategoryLoader();
+        if(LOGD) Log.d(TAG, "loadData" );
+
+        if(isModelLoaded()){
+            notifyListeners();
+            return;
+        }else if (isModelLoadedFromFile()){
+            //loaded from cacheFile
+            notifyListeners();
+            return; 
+        }else{
+            //load by Loader
+            if(mCategoryLoader == null){
+                initCategoryLoader();
+            }
+            mCategoryLoader.forceLoad();
         }
-        mCategoryLoader.forceLoad();
     }
 
+    private boolean isModelLoadedFromFile() {
+        if(LOGD) Log.d(TAG, "isModelLoadedFromFile" );
+
+        if(isFileExist(mCacheFileName, mContext)){
+            try {
+                JSONObject jsonObject = readJson(mCacheFileName, mContext);
+                mModel  = new OnThisDayModel(jsonObject);
+                return true;
+            } catch (IOException | JSONException e) {
+                Log.e(TAG, "Can't load model form file:"+mCacheFileName, e);
+                return false;
+            }
+        }
+        return false;
+    }
+
+    private boolean isModelLoaded() {
+        if(mModel != null
+                && mModel.categories != null
+                && mModel.categories.size() > 0){
+            return true;
+        }
+        return false;
+    }
 
 
     @Override
@@ -99,13 +142,24 @@ public class OnThisDayLogic implements Loader.OnLoadCompleteListener<Cursor> {
 
             }
 
-
             mModel = new OnThisDayModel(mDateString, mLang, categories, false, isError);
-
+            if(!isError){
+                try {
+                    saveModelToFile(mModel, mCacheFileName, mContext);
+                } catch (JSONException | IOException e) {
+                    Log.e(TAG, "Can't save model", e);
+                }
+            }
             notifyListeners();
         }
 
 
+    }
+
+    private void saveModelToFile(OnThisDayModel model, String cacheFileName, Context context) throws JSONException, IOException {
+        if(LOGD) Log.d(TAG, "saveModelToFile:" + cacheFileName);
+
+        writeJson(model.toJSON(), cacheFileName, context);
     }
 
 

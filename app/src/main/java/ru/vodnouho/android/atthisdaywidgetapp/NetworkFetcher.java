@@ -253,8 +253,11 @@ public class NetworkFetcher {
                 String imageFileName = i + ".jpg";
                 Bitmap bitmap = sImageCache.get(key);
                 try {
-                    saveBitmapToFile(bitmap, imageFileName, sContext);
-                    jsonObject.put(key, imageFileName);
+                    if(bitmap != null){
+                        saveBitmapToFile(bitmap, imageFileName, sContext);
+                        jsonObject.put(key, imageFileName);
+                    }
+
                     i++;
 
                 } catch (Throwable e) {
