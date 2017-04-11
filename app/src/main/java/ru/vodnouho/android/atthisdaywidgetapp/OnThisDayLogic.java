@@ -253,6 +253,7 @@ public class OnThisDayLogic implements Loader.OnLoadCompleteListener<Cursor> {
                     || "Toponymie".equals(category.name)
                     || "Bibliographie".equals(category.name)
                     || "Articles connexes".equals(category.name)
+                    || "Weblinks".equals(category.name)
                     ) {
                 categories.remove(i);
                 continue;
