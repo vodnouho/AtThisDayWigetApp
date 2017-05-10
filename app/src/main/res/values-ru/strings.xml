@@ -23,8 +23,7 @@
         <item>Декабря</item>
     </string-array>
 
-    <string name="plz_install_otd">Пожалуйста установите бесплатное приложение \"Сегодня\".</string>
-    <string name="install">Установить</string>
+
 
     <string name="loading_inprogress">Идёт загрузка...</string>
     <string name="more">Ещё...</string>
@@ -38,5 +37,10 @@
         <item>Светлое</item>
         <item>Тёмное</item>
     </string-array>
+
+    <string name="plz_install_otd">Пожалуйста установите бесплатное приложение \"Сегодня\".</string>
+    <string name="install">Установить</string>
+    <string name="plz_resfresh">и обновите виджет</string>
+    <string name="refresh">Обновить</string>
 
 </resources>
