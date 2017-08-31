@@ -4,22 +4,40 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:orientation="vertical"
+              android:paddingTop="8dp"
+              android:paddingLeft="16dp"
+              android:paddingRight="16dp"
+              android:paddingBottom="16dp"
+              android:background="@color/bgColor"
     >
+
 
     <TextView
         android:id="@+id/plz_install_otd_TextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
+        android:layout_gravity="left"
         android:text="@string/plz_install_otd"
-        android:textAppearance="?android:attr/textAppearanceLarge"/>
+        android:textAppearance="?android:attr/textAppearanceMedium"/>
 
     <Button
-        android:id="@+id/installView"
+        android:id="@+id/installButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/install"
-        >
+        />
+    <TextView
+        android:id="@+id/plz_refresh_otd_TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="left"
+        android:text="@string/plz_resfresh"
+        android:textAppearance="?android:attr/textAppearanceMedium"/>
 
-    </Button>
+    <Button
+        android:id="@+id/refreshButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/refresh"
+        />
 </LinearLayout>

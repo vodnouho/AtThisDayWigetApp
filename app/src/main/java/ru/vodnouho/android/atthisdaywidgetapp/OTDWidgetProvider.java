@@ -176,8 +176,10 @@ public class OTDWidgetProvider extends AppWidgetProvider {
             rv.setInt(R.id.plz_install_otd_TextView, "setTextColor", textColor);
 
             plzInstallString = LocalizationUtils.getLocalizedString(R.string.install, settingLang, context);
-            rv.setTextViewText(R.id.installView, plzInstallString);
-            rv.setInt(R.id.installView, "setTextColor", textColor);
+            rv.setTextViewText(R.id.installButton, plzInstallString);
+            //rv.setInt(R.id.installButton, "setTextColor", textColor);
+
+
             // Create an Intent to launch Play Market
 
             Intent intent;
@@ -190,8 +192,16 @@ public class OTDWidgetProvider extends AppWidgetProvider {
                 intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + CONTENT_PROVIDER_PACKAGE));
             }
             PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
-            rv.setOnClickPendingIntent(R.id.installView, pendingIntent);
+            rv.setOnClickPendingIntent(R.id.installButton, pendingIntent);
 
+            plzInstallString = LocalizationUtils.getLocalizedString(R.string.plz_resfresh, settingLang, context);
+            rv.setTextViewText(R.id.plz_refresh_otd_TextView, plzInstallString);
+            rv.setInt(R.id.plz_refresh_otd_TextView, "setTextColor", textColor);
+
+            plzInstallString = LocalizationUtils.getLocalizedString(R.string.refresh, settingLang, context);
+            rv.setTextViewText(R.id.refreshButton, plzInstallString);
+
+            rv.setOnClickPendingIntent(R.id.refreshButton, getPendingSelfIntent(context, ACTION_REFRESH, appWidgetId));
 
         } else {
             rv = new RemoteViews(context.getPackageName(),

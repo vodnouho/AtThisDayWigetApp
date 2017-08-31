@@ -24,6 +24,9 @@
 
     <string name="plz_install_otd">Instale \"En este día\" aplicación.</string>
     <string name="install">Instalar</string>
+    <string name="plz_resfresh">y actualizar widget</string>
+    <string name="refresh">Refrescar</string>
+
 
     <string name="loading_inprogress">Cargando...</string>
     <string name="more">Más...</string>

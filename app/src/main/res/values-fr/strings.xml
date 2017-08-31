@@ -22,6 +22,10 @@
 
     <string name="plz_install_otd">Veuillez installer \"Ce jour là\" application.</string>
     <string name="install">Installer</string>
+    <string name="refresh">Rafraîchir</string>
+    <string name="plz_resfresh">et actualiser le widget</string>
+
+
     <string name="loading_inprogress">Chargement...</string>
     <string name="more">PLUS...</string>
 
@@ -34,6 +38,7 @@
         <item>Clair</item>
         <item>Sombre</item>
     </string-array>
+
 
 
 </resources>
