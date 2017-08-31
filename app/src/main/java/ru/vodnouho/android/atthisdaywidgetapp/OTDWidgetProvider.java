@@ -29,6 +29,8 @@ public class OTDWidgetProvider extends AppWidgetProvider {
     public static final String RUN_ACTION = "ru.vodnouho.android.RUN_ACTION"; //Action for run OTD app
     public static final String ACTION_REFRESH = "ru.vodnouho.android.ACTION_REFRESH"; //Action for refresh widget
 
+    public static final String ACTION_DATE_CHANGED = "android.intent.action.DATE_CHANGED"; //Action for refresh widget
+
     public static final String EXTRA_ITEM = "ru.vodnouho.android.EXTRA_ITEM"; //Action for run OTD app
 
 
@@ -38,7 +40,7 @@ public class OTDWidgetProvider extends AppWidgetProvider {
     @Override
     public void onReceive(Context context, Intent intent) {
         if (LOGD)
-            Log.d(TAG, "OTDWidgetProvider got the intent: " + intent.toString());
+            Log.d(TAG, "OTDWidgetProvider got the action:"+intent.getAction()+" intent: " + intent.toString());
 
         AppWidgetManager mgr = AppWidgetManager.getInstance(context);
         if (intent.getAction().equals(RUN_ACTION)) {
@@ -47,7 +49,16 @@ public class OTDWidgetProvider extends AppWidgetProvider {
             String extra = intent.getStringExtra(EXTRA_ITEM);
             Toast.makeText(context, "Touched view " + extra, Toast.LENGTH_SHORT).show();
 
-        } else if (intent.getAction().equals(ACTION_REFRESH)) {
+        } else if (intent.getAction().equals(ACTION_DATE_CHANGED)){
+            int[] appWidgetIds = mgr.getAppWidgetIds(
+                    new ComponentName(context, OTDWidgetProvider.class)
+            );
+            for(int i=0; i<appWidgetIds.length; i++){
+                updateAppWidget(context, mgr, appWidgetIds[i], false);
+            }
+
+        }else if (intent.getAction().equals(ACTION_REFRESH) ) {
+            Log.d(TAG, "OTDWidgetProvider catch the intent: " + intent.toString());
             int appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
                     AppWidgetManager.INVALID_APPWIDGET_ID);
 
