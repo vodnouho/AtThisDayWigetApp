@@ -55,8 +55,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
 
     @Override
     public RemoteViewsFactory onGetViewFactory(Intent intent) {
-        if (LOGD)
-            Log.d(TAG, "onGetViewFactory()");
+
 
         CategoryListRemoteViewsFactory categoryListRemoteViewsFactory = null;
 
@@ -66,10 +65,15 @@ public class ATDAppWidgetService extends RemoteViewsService {
                 AppWidgetManager.EXTRA_APPWIDGET_ID,
                 AppWidgetManager.INVALID_APPWIDGET_ID);
 
+        if (LOGD)
+            Log.d(TAG, "onGetViewFactory()");
+
         //сохраним для виджета
         categoryListRemoteViewsFactory = mapByWidgetId.get(appWidgetId);
         if (categoryListRemoteViewsFactory == null
-                || !dateString.equals(categoryListRemoteViewsFactory.getDateString())) {
+                || !dateString.equals(categoryListRemoteViewsFactory.getDateString())
+                || !lang.equals(categoryListRemoteViewsFactory.getLang())
+                ) {
             categoryListRemoteViewsFactory = new CategoryListRemoteViewsFactory(this.getApplicationContext(), intent);
             mapByWidgetId.put(appWidgetId, categoryListRemoteViewsFactory);
         }
@@ -198,6 +202,10 @@ public class ATDAppWidgetService extends RemoteViewsService {
             return mDateString;
         }
 
+        public String getLang() {
+            return mLang;
+        }
+
         @Override
         public void onReceive(Context context, Intent intent) {
             if (LOGD)
@@ -283,7 +291,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
         @Override
         public void onDataSetChanged() {
             if (LOGD)
-                Log.d(TAG, "onDataSetChanged()");
+                Log.d(TAG, "onDataSetChanged() mModel:"+mModel);
 
             //no DataProvider - no Data. kekeke!
             if (!DataFetcher.isProviderInstalled(mContext)) {

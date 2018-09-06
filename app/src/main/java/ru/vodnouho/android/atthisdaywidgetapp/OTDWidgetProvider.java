@@ -380,7 +380,7 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         adapter.putExtra(ATDAppWidgetService.EXTRA_WIDGET_LANG, lang);
         adapter.putExtra(ATDAppWidgetService.EXTRA_WIDGET_DATE, dateS);
         adapter.setData(Uri.parse(adapter.toUri(Intent.URI_INTENT_SCHEME)));
-        Log.d(TAG, "setRemoteAdapter");
+        Log.d(TAG, "setRemoteAdapter id:"+appWidgetId + " lang:"+lang + " dateS:"+dateS);
         rv.setRemoteAdapter(R.id.listView, adapter);
         rv.setInt(R.id.listView, "setBackgroundColor", bgColor);
 
