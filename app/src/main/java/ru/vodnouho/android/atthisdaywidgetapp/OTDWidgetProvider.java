@@ -23,6 +23,8 @@ import java.util.Date;
  */
 public class OTDWidgetProvider extends AppWidgetProvider {
     private static final String TAG = "vdnh.OTDWidgetProvider";
+    public static final String APPWIDGET_CONFIGURE = "ru.vodnouho.android.atthisdaywidgetapp.APPWIDGET_CONFIGURE";
+
     public static final boolean LOGD = true;
 
     private static final String CONTENT_PROVIDER_PACKAGE = "ru.vodnouho.android.yourday";
@@ -122,11 +124,29 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         Log.d(TAG, "updateAppWidget ID:" + appWidgetId);
 
         boolean isContentProviderInstalled = isPackageInstalled(CONTENT_PROVIDER_PACKAGE, context);
-/*
-        Log.d(TAG, "is On This Day installed:"+isContentProviderInstalled);
-        Log.d(TAG, "is ContentProviderInstalled:"+DataFetcher.isProviderInstalled(context));
-*/
 
+
+        RemoteViews rv;
+        if (!isContentProviderInstalled) {
+            rv = createViewPleaseInstall(context, appWidgetId);
+        } else {
+            rv = createView(context, appWidgetId, isNoData);
+        }
+
+
+        //
+        // Do additional processing specific to this app widget...
+        //
+        appWidgetManager.updateAppWidget(appWidgetId, rv);
+
+
+    }
+
+    private static RemoteViews createView(Context context, int appWidgetId, boolean isNoData){
+        //no content provider
+
+        RemoteViews rv = new RemoteViews(context.getPackageName(),
+                R.layout.atd_widget_layout);
 
         //save current Lang
         Resources res = context.getResources();
@@ -159,76 +179,114 @@ public class OTDWidgetProvider extends AppWidgetProvider {
             textColor = ContextCompat.getColor(context, R.color.textBlackColor);
         }
 
+        rv.setInt(R.id.loading_textView, "setTextColor", textColor);
+        rv.setInt(R.id.emptyView, "setBackgroundColor", bgColor);
+
+        rv.setInt(R.id.widget_container_ViewGroup, "setBackgroundColor", bgColor);
+
         Date currentDate = new Date();
 
-        RemoteViews rv;
-        if (!isContentProviderInstalled) {
-            //no content provider
+        setTitleText(rv, context, settingLang, currentDate);
+        rv.setInt(R.id.titleTextView, "setTextColor", textColor);
+        rv.setInt(R.id.title_ViewGroup, "setBackgroundColor", headerBgColor);
+        rv.setInt(R.id.settingsImageButton, "setBackgroundColor", headerBgColor);
+        rv.setInt(R.id.settingsImageButton, "setColorFilter", textColor);
 
-            rv = new RemoteViews(context.getPackageName(),
-                    R.layout.plz_install_widget_layout);
+        rv.setOnClickPendingIntent(R.id.titleTextView, getPendingSelfIntent(context, ACTION_REFRESH, appWidgetId));
+        rv.setOnClickPendingIntent(R.id.settingsImageButton, getSettingIntent(context, APPWIDGET_CONFIGURE, appWidgetId));
 
-            rv.setInt(R.id.plz_install_ViewGroup, "setBackgroundColor", bgColor);
+        //start service for getData and create Views
+        setList(rv, context, settingLang, currentDate, appWidgetId, isNoData);
 
+        return rv;
+    }
 
-            String plzInstallString = LocalizationUtils.getLocalizedString(R.string.plz_install_otd, settingLang, context);
-            rv.setTextViewText(R.id.plz_install_otd_TextView, plzInstallString);
-            rv.setInt(R.id.plz_install_otd_TextView, "setTextColor", textColor);
+    private static RemoteViews createViewPleaseInstall(Context context, int appWidgetId){
+        //no content provider
 
-            plzInstallString = LocalizationUtils.getLocalizedString(R.string.install, settingLang, context);
-            rv.setTextViewText(R.id.installButton, plzInstallString);
-            //rv.setInt(R.id.installButton, "setTextColor", textColor);
+        RemoteViews rv = new RemoteViews(context.getPackageName(),
+                R.layout.plz_install_widget_layout);
 
-
-            // Create an Intent to launch Play Market
-
-            Intent intent;
-
-            try {
-                //TODO link to BETA !!!
-                //intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/apps/testing/ru.vodnouho.android.yourday"));
-                intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + CONTENT_PROVIDER_PACKAGE));
-            } catch (android.content.ActivityNotFoundException anfe) {
-                intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + CONTENT_PROVIDER_PACKAGE));
-            }
-            PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
-            rv.setOnClickPendingIntent(R.id.installButton, pendingIntent);
-
-            plzInstallString = LocalizationUtils.getLocalizedString(R.string.plz_resfresh, settingLang, context);
-            rv.setTextViewText(R.id.plz_refresh_otd_TextView, plzInstallString);
-            rv.setInt(R.id.plz_refresh_otd_TextView, "setTextColor", textColor);
-
-            plzInstallString = LocalizationUtils.getLocalizedString(R.string.refresh, settingLang, context);
-            rv.setTextViewText(R.id.refreshButton, plzInstallString);
-
-            rv.setOnClickPendingIntent(R.id.refreshButton, getPendingSelfIntent(context, ACTION_REFRESH, appWidgetId));
-
-        } else {
-            rv = new RemoteViews(context.getPackageName(),
-                    R.layout.atd_widget_layout);
-            rv.setInt(R.id.loading_textView, "setTextColor", textColor);
-            rv.setInt(R.id.emptyView, "setBackgroundColor", bgColor);
-
-            rv.setInt(R.id.widget_container_ViewGroup, "setBackgroundColor", bgColor);
+        //save current Lang
+        Resources res = context.getResources();
+        Configuration conf = res.getConfiguration();
+        String currentLang = conf.locale.getLanguage();
 
 
-            setTitleText(rv, context, settingLang, currentDate);
-            rv.setInt(R.id.titleTextView, "setTextColor", textColor);
-            rv.setInt(R.id.title_ViewGroup, "setBackgroundColor", headerBgColor);
+        //get settings lang
+        String settingLang = SettingsActivity.loadPrefLang(context, appWidgetId);
+        if (settingLang == null || settingLang.isEmpty()) {
+            settingLang = currentLang;
+        }
 
-            rv.setOnClickPendingIntent(R.id.titleTextView, getPendingSelfIntent(context, ACTION_REFRESH, appWidgetId));
+        String settingTheme = SettingsActivity.loadPrefTheme(context, appWidgetId);
+        if (settingTheme == null || settingTheme.isEmpty()) {
+            settingTheme = SettingsActivity.THEME_LIGHT;
+        }
 
-            //start service for getData and create Views
-            setList(rv, context, settingLang, currentDate, appWidgetId, isNoData);
+        int bgColor = -1;
+        int headerBgColor = -1;
+        int textColor = -1;
+        if(SettingsActivity.THEME_LIGHT.equals(settingTheme)){
+
+            bgColor = ContextCompat.getColor(context, R.color.bgColor);
+            headerBgColor = ContextCompat.getColor(context, R.color.headerBgColor);
+            textColor = ContextCompat.getColor(context, R.color.textColor);
+        }else{
+            bgColor = ContextCompat.getColor(context, R.color.bgBlackColor);
+            headerBgColor = ContextCompat.getColor(context, R.color.headerBgBlackColor);
+            textColor = ContextCompat.getColor(context, R.color.textBlackColor);
         }
 
 
-        //
-        // Do additional processing specific to this app widget...
-        //
-        appWidgetManager.updateAppWidget(appWidgetId, rv);
+        rv.setInt(R.id.plz_install_ViewGroup, "setBackgroundColor", bgColor);
 
 
+        String plzInstallString = LocalizationUtils.getLocalizedString(R.string.plz_install_otd, settingLang, context);
+        rv.setTextViewText(R.id.plz_install_otd_TextView, plzInstallString);
+        rv.setInt(R.id.plz_install_otd_TextView, "setTextColor", textColor);
+
+        plzInstallString = LocalizationUtils.getLocalizedString(R.string.install, settingLang, context);
+        rv.setTextViewText(R.id.installButton, plzInstallString);
+        //rv.setInt(R.id.installButton, "setTextColor", textColor);
+
+
+        // Create an Intent to launch Play Market
+
+        Intent intent;
+
+        try {
+            //TODO link to BETA !!!
+            //intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/apps/testing/ru.vodnouho.android.yourday"));
+            intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + CONTENT_PROVIDER_PACKAGE));
+        } catch (android.content.ActivityNotFoundException anfe) {
+            intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + CONTENT_PROVIDER_PACKAGE));
+        }
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
+        rv.setOnClickPendingIntent(R.id.installButton, pendingIntent);
+
+        plzInstallString = LocalizationUtils.getLocalizedString(R.string.plz_resfresh, settingLang, context);
+        rv.setTextViewText(R.id.plz_refresh_otd_TextView, plzInstallString);
+        rv.setInt(R.id.plz_refresh_otd_TextView, "setTextColor", textColor);
+
+        plzInstallString = LocalizationUtils.getLocalizedString(R.string.refresh, settingLang, context);
+        rv.setTextViewText(R.id.refreshButton, plzInstallString);
+
+        rv.setOnClickPendingIntent(R.id.refreshButton, getPendingSelfIntent(context, ACTION_REFRESH, appWidgetId));
+
+        return rv;
+
+    }
+
+    protected static PendingIntent getSettingIntent(Context context, String action, int widgetId) {
+        Intent intent = new Intent(context, SettingsActivity.class);
+        intent.setAction(action);
+        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
+
+        if (LOGD)
+            Log.d(TAG, "getSettingIntent widgetId=" + widgetId + " intent" + intent);
+
+        return PendingIntent.getActivity(context, widgetId, intent, 0);
     }
 
     protected static PendingIntent getPendingSelfIntent(Context context, String action, int widgetId) {

@@ -20,6 +20,7 @@
             android:label="@string/app_name" android:icon="@drawable/ic_widget" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+                <action android:name="ru.vodnouho.android.atthisdaywidgetapp.APPWIDGET_CONFIGURE" />
 
             </intent-filter>
         </activity>

@@ -1,5 +1,9 @@
 package ru.vodnouho.android.atthisdaywidgetapp;
 
+/**
+ * Activity to set UI settings for instance of widget.
+ */
+
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;

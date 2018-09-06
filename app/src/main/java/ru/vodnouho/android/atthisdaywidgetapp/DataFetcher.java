@@ -98,7 +98,7 @@ public class DataFetcher  {
 
 
     public static Uri createUriForCategories(String lang, String dateString){
-        //URI:content://ru.vodnouho.android.yourday.cp/categories/en/0818
+
         Uri contentUri = Uri.withAppendedPath(
                 FactsContract.Categories.CONTENT_URI,
                 lang + "/" + dateString);
