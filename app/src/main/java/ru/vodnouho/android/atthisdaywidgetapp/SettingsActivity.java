@@ -4,12 +4,14 @@ package ru.vodnouho.android.atthisdaywidgetapp;
  * Activity to set UI settings for instance of widget.
  */
 
+import android.app.WallpaperManager;
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -19,6 +21,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 
@@ -78,11 +81,20 @@ public class SettingsActivity extends AppCompatActivity {
         mTheme = calcTheme(this, mAppWidgetId);
         prepareThemeSpinner(this, mTheme);
 
+        drawWallpaper(this);
 
 
         // Bind the action for the save button.
         findViewById(R.id.saveButton).setOnClickListener(mOnClickListener);
 
+    }
+
+    private void drawWallpaper(Context context) {
+        final WallpaperManager wallpaperManager = WallpaperManager.getInstance(context);
+        final Drawable wallpaperDrawable = wallpaperManager.getDrawable();
+
+        ImageView wallpaperImageView = findViewById(R.id.wallpaper_ImageView);
+        wallpaperImageView.setImageDrawable(wallpaperDrawable);
     }
 
     private String calcLang(Context context, int appWidgetId) {
