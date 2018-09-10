@@ -20,6 +20,7 @@ public class LocalizationUtils {
     public static final String LANG_DE = "de";
     public static final String LANG_FR = "fr";
     public static final String LANG_EN = "en";
+    public static final String LANG_PT = "pt";
 
     /**
      * Filter lang which localization exist
@@ -36,6 +37,8 @@ public class LocalizationUtils {
 //        }else if(FactLab.LANG_ZH.equals(lang)){
 //            return;
         }else if(LANG_FR.equals(lang)){
+            return lang;
+        }else if(LANG_PT.equals(lang)){
             return lang;
         }else{
             return LANG_EN;
@@ -74,7 +77,11 @@ public class LocalizationUtils {
             titleText.append(dayOfMonth);
             titleText.append(" de ");
             titleText.append(monthNames[month].toLowerCase());
-
+        }else if (LANG_PT.equals(lang)) {
+            titleText.append(" ");
+            titleText.append(dayOfMonth);
+            titleText.append(" de ");
+            titleText.append(monthNames[month].toLowerCase());
         }else if (LANG_DE.equals(lang)) {
             titleText.append(" ");
             titleText.append(dayOfMonth);
@@ -118,6 +125,9 @@ public class LocalizationUtils {
             newLocale = new Locale(LANG_DE, "DE");
         } else if(LANG_FR.equals(lang)) {
                 newLocale = new Locale(LANG_FR, "FR");
+        } else if(LANG_PT.equals(lang)) {
+            newLocale = new Locale(LANG_PT, "FR");
+
         } else {
             newLocale = Locale.US;
         }

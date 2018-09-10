@@ -13,6 +13,7 @@ import android.content.res.Resources;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -24,6 +25,7 @@ import android.widget.Spinner;
 import java.util.Locale;
 
 public class SettingsActivity extends AppCompatActivity {
+    private static final String TAG = "vdnh.SettingsActivity";
     private static final String LANG_RU = "ru";
     private static final String LANG_EN = "en";
 
@@ -36,6 +38,7 @@ public class SettingsActivity extends AppCompatActivity {
     private static final String PREF_THEME_KEY = "theme_widget_";
     public static final String THEME_LIGHT = "1";
     public static final String THEME_BLACK = "2";
+
 
     int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
 
@@ -99,7 +102,7 @@ public class SettingsActivity extends AppCompatActivity {
     private String calcTheme(Context context, int appWidgetId) {
         //search in preference
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
-        String theme =  prefs.getString(PREF_LANG_KEY + appWidgetId, THEME_LIGHT);
+        String theme =  prefs.getString(PREF_THEME_KEY + appWidgetId, THEME_LIGHT);
         return theme;
     }
 
@@ -207,6 +210,7 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private int calcSelectedTheme(String theme, String[] themeCodes) {
+        Log.d(TAG, "theme:"+theme);
         if(theme == null) return 0; //just NullPointException protection
         for(int i=0; i<themeCodes.length; i++){
             if (theme.equals(themeCodes[i])){
