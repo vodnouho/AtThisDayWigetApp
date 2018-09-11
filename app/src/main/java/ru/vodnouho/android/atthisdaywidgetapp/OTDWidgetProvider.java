@@ -24,6 +24,7 @@ import java.util.Date;
 public class OTDWidgetProvider extends AppWidgetProvider {
     private static final String TAG = "vdnh.OTDWidgetProvider";
     public static final String APPWIDGET_CONFIGURE = "ru.vodnouho.android.atthisdaywidgetapp.APPWIDGET_CONFIGURE";
+    public static final String APPWIDGET_CONFIGURE_URI ="otd://ru.vodnouho.android.atthisdaywidgetapp.SettingsActivity/";
 
     public static final boolean LOGD = true;
 
@@ -43,6 +44,7 @@ public class OTDWidgetProvider extends AppWidgetProvider {
     public void onReceive(Context context, Intent intent) {
         if (LOGD)
             Log.d(TAG, "OTDWidgetProvider got the action:"+intent.getAction()+" intent: " + intent.toString());
+        super.onReceive(context, intent);
 
         AppWidgetManager mgr = AppWidgetManager.getInstance(context);
         if (intent.getAction().equals(RUN_ACTION)) {
@@ -81,7 +83,7 @@ public class OTDWidgetProvider extends AppWidgetProvider {
             AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
             updateAppWidget(context, appWidgetManager, appWidgetId, true);
         } else {
-            super.onReceive(context, intent);
+            //super.onReceive(context, intent);
         }
 
     }
@@ -193,7 +195,9 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         rv.setInt(R.id.settingsImageButton, "setColorFilter", textColor);
 
         rv.setOnClickPendingIntent(R.id.titleTextView, getPendingSelfIntent(context, ACTION_REFRESH, appWidgetId));
-        rv.setOnClickPendingIntent(R.id.settingsImageButton, getSettingIntent(context, APPWIDGET_CONFIGURE, appWidgetId));
+        rv.setOnClickPendingIntent(R.id.settingsImageButton, getSettingIntent(context,
+                AppWidgetManager.ACTION_APPWIDGET_CONFIGURE,
+                appWidgetId));
 
         //start service for getData and create Views
         setList(rv, context, settingLang, currentDate, appWidgetId, isNoData);
@@ -281,6 +285,7 @@ public class OTDWidgetProvider extends AppWidgetProvider {
     protected static PendingIntent getSettingIntent(Context context, String action, int widgetId) {
         Intent intent = new Intent(context, SettingsActivity.class);
         intent.setAction(action);
+        intent.setData(Uri.parse(APPWIDGET_CONFIGURE_URI+widgetId));
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
 
         if (LOGD)
@@ -325,6 +330,9 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         synchronized (context) {
             Log.d(TAG, "setTitleText currentLang:" + currentLang + " settingLang:" + settingLang);
 
+            titleText = LocalizationUtils.createLocalizedTitle(context, settingLang, currentDate);
+
+/*
             boolean isLangChaged = false;
             if (!settingLang.equals(currentLang)) {
                 LocalizationUtils.setLocate(context, settingLang);
@@ -334,6 +342,7 @@ public class OTDWidgetProvider extends AppWidgetProvider {
             if (isLangChaged) {
                 LocalizationUtils.setLocate(context, currentLang);
             }
+*/
         }
 
         rv.setTextViewText(R.id.titleTextView, titleText);
