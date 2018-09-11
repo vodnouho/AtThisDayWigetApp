@@ -29,6 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static ru.vodnouho.android.atthisdaywidgetapp.BuildConfig.DEBUG;
 import static ru.vodnouho.android.atthisdaywidgetapp.OTDWidgetProvider.LOGD;
 
 
@@ -45,6 +46,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
 
     public static final String EXTRA_WIDGET_LANG = "ru.vodnouho.android.atthisdaywigetapp.EXTRA_WIDGET_LANG";
     public static final String EXTRA_WIDGET_DATE = "ru.vodnouho.android.atthisdaywigetapp.EXTRA_WIDGET_DATE";
+    public static final String EXTRA_WIDGET_THEME = "ru.vodnouho.android.atthisdaywigetapp.EXTRA_WIDGET_THEME";
 
     public static final String ACTION_IMAGE_LOADED = "ru.vodnouho.android.atthisdaywidgetapp.ACTION_IMAGE_LOADED";
     public static final String ACTION_NO_DATA = "ru.vodnouho.android.atthisdaywidgetapp.ACTION_NO_DATA";
@@ -60,6 +62,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
         CategoryListRemoteViewsFactory categoryListRemoteViewsFactory = null;
 
         String lang = intent.getStringExtra(EXTRA_WIDGET_LANG);
+        String theme = intent.getStringExtra(EXTRA_WIDGET_THEME);
         String dateString = intent.getStringExtra(EXTRA_WIDGET_DATE);
         String appWidgetId = "" + intent.getIntExtra(
                 AppWidgetManager.EXTRA_APPWIDGET_ID,
@@ -70,14 +73,12 @@ public class ATDAppWidgetService extends RemoteViewsService {
 
         //сохраним для виджета
         categoryListRemoteViewsFactory = mapByWidgetId.get(appWidgetId);
-        if (categoryListRemoteViewsFactory == null
-                || !dateString.equals(categoryListRemoteViewsFactory.getDateString())
-                || !lang.equals(categoryListRemoteViewsFactory.getLang())
-                ) {
-            categoryListRemoteViewsFactory = new CategoryListRemoteViewsFactory(this.getApplicationContext(), intent);
-            mapByWidgetId.put(appWidgetId, categoryListRemoteViewsFactory);
+        if (categoryListRemoteViewsFactory == null ){
+            categoryListRemoteViewsFactory = new CategoryListRemoteViewsFactory(getApplicationContext(), intent);
+            //TODO we don't need a map mapByWidgetId.put(appWidgetId, categoryListRemoteViewsFactory);
         }
 
+        categoryListRemoteViewsFactory.refreshParameters(getApplicationContext());
 
         return categoryListRemoteViewsFactory;
     }
@@ -162,7 +163,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
         public CategoryListRemoteViewsFactory(Context context, Intent intent) {
             mContext = context;
 
-            mLang = intent.getStringExtra(EXTRA_WIDGET_LANG);
+            //mLang = intent.getStringExtra(EXTRA_WIDGET_LANG);
             mDateString = intent.getStringExtra(EXTRA_WIDGET_DATE);
 
 
@@ -179,6 +180,20 @@ public class ATDAppWidgetService extends RemoteViewsService {
                 settingTheme = SettingsActivity.THEME_LIGHT;
             }
 
+            refreshParameters(context);
+
+
+            if (LOGD)
+                Log.d(TAG, "constructor lang:" + mLang + " date:" + mDateString + " appWidgetId:" + mAppWidgetId);
+
+        }
+
+        public void refreshParameters(Context context){
+            mLang = SettingsActivity.loadPrefLang(context, mAppWidgetId);
+            String settingTheme = SettingsActivity.loadPrefTheme(context, mAppWidgetId);
+
+            if(DEBUG) Log.d(TAG, "refreshParameters lang:"+mLang+" theme:"+settingTheme);
+
             mBgColor = -1;
             mTextColor = -1;
             mLinkTextColor = -1;
@@ -192,10 +207,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
                 mLinkTextColor = ContextCompat.getColor(context, R.color.linkTextBlackColor);
             }
 
-
-            if (LOGD)
-                Log.d(TAG, "constructor lang:" + mLang + " date:" + mDateString + " appWidgetId:" + mAppWidgetId);
-
+            //updateViews();
         }
 
         public String getDateString() {
@@ -346,7 +358,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
                 mViewsHolder.clear();
             }
 
-            if (mModel.categories == null) {
+            if (mModel == null || mModel.categories == null) {
                 Log.wtf(TAG, "no mCategories on updateViews called");
                 return;
             }

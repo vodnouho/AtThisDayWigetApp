@@ -12,6 +12,7 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -24,7 +25,9 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
+import android.widget.TextView;
 
+import java.util.Date;
 import java.util.Locale;
 
 public class SettingsActivity extends AppCompatActivity {
@@ -82,7 +85,7 @@ public class SettingsActivity extends AppCompatActivity {
         prepareThemeSpinner(this, mTheme);
 
         drawWallpaper(this);
-
+        drawWidget();
 
         // Bind the action for the save button.
         findViewById(R.id.saveButton).setOnClickListener(mOnClickListener);
@@ -95,6 +98,32 @@ public class SettingsActivity extends AppCompatActivity {
 
         ImageView wallpaperImageView = findViewById(R.id.wallpaper_ImageView);
         wallpaperImageView.setImageDrawable(wallpaperDrawable);
+    }
+
+    private void drawWidget(){
+        int bgColor = -1;
+        int textColor = -1;
+        if(SettingsActivity.THEME_LIGHT.equals(mTheme)){
+
+            bgColor = ContextCompat.getColor(this, R.color.bgColor);
+            textColor = ContextCompat.getColor(this, R.color.textColor);
+        }else{
+            bgColor = ContextCompat.getColor(this, R.color.bgBlackColor);
+            textColor = ContextCompat.getColor(this, R.color.textBlackColor);
+        }
+
+        ((TextView)findViewById(R.id.loading_textView)).setTextColor(textColor);
+        findViewById(R.id.emptyView).setBackgroundColor(bgColor);
+        findViewById(R.id.widget_container_ViewGroup).setBackgroundColor(bgColor);
+
+        //header
+        findViewById(R.id.title_ViewGroup).setBackgroundColor(bgColor);
+        Date currentDate = new Date();
+        String titleText = LocalizationUtils.createLocalizedTitle(this, mLang, currentDate);
+        TextView titleTextView = (TextView) findViewById(R.id.titleTextView);
+        titleTextView.setTextColor(textColor);
+        titleTextView.setText(titleText);
+        ((ImageView)findViewById(R.id.settingsImageButton)).setColorFilter(textColor);
     }
 
     private String calcLang(Context context, int appWidgetId) {
@@ -159,6 +188,7 @@ public class SettingsActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 mLang = langCodes[position];
+                drawWidget();
                 //TODO Update argument to preserve selected value on rotation
 //                getArguments().putSerializable(FactLab.EXTRA_LANG, mLang);
             }
@@ -190,6 +220,7 @@ public class SettingsActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 mTheme = themeCodes[position];
+                drawWidget();
             }
 
             @Override
@@ -256,20 +287,35 @@ public class SettingsActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    // Read the lang from the SharedPreferences object for this widget.
-    // If there is no preference saved, get the default from a resource
+
+    /**
+     * Read the lang from the SharedPreferences object for this widget.
+     * If there is no preference saved, return the current from a resource
+     * @param context
+     * @param appWidgetId
+     * @return
+     */
     static String loadPrefLang(Context context, int appWidgetId) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
 
-        return prefs.getString(PREF_LANG_KEY + appWidgetId, null);
+        Resources res = context.getResources();
+        Configuration conf = res.getConfiguration();
+        String currentLang = conf.locale.getLanguage();
+
+        return prefs.getString(PREF_LANG_KEY + appWidgetId, currentLang);
     }
 
-    // Read the lang from the SharedPreferences object for this widget.
-    // If there is no preference saved, get the default from a resource
+    /**
+     * Read the theme from the SharedPreferences object for this widget.
+     * If there is no preference saved, return SettingsActivity.THEME_LIGHT
+     * @param context
+     * @param appWidgetId
+     * @return
+     */
     static String loadPrefTheme(Context context, int appWidgetId) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
 
-        return prefs.getString(PREF_THEME_KEY + appWidgetId, null);
+        return prefs.getString(PREF_THEME_KEY + appWidgetId, SettingsActivity.THEME_LIGHT);
     }
 
 }

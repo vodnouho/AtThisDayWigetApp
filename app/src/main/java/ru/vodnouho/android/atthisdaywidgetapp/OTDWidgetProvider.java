@@ -191,7 +191,7 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         setTitleText(rv, context, settingLang, currentDate);
         rv.setInt(R.id.titleTextView, "setTextColor", textColor);
         rv.setInt(R.id.title_ViewGroup, "setBackgroundColor", headerBgColor);
-        rv.setInt(R.id.settingsImageButton, "setBackgroundColor", headerBgColor);
+       // rv.setInt(R.id.settingsImageButton, "setBackgroundColor", headerBgColor);
         rv.setInt(R.id.settingsImageButton, "setColorFilter", textColor);
 
         rv.setOnClickPendingIntent(R.id.titleTextView, getPendingSelfIntent(context, ACTION_REFRESH, appWidgetId));
@@ -387,6 +387,7 @@ public class OTDWidgetProvider extends AppWidgetProvider {
 //        adapter.putExtra(CategoryListRemoteViewsFactory.EXTRA_WIDGET_ID, appWidgetId);
         adapter.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);        //TODO???
         adapter.putExtra(ATDAppWidgetService.EXTRA_WIDGET_LANG, lang);
+        adapter.putExtra(ATDAppWidgetService.EXTRA_WIDGET_THEME, settingTheme);
         adapter.putExtra(ATDAppWidgetService.EXTRA_WIDGET_DATE, dateS);
         adapter.setData(Uri.parse(adapter.toUri(Intent.URI_INTENT_SCHEME)));
         Log.d(TAG, "setRemoteAdapter id:"+appWidgetId + " lang:"+lang + " dateS:"+dateS);
