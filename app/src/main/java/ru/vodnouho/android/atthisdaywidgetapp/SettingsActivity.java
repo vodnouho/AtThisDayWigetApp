@@ -15,7 +15,6 @@ import android.graphics.drawable.Drawable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -23,19 +22,21 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
-import android.widget.RadioGroup;
+import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
-public class SettingsActivity extends AppCompatActivity {
+import static ru.vodnouho.android.atthisdaywidgetapp.BuildConfig.DEBUG;
+
+public class SettingsActivity extends AppCompatActivity implements OnThisDayLogic.ModelChangedListener {
     private static final String TAG = "vdnh.SettingsActivity";
     private static final String LANG_RU = "ru";
     private static final String LANG_EN = "en";
-
-
 
 
     private static final String PREFS_NAME
@@ -50,6 +51,15 @@ public class SettingsActivity extends AppCompatActivity {
 
     private String mLang;
     private String mTheme;
+    private Date mDate;
+    private OnThisDayLogic mLogic;
+    private OnThisDayModel mModel;
+    private String mDateString;
+
+    private ListView mListView;
+    private DataAdapter mListAdapter;
+    private View mEmptyView;
+    private TextView mLoadingView;
 
 
     @Override
@@ -85,10 +95,23 @@ public class SettingsActivity extends AppCompatActivity {
         prepareThemeSpinner(this, mTheme);
 
         drawWallpaper(this);
-        drawWidget();
+        mEmptyView = findViewById(R.id.emptyView);
+        mLoadingView = findViewById(R.id.loading_textView);
+        mDate = new Date();
+        drawWidget(mLang, mDate, mTheme);
 
         // Bind the action for the save button.
         findViewById(R.id.saveButton).setOnClickListener(mOnClickListener);
+
+
+        SimpleDateFormat sdf = new SimpleDateFormat("MMdd");
+        mDateString = sdf.format(mDate);
+        mLogic = OnThisDayLogic.getInstance(mDateString, mLang, this);
+        mLogic.registerModelChangedListener(this);
+
+        mLogic.loadData();
+
+        drawListView();
 
     }
 
@@ -100,30 +123,40 @@ public class SettingsActivity extends AppCompatActivity {
         wallpaperImageView.setImageDrawable(wallpaperDrawable);
     }
 
-    private void drawWidget(){
+    private void drawWidget(String lang, Date date, String theme) {
         int bgColor = -1;
         int textColor = -1;
-        if(SettingsActivity.THEME_LIGHT.equals(mTheme)){
+        if (SettingsActivity.THEME_LIGHT.equals(theme)) { //mTheme to args
 
             bgColor = ContextCompat.getColor(this, R.color.bgColor);
             textColor = ContextCompat.getColor(this, R.color.textColor);
-        }else{
+        } else {
             bgColor = ContextCompat.getColor(this, R.color.bgBlackColor);
             textColor = ContextCompat.getColor(this, R.color.textBlackColor);
         }
 
-        ((TextView)findViewById(R.id.loading_textView)).setTextColor(textColor);
+        ((TextView) findViewById(R.id.loading_textView)).setTextColor(textColor);
         findViewById(R.id.emptyView).setBackgroundColor(bgColor);
         findViewById(R.id.widget_container_ViewGroup).setBackgroundColor(bgColor);
 
         //header
         findViewById(R.id.title_ViewGroup).setBackgroundColor(bgColor);
-        Date currentDate = new Date();
-        String titleText = LocalizationUtils.createLocalizedTitle(this, mLang, currentDate);
+
+        String titleText = LocalizationUtils.createLocalizedTitle(this, lang, date);
         TextView titleTextView = (TextView) findViewById(R.id.titleTextView);
         titleTextView.setTextColor(textColor);
         titleTextView.setText(titleText);
-        ((ImageView)findViewById(R.id.settingsImageButton)).setColorFilter(textColor);
+        ((ImageView) findViewById(R.id.settingsImageButton)).setColorFilter(textColor);
+    }
+
+    private void  drawListView(){
+        mListView = (ListView) findViewById(R.id.listView);
+        mListAdapter = new DataAdapter(this);
+
+        if(mModel != null && mModel.categories != null){
+            mListAdapter.setData(mModel.categories, mLang);
+        }
+        mListView.setAdapter(mListAdapter);
     }
 
     private String calcLang(Context context, int appWidgetId) {
@@ -136,17 +169,16 @@ public class SettingsActivity extends AppCompatActivity {
 
         //search in preference
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
-        lang =  prefs.getString(PREF_LANG_KEY + appWidgetId, lang);
+        lang = prefs.getString(PREF_LANG_KEY + appWidgetId, lang);
         return lang;
     }
 
     private String calcTheme(Context context, int appWidgetId) {
         //search in preference
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
-        String theme =  prefs.getString(PREF_THEME_KEY + appWidgetId, THEME_LIGHT);
+        String theme = prefs.getString(PREF_THEME_KEY + appWidgetId, THEME_LIGHT);
         return theme;
     }
-
 
 
     View.OnClickListener mOnClickListener = new View.OnClickListener() {
@@ -168,7 +200,7 @@ public class SettingsActivity extends AppCompatActivity {
         }
     };
 
-    void prepareLangSpinner(Context context, String lang){
+    void prepareLangSpinner(Context context, String lang) {
         Spinner spinner = (Spinner) findViewById(R.id.settings_langSpinner);
 
 // Create an ArrayAdapter using the string array and a default spinner layout
@@ -187,8 +219,18 @@ public class SettingsActivity extends AppCompatActivity {
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                mLang = langCodes[position];
-                drawWidget();
+                String langCode = langCodes[position];
+                if (langCode != mLang) {
+                    mLang = langCode;
+
+                    mLogic.unregisterModelChangedListener(SettingsActivity.this);
+                    mLogic = OnThisDayLogic.getInstance(mDateString, mLang, SettingsActivity.this);
+                    mLogic.registerModelChangedListener(SettingsActivity.this);
+
+                    showLoading();
+                    mLogic.loadData();
+                    drawWidget(mLang, mDate, mTheme);
+                }
                 //TODO Update argument to preserve selected value on rotation
 //                getArguments().putSerializable(FactLab.EXTRA_LANG, mLang);
             }
@@ -201,7 +243,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     }
 
-    void prepareThemeSpinner(Context context, String theme){
+    void prepareThemeSpinner(Context context, String theme) {
         Spinner spinner = (Spinner) findViewById(R.id.settings_themeSpinner);
 
 // Create an ArrayAdapter using the string array and a default spinner layout
@@ -220,7 +262,7 @@ public class SettingsActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 mTheme = themeCodes[position];
-                drawWidget();
+                drawWidget(mLang, mDate, mTheme);
             }
 
             @Override
@@ -243,9 +285,9 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private int calcSelectedLang(String lang, String[] langCodes) {
-        if(lang == null) return 0; //just NullPointException protection
-        for(int i=0; i<langCodes.length; i++){
-            if (lang.equals(langCodes[i])){
+        if (lang == null) return 0; //just NullPointException protection
+        for (int i = 0; i < langCodes.length; i++) {
+            if (lang.equals(langCodes[i])) {
                 return i;
             }
         }
@@ -253,16 +295,15 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private int calcSelectedTheme(String theme, String[] themeCodes) {
-        Log.d(TAG, "theme:"+theme);
-        if(theme == null) return 0; //just NullPointException protection
-        for(int i=0; i<themeCodes.length; i++){
-            if (theme.equals(themeCodes[i])){
+        Log.d(TAG, "theme:" + theme);
+        if (theme == null) return 0; //just NullPointException protection
+        for (int i = 0; i < themeCodes.length; i++) {
+            if (theme.equals(themeCodes[i])) {
                 return i;
             }
         }
         return 0;
     }
-
 
 
     @Override
@@ -291,6 +332,7 @@ public class SettingsActivity extends AppCompatActivity {
     /**
      * Read the lang from the SharedPreferences object for this widget.
      * If there is no preference saved, return the current from a resource
+     *
      * @param context
      * @param appWidgetId
      * @return
@@ -308,6 +350,7 @@ public class SettingsActivity extends AppCompatActivity {
     /**
      * Read the theme from the SharedPreferences object for this widget.
      * If there is no preference saved, return SettingsActivity.THEME_LIGHT
+     *
      * @param context
      * @param appWidgetId
      * @return
@@ -318,4 +361,73 @@ public class SettingsActivity extends AppCompatActivity {
         return prefs.getString(PREF_THEME_KEY + appWidgetId, SettingsActivity.THEME_LIGHT);
     }
 
+    @Override
+    public void onModelChanged(OnThisDayModel newModel) {
+        if (DEBUG)
+            Log.d(TAG, "onModelChanged...");
+
+
+        if (newModel != mModel) {
+            mModel = newModel;
+            if (mModel.isError) {
+                notifyProviderHasNoData();
+            } else {
+                //заполним вьюхи
+                updateViews(mModel);
+
+                //расскажем виджету, что пора обновиться
+                notifyOnDataChanged();
+            }
+        }
+        hideLoading();
+    }
+
+    private void hideLoading(){
+        mEmptyView.setVisibility(View.GONE);
+    }
+
+    private void showLoading(){
+        String loadingString = LocalizationUtils.getLocalizedString(R.string.loading_inprogress,
+                mLang,
+                SettingsActivity.this);
+        mLoadingView.setText(loadingString);
+        mEmptyView.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * TODO implement method
+     */
+    private void notifyOnDataChanged() {
+        if (DEBUG)
+            Log.d(TAG, "notifyOnDataChanged...");
+    }
+
+    /**
+     * TODO implement method
+     * @param mModel
+     */
+    private void updateViews(final OnThisDayModel mModel) {
+        if (DEBUG)
+            Log.d(TAG, "updateViews...");
+
+        if(mListAdapter != null){
+            //change data in UI Thread
+            mListView.post(new Runnable() {
+                @Override
+                public void run() {
+                    mListAdapter.setData(mModel.categories, mLang);
+
+                }
+            });
+
+        }
+    }
+
+    /**
+     * TODO implement method
+     */
+    private void notifyProviderHasNoData() {
+        if (DEBUG)
+            Log.d(TAG, "notifyWidgedProviderHasNoData...");
+    }
 }

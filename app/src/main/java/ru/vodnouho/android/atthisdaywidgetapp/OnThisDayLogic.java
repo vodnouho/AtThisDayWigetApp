@@ -72,6 +72,12 @@ public class OnThisDayLogic implements Loader.OnLoadCompleteListener<Cursor> {
         }
     }
 
+    public void unregisterModelChangedListener(ModelChangedListener listener) {
+        if (!mListeners.contains(listener)) {
+            mListeners.remove(listener);
+        }
+    }
+
     private void notifyListeners() {
         for (ModelChangedListener listener : mListeners) {
             listener.onModelChanged(mModel);

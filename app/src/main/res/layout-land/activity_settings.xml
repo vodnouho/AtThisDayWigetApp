@@ -26,7 +26,12 @@
             android:layout_height="match_parent"
             android:scaleType="centerCrop"
             />
-        <include layout="@layout/atd_widget_layout" />
+
+        <include
+            layout="@layout/atd_widget_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="16dp" />
     </FrameLayout>
 
     <TextView
