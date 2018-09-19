@@ -2,6 +2,7 @@ package ru.vodnouho.android.atthisdaywidgetapp;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.support.v4.content.ContextCompat;
 import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -26,11 +27,12 @@ public class DataAdapter extends BaseAdapter {
     private Context mContext;
     private final LayoutInflater mInflater;
     private ArrayList<Category> mData;
-    private List<ViewHolder> mViewHolders;
+    private List<DataHolder> mDataHolders;
     private String mLang;
     private int mTextColor;
     private int mBgColor;
     private int mLinkTextColor;
+    private String mTheme;
 
     public DataAdapter(Context context) {
         mContext = context;
@@ -41,14 +43,16 @@ public class DataAdapter extends BaseAdapter {
 
     public void clear(){
         mContext = null;
-        if(mViewHolders != null){
+        if(mDataHolders != null){
 
-            for(ViewHolder viewHolder : mViewHolders){
+/*
+            for(DataHolder viewHolder : mDataHolders){
                 viewHolder.clear();
             }
+*/
 
-            mViewHolders.clear();
-            mViewHolders = null;
+            mDataHolders.clear();
+            mDataHolders = null;
         }
     }
 
@@ -66,29 +70,29 @@ public class DataAdapter extends BaseAdapter {
         //String localizedMoreString = LocalizationUtils.getLocalizedString(R.string.more, mLang, mContext);
 
 
-        if (mViewHolders == null) {
-            mViewHolders = Collections.synchronizedList(new ArrayList<ViewHolder>());
+        if (mDataHolders == null) {
+            mDataHolders = Collections.synchronizedList(new ArrayList<DataHolder>());
         } else {
-            mViewHolders.clear();
+            mDataHolders.clear();
         }
 
 
         for (Category c : mData) {
             //category name
-            ViewHolder vh = new ViewHolder(TYPE_CATEGORY_NAME);
+            DataHolder vh = new DataHolder(TYPE_CATEGORY_NAME);
 
             vh.categoryName = c.name;
-            mViewHolders.add(vh);
+            mDataHolders.add(vh);
 
             ArrayList<Fact> facts = c.getFavFacts();
             for (int i = 0; i < facts.size(); i++) {
                 Fact f = facts.get(i);
 
-                vh = new ViewHolder(TYPE_FACT);
+                vh = new DataHolder(TYPE_FACT);
                 vh.factText = Html.fromHtml(f.text);
 
                 vh.fact = f;
-                mViewHolders.add(vh);
+                mDataHolders.add(vh);
 
                 //better start parallel request after mViewsHolder.add()
 /*
@@ -116,7 +120,7 @@ public class DataAdapter extends BaseAdapter {
     @Override
     public int getCount() {
 
-        if (mViewHolders == null) {
+        if (mDataHolders == null) {
             if(DEBUG)
                 Log.d(TAG, "getCount():0");
 
@@ -124,19 +128,19 @@ public class DataAdapter extends BaseAdapter {
         }
 
         if(DEBUG)
-            Log.d(TAG, "getCount():"+mViewHolders.size());
+            Log.d(TAG, "getCount():"+ mDataHolders.size());
 
 
-        return mViewHolders.size();
+        return mDataHolders.size();
     }
 
     @Override
-    public ViewHolder getItem(int position) {
-        if (mViewHolders == null || mViewHolders.size() <= position) {
+    public DataHolder getItem(int position) {
+        if (mDataHolders == null || mDataHolders.size() <= position) {
             return null;
         }
 
-        return mViewHolders.get(position);
+        return mDataHolders.get(position);
     }
 
     @Override
@@ -158,13 +162,13 @@ public class DataAdapter extends BaseAdapter {
 
 
         //TODO сделать вью холдеры отдельно от дата холдеров
-        ViewHolder viewHolder = mViewHolders.get(position);
-        ViewHolder viewHolder1;
+        DataHolder dataHolder = mDataHolders.get(position);
+        ViewHolder viewHolder;
 
         //onCreate
         if (convertView == null){
-            viewHolder1 = viewHolder;
-            if(TYPE_CATEGORY_NAME == viewHolder.mViewType){
+            viewHolder = new ViewHolder();
+            if(TYPE_CATEGORY_NAME == dataHolder.mViewType){
                 convertView = mInflater.inflate(R.layout.widget_item_category, parent, false);
                 viewHolder.setCategoryNameView(convertView);
             }else{
@@ -173,15 +177,17 @@ public class DataAdapter extends BaseAdapter {
             }
             convertView.setTag(viewHolder);
         }else{
-            viewHolder1 = (ViewHolder) convertView.getTag();
+            viewHolder = (ViewHolder) convertView.getTag();
         }
 
         //onBind
-        if(TYPE_CATEGORY_NAME == viewHolder.mViewType){
-            viewHolder1.categoryNameTextView.setText(viewHolder.categoryName);
+        if(TYPE_CATEGORY_NAME == dataHolder.mViewType){
+            viewHolder.categoryNameTextView.setText(dataHolder.categoryName);
+            viewHolder.categoryNameTextView.setTextColor(mTextColor);
         }else{
-            viewHolder1.factTextTextView.setText(viewHolder.factText);
-
+            viewHolder.factTextTextView.setText(dataHolder.factText);
+            viewHolder.factTextTextView.setTextColor(mTextColor);
+            viewHolder.mListItemView.setBackgroundColor(mBgColor);
         }
 
         return convertView;
@@ -196,43 +202,60 @@ public class DataAdapter extends BaseAdapter {
 
     @Override
     public int getItemViewType(int position) {
-        ViewHolder viewHolder = getItem(position);
-        return viewHolder.mViewType;
+        DataHolder dataHolder = getItem(position);
+        return dataHolder.mViewType;
     }
 
+    public void setTheme(Context cnxt, String theme) {
+        mTheme = theme;
 
-    private class ViewHolder {
-        View mView;
+        if (SettingsActivity.THEME_LIGHT.equals(theme)) { //mTheme to args
+            mBgColor = ContextCompat.getColor(cnxt, R.color.bgColor);
+            mTextColor = ContextCompat.getColor(cnxt, R.color.textColor);
+        } else {
+            mBgColor = ContextCompat.getColor(cnxt, R.color.bgBlackColor);
+            mTextColor = ContextCompat.getColor(cnxt, R.color.textBlackColor);
+        }
+
+    }
+
+    private class DataHolder{
         int mViewType;
-
 
         //category
         public String categoryName;
-        TextView categoryNameTextView;
 
         //fact
         public Fact fact;
         public CharSequence factText;
-        Bitmap mImageBitmap;
-        TextView factTextTextView;
+        public Bitmap mImageBitmap;
 
 
-
-        ViewHolder(int viewType) {
+        DataHolder(int viewType) {
             mViewType = viewType;
         }
+    }
 
+
+    private class ViewHolder {
+        View mListItemView;
+
+        //category
+        TextView categoryNameTextView;
+
+        //fact
+        TextView factTextTextView;
 
         public void clear() {
-            mView = null;
-            mImageBitmap = null;
         }
 
         public void setCategoryNameView(View convertView) {
+            mListItemView = convertView.findViewById(R.id.list_item_ViewGroup);
             categoryNameTextView = convertView.findViewById(R.id.tvItemText);
         }
 
         public void setFactView(View convertView) {
+            mListItemView = convertView.findViewById(R.id.list_item_ViewGroup);
             factTextTextView = convertView.findViewById(R.id.tvItemText);
         }
     }

@@ -156,6 +156,7 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
         if(mModel != null && mModel.categories != null){
             mListAdapter.setData(mModel.categories, mLang);
         }
+        mListAdapter.setTheme(this, mTheme);
         mListView.setAdapter(mListAdapter);
     }
 
@@ -263,6 +264,8 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 mTheme = themeCodes[position];
                 drawWidget(mLang, mDate, mTheme);
+                mListAdapter.setTheme(SettingsActivity.this, mTheme);
+                mListAdapter.notifyDataSetChanged();
             }
 
             @Override
