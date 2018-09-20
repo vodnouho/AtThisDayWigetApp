@@ -30,7 +30,9 @@ public class DataAdapter extends BaseAdapter {
     private List<DataHolder> mDataHolders;
     private String mLang;
     private int mTextColor;
+    private int mBaseBgColor;
     private int mBgColor;
+    private int mTransparency;
     private int mLinkTextColor;
     private String mTheme;
 
@@ -210,14 +212,22 @@ public class DataAdapter extends BaseAdapter {
         mTheme = theme;
 
         if (SettingsActivity.THEME_LIGHT.equals(theme)) { //mTheme to args
-            mBgColor = ContextCompat.getColor(cnxt, R.color.bgColor);
+            mBaseBgColor = ContextCompat.getColor(cnxt, R.color.bgColor);
             mTextColor = ContextCompat.getColor(cnxt, R.color.textColor);
         } else {
-            mBgColor = ContextCompat.getColor(cnxt, R.color.bgBlackColor);
+            mBaseBgColor = ContextCompat.getColor(cnxt, R.color.bgBlackColor);
             mTextColor = ContextCompat.getColor(cnxt, R.color.textBlackColor);
         }
 
+        mBgColor = Utils.setTransparency(mTransparency, mBaseBgColor);
     }
+
+    public void setTransparency(int transparency) {
+        mTransparency = transparency;
+        mBgColor = Utils.setTransparency(transparency, mBaseBgColor);
+    }
+
+
 
     private class DataHolder{
         int mViewType;

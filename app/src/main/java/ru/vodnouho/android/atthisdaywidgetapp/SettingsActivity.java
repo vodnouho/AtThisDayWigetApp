@@ -23,11 +23,11 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
@@ -43,6 +43,7 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
             = "ru.vodnouho.android.atthisdaywigetapp.ATDWidgetProvider";
     private static final String PREF_LANG_KEY = "lang_widget_";
     private static final String PREF_THEME_KEY = "theme_widget_";
+    private static final String PREF_TRANSPARENCY_KEY = "transparency_widget_";
     public static final String THEME_LIGHT = "1";
     public static final String THEME_BLACK = "2";
 
@@ -51,15 +52,22 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
 
     private String mLang;
     private String mTheme;
+    int mBaseBgColor = -1;
+    int mBgColor = -1;
+    int mTextColor = -1;
     private Date mDate;
     private OnThisDayLogic mLogic;
     private OnThisDayModel mModel;
     private String mDateString;
+    private int mTransparency;
+    private int mTextSize;
 
     private ListView mListView;
     private DataAdapter mListAdapter;
     private View mEmptyView;
     private TextView mLoadingView;
+    private SeekBar mTransparencySeekBar;
+    private SeekBar mTextSizeSeekBar;
 
 
     @Override
@@ -94,6 +102,14 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
         mTheme = calcTheme(this, mAppWidgetId);
         prepareThemeSpinner(this, mTheme);
 
+        calcBaseColors(mTheme);
+
+        //Set transparency and activate listener for seek bar
+        mTransparency = calcTransparency(this, mAppWidgetId);
+        prepareTransparencySeekBar(this, mTransparency);
+
+        calcBgColor(mBgColor, mTransparency);
+
         drawWallpaper(this);
         mEmptyView = findViewById(R.id.emptyView);
         mLoadingView = findViewById(R.id.loading_textView);
@@ -123,30 +139,34 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
         wallpaperImageView.setImageDrawable(wallpaperDrawable);
     }
 
-    private void drawWidget(String lang, Date date, String theme) {
-        int bgColor = -1;
-        int textColor = -1;
+    private void calcBaseColors(String theme){
         if (SettingsActivity.THEME_LIGHT.equals(theme)) { //mTheme to args
-
-            bgColor = ContextCompat.getColor(this, R.color.bgColor);
-            textColor = ContextCompat.getColor(this, R.color.textColor);
+            mBaseBgColor = ContextCompat.getColor(this, R.color.bgColor);
+            mTextColor = ContextCompat.getColor(this, R.color.textColor);
         } else {
-            bgColor = ContextCompat.getColor(this, R.color.bgBlackColor);
-            textColor = ContextCompat.getColor(this, R.color.textBlackColor);
+            mBaseBgColor = ContextCompat.getColor(this, R.color.bgBlackColor);
+            mTextColor = ContextCompat.getColor(this, R.color.textBlackColor);
         }
+    }
 
-        ((TextView) findViewById(R.id.loading_textView)).setTextColor(textColor);
-        findViewById(R.id.emptyView).setBackgroundColor(bgColor);
-        findViewById(R.id.widget_container_ViewGroup).setBackgroundColor(bgColor);
+    private void  calcBgColor(int transparency, int bgColor){
+        mBgColor = Utils.setTransparency(transparency, bgColor);
+    }
+
+    private void drawWidget(String lang, Date date, String theme) {
+
+        ((TextView) findViewById(R.id.loading_textView)).setTextColor(mTextColor);
+        findViewById(R.id.emptyView).setBackgroundColor(mBgColor);
+        findViewById(R.id.widget_container_ViewGroup).setBackgroundColor(mBgColor);
 
         //header
-        findViewById(R.id.title_ViewGroup).setBackgroundColor(bgColor);
+        findViewById(R.id.title_ViewGroup).setBackgroundColor(mBgColor);
 
         String titleText = LocalizationUtils.createLocalizedTitle(this, lang, date);
         TextView titleTextView = (TextView) findViewById(R.id.titleTextView);
-        titleTextView.setTextColor(textColor);
+        titleTextView.setTextColor(mTextColor);
         titleTextView.setText(titleText);
-        ((ImageView) findViewById(R.id.settingsImageButton)).setColorFilter(textColor);
+        ((ImageView) findViewById(R.id.settingsImageButton)).setColorFilter(mTextColor);
     }
 
     private void  drawListView(){
@@ -157,6 +177,7 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
             mListAdapter.setData(mModel.categories, mLang);
         }
         mListAdapter.setTheme(this, mTheme);
+        mListAdapter.setTransparency(mTransparency);
         mListView.setAdapter(mListAdapter);
     }
 
@@ -179,6 +200,17 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
         String theme = prefs.getString(PREF_THEME_KEY + appWidgetId, THEME_LIGHT);
         return theme;
+    }
+
+
+    private int calcTransparency(Context context, int appWidgetId) {
+        //transparency
+        int transparency = Utils.getTransparency(mBaseBgColor);
+
+        //search in preference
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
+        transparency = prefs.getInt(PREF_TRANSPARENCY_KEY + appWidgetId, transparency);
+        return transparency;
     }
 
 
@@ -263,6 +295,9 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 mTheme = themeCodes[position];
+                calcBaseColors(mTheme);
+                calcTransparency(SettingsActivity.this, mAppWidgetId);
+                calcBgColor(mTransparency, mBaseBgColor);
                 drawWidget(mLang, mDate, mTheme);
                 mListAdapter.setTheme(SettingsActivity.this, mTheme);
                 mListAdapter.notifyDataSetChanged();
@@ -276,6 +311,32 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
 
     }
 
+    void prepareTransparencySeekBar(Context context, int transparency) {
+        mTransparencySeekBar = findViewById(R.id.transparency_seekBar);
+        mTransparencySeekBar.setProgress(transparency);
+        mTransparencySeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if(fromUser){
+                   mTransparency = progress;
+                   calcBgColor(mTransparency, mBaseBgColor);
+                   drawWidget(mLang, mDate, mTheme);
+                   mListAdapter.setTransparency(mTransparency);
+                   mListAdapter.notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+    }
 
     // Write settings to the SharedPreferences object for this widget
     void savePrefs(Context context, int appWidgetId) {
