@@ -38,6 +38,9 @@
         <item>Тёмное</item>
     </string-array>
 
+    <string name="settings_transparency">Прозрачность:</string>
+    <string name="settings_text_size">Размер текста:</string>
+
     <string name="plz_install_otd">Пожалуйста установите бесплатное приложение \"Сегодня\".</string>
     <string name="install">Установить</string>
     <string name="plz_resfresh">и обновите виджет</string>

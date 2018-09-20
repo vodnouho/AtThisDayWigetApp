@@ -5,14 +5,32 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.56"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.75"
+        app:layout_constraintStart_toStartOf="parent" />
+
+
     <FrameLayout
         android:id="@+id/viewExample"
         android:layout_width="0dp"
         android:layout_height="0dp"
 
-        android:layout_marginEnd="16dp"
+        android:layout_marginEnd="8dp"
         android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
+        android:layout_marginRight="8dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         app:layout_constraintDimensionRatio="w,1:2"
@@ -24,8 +42,7 @@
             android:id="@+id/wallpaper_ImageView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scaleType="centerCrop"
-            />
+            android:scaleType="centerCrop" />
 
         <include
             layout="@layout/atd_widget_layout"
@@ -115,22 +132,86 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <android.support.constraint.Guideline
-        android:id="@+id/guideline2"
+
+    <TextView
+        android:id="@+id/transparency_textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="461dp"
-        android:layout_marginStart="461dp"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.75"
-        app:layout_constraintStart_toStartOf="parent" />
+
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+        android:padding="16dp"
+        android:text="@string/settings_transparency"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        app:layout_constraintEnd_toStartOf="@+id/guideline2"
+        app:layout_constraintTop_toBottomOf="@+id/settings_themeRadioGroup_textView" />
+
+
+    <SeekBar
+        android:id="@+id/transparency_seekBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toBottomOf="@+id/transparency_textView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline2"
+        app:layout_constraintTop_toTopOf="@+id/transparency_textView"
+
+        android:max="255"
+        android:progress="128"/>
+
+
+
+    <TextView
+        android:id="@+id/testSize_textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+        android:padding="16dp"
+        android:text="@string/settings_text_size"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        app:layout_constraintEnd_toStartOf="@+id/guideline2"
+        app:layout_constraintTop_toBottomOf="@+id/transparency_textView" />
+
+
+    <SeekBar
+        android:id="@+id/testSize_seekBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline2"
+        app:layout_constraintBottom_toBottomOf="@+id/testSize_textView"
+        app:layout_constraintTop_toTopOf="@+id/testSize_textView"
+
+        style="@style/Widget.AppCompat.SeekBar.Discrete"
+
+        android:max="4"
+        android:progress="3"/>
+
 
     <android.support.constraint.Barrier
         android:id="@+id/barrier"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+
         app:barrierDirection="left"
-        app:constraint_referenced_ids="settings_langRadioGroup_textView,settings_themeRadioGroup_textView"
-        tools:layout_editor_absoluteX="592dp" />
+        app:constraint_referenced_ids="settings_langRadioGroup_textView,settings_themeRadioGroup_textView,transparency_textView"
+       />
 
 </android.support.constraint.ConstraintLayout>

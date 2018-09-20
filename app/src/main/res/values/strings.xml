@@ -53,6 +53,8 @@
         <item>2</item>
     </string-array>
 
+    <string name="settings_transparency">Transparency:</string>
+    <string name="settings_text_size">Text size:</string>
 
     <string name="plz_install_otd">Please install FREE \"On This Day\" application.</string>
     <string name="install">Install</string>
@@ -64,6 +66,7 @@
     <string name="years_ago">%1$s years ago</string>
 
     <string name="loading_error">Information is not available</string>
+
 
     <!--string name="event1_ru"><![CDATA[<a href="http://wikipedia.org">День полотенца</a>]]>. День памяти британского писателя Дугласа Адамса. </string>
     <string name="event2_ru"><![CDATA[1977 — в кинотеатрах начался показ фильма «Звёздные войны. Эпизод IV: Новая надежда», ставшего первым по размерам кассовых сборов.]]> </string>
