@@ -1,299 +1,208 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:orientation="vertical"
-              android:paddingBottom="@dimen/activity_vertical_margin"
-              android:paddingLeft="@dimen/activity_horizontal_margin"
-              android:paddingRight="@dimen/activity_horizontal_margin"
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-              android:paddingTop="@dimen/activity_vertical_margin"
-              android:weightSum="1">
-
-    <LinearLayout
-        android:layout_width="match_parent"
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline2"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingEnd="32dp"
-        android:paddingRight="32dp">
 
-        <TextView
-            android:id="@+id/settings_langRadioGroup_textView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top|end"
-            android:layout_weight="1"
-
-            android:gravity="end"
-            android:padding="16dp"
-            android:text="@string/settings_language"
-            />
-
-        <Spinner
-            android:id="@+id/settings_langSpinner"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top|start"
-            android:layout_weight="1"
-
-            />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingEnd="32dp"
-        android:paddingRight="32dp">
-
-        <TextView
-            android:id="@+id/settings_themeRadioGroup_textView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top|end"
-            android:layout_weight="1"
-
-            android:gravity="end"
-            android:padding="16dp"
-            android:text="@string/settings_theme"
-            />
-
-        <Spinner
-            android:id="@+id/settings_themeSpinner"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top|start"
-            android:layout_weight="1"
-
-            />
-
-    </LinearLayout>
-
-
-    <!--LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/settings_example_bg"
         android:orientation="vertical"
-        android:padding="8dp">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:background="#88FFFFFF"
-            android:orientation="vertical"
-            >
-
-            <LinearLayout
-                android:id="@+id/title_ViewGroup"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="#FFFFFFFF"
-                android:orientation="horizontal"
-                >
-
-                <ImageView
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-
-                    android:padding="8dp"
-
-                    android:src="@drawable/ic_widget"
-                    />
-
-                <TextView
-                    android:id="@+id/titleTextView"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:text="В это день 25 мая"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-
-                    />
-            </LinearLayout>
-            <LinearLayout
-                xmlns:android="http://schemas.android.com/apk/res/android"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                >
-                <TextView
-                    android:id="@+id/category1_TextView"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:paddingLeft="8dp"
-                    android:paddingTop="8dp"
-                    android:paddingBottom="0dp"
-                    android:text="Памятные даты"
-                    >
-                </TextView>
-            </LinearLayout>
-            <LinearLayout
-                android:id="@+id/event1_ViewGroup"
-                xmlns:android="http://schemas.android.com/apk/res/android"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="#88FFFFFF"
-                android:minHeight="100dp"
-                android:orientation="horizontal"
-                >
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    >
-
-                    <TextView
-                        android:id="@+id/yearItemText"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="top|left"
-
-                        android:paddingLeft="8dp"
-                        android:paddingRight="8dp"
-                        android:text=""
-                        android:textAppearance="?android:attr/textAppearanceSmall"
-                        >
-                    </TextView>
-
-                    <TextView
-                        android:id="@+id/tvItemText"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:layout_gravity="top|left"
-
-                        android:paddingBottom="12dp"
-                        android:paddingLeft="8dp"
-                        android:paddingRight="8dp"
-                        android:textAppearance="?android:attr/textAppearanceMedium"
-                        android:text="@string/event1_ru"
-
-                        android:autoLink="all"
-                        >
-                    </TextView>
-                </LinearLayout>
-
-                <ImageView
-                    android:id="@+id/fact_ImageView"
-                    android:layout_width="80dp"
-                    android:layout_height="80dp"
-                    android:layout_gravity="top|right"
-                    android:layout_marginBottom="8dp"
-                    android:layout_marginRight="8dp"
-                    android:layout_marginTop="8dp"
-
-                    android:src="@drawable/settings_event1_image"
-                    android:scaleType="fitCenter"
-                    android:background="#88FFFFFF"
-                    />
-
-            </LinearLayout>
-            <LinearLayout android:layout_width="match_parent"
-                          android:layout_height="4dp"
-
-                />
-            <LinearLayout
-                xmlns:android="http://schemas.android.com/apk/res/android"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                >
-                <TextView
-                    android:id="@+id/category2_TextView"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:paddingLeft="8dp"
-                    android:paddingTop="8dp"
-                    android:paddingBottom="0dp"
-                    android:text="События"
-                    >
-                </TextView>
-            </LinearLayout>
-            <LinearLayout
-                android:id="@+id/event2_ViewGroup"
-                xmlns:android="http://schemas.android.com/apk/res/android"
-                android:layout_width="match_parent"
-                android:layout_height="300dp"
-                android:background="#88FFFFFF"
-                android:minHeight="100dp"
-                android:orientation="horizontal"
-                >
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    >
-
-                    <TextView
-                        android:id="@+id/event2_yearItemText"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="top|left"
-
-                        android:paddingLeft="8dp"
-                        android:paddingRight="8dp"
-                        android:text="@string/event2_year_ru"
-                        android:textAppearance="?android:attr/textAppearanceSmall"
-                        >
-                    </TextView>
-
-                    <TextView
-                        android:id="@+id/event2_TextView"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:layout_gravity="top|left"
-
-                        android:paddingBottom="12dp"
-                        android:paddingLeft="8dp"
-                        android:paddingRight="8dp"
-                        android:textAppearance="?android:attr/textAppearanceMedium"
-                        android:text="@string/event2_ru"
-
-                        android:textColor="@color/textColor"
-
-                        android:autoLink="all"
-                        >
-                    </TextView>
-                </LinearLayout>
-
-                <ImageView
-                    android:id="@+id/event2_ImageView"
-                    android:layout_width="80dp"
-                    android:layout_height="80dp"
-                    android:layout_gravity="top|right"
-                    android:layout_marginBottom="8dp"
-                    android:layout_marginRight="8dp"
-                    android:layout_marginTop="8dp"
-                    android:background="#88FFFFFF"
-
-                    android:src="@drawable/settings_event2_image"
-                    android:scaleType="fitCenter"
-                    />
-
-            </LinearLayout>
-        </LinearLayout>
-    </LinearLayout-->
+        app:layout_constraintGuide_percent="0.5"
+        app:layout_constraintStart_toStartOf="parent" />
 
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline3"
+        android:layout_width="wrap_content"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:gravity="end|bottom"
-        >
+        android:layout_marginTop="246dp"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.36"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <Button
-            android:id="@+id/saveButton"
-            android:layout_width="wrap_content"
+    <FrameLayout
+        android:id="@+id/viewExample"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+
+        android:layout_marginEnd="8dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintDimensionRatio="w,1:2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/wallpaper_ImageView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop" />
+
+        <include
+            layout="@layout/atd_widget_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="16dp" />
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/settings_langRadioGroup_textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
 
 
-            android:layout_height="wrap_content"
-            android:text="@string/save"/>
-    </LinearLayout>
-</LinearLayout>
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+        android:gravity="center_vertical|end"
+        android:padding="16dp"
+
+        android:text="@string/settings_language"
+
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        app:layout_constraintEnd_toStartOf="@+id/guideline2"
+        app:layout_constraintTop_toTopOf="@+id/guideline3" />
+
+
+    <Spinner
+        android:id="@+id/settings_langSpinner"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:padding="16dp"
+        app:layout_constraintBottom_toBottomOf="@+id/settings_langRadioGroup_textView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline2"
+        app:layout_constraintTop_toTopOf="@+id/settings_langRadioGroup_textView" />
+
+    <TextView
+        android:id="@+id/settings_themeRadioGroup_textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+        android:padding="16dp"
+        android:text="@string/settings_theme"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        app:layout_constraintEnd_toStartOf="@+id/guideline2"
+        app:layout_constraintTop_toBottomOf="@+id/settings_langRadioGroup_textView" />
+
+
+    <Spinner
+        android:id="@+id/settings_themeSpinner"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:padding="16dp"
+        app:layout_constraintBottom_toBottomOf="@+id/settings_themeRadioGroup_textView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline2"
+        app:layout_constraintTop_toTopOf="@+id/settings_themeRadioGroup_textView" />
+
+    <Button
+        android:id="@+id/saveButton"
+        android:layout_width="wrap_content"
+
+
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:text="@string/save"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+
+    <TextView
+        android:id="@+id/transparency_textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+        android:padding="16dp"
+        android:text="@string/settings_transparency"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        app:layout_constraintEnd_toStartOf="@+id/guideline2"
+        app:layout_constraintTop_toBottomOf="@+id/settings_themeRadioGroup_textView" />
+
+
+    <SeekBar
+        android:id="@+id/transparency_seekBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:max="255"
+        android:progress="128"
+        app:layout_constraintBottom_toBottomOf="@+id/transparency_textView"
+        app:layout_constraintEnd_toEndOf="parent"
+
+        app:layout_constraintStart_toStartOf="@+id/guideline2"
+        app:layout_constraintTop_toTopOf="@+id/transparency_textView" />
+
+
+    <TextView
+        android:id="@+id/testSize_textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+        android:padding="16dp"
+        android:text="@string/settings_text_size"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        app:layout_constraintEnd_toStartOf="@+id/guideline2"
+        app:layout_constraintTop_toBottomOf="@+id/transparency_textView" />
+
+
+    <SeekBar
+        android:id="@+id/testSize_seekBar"
+        style="@style/Widget.AppCompat.SeekBar.Discrete"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginStart="16dp"
+
+        android:layout_marginTop="8dp"
+        android:max="4"
+        android:progress="3"
+        app:layout_constraintBottom_toBottomOf="@+id/testSize_textView"
+
+        app:layout_constraintEnd_toEndOf="parent"
+
+        app:layout_constraintStart_toStartOf="@+id/guideline2"
+        app:layout_constraintTop_toTopOf="@+id/testSize_textView" />
+
+
+</android.support.constraint.ConstraintLayout>
