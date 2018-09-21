@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -493,7 +494,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
             } else {
                 holder.mViews.setImageViewBitmap(R.id.fact_ImageView, holder.mImageBitmap);
                 holder.mViews.setViewVisibility(R.id.fact_ImageView, View.VISIBLE);
-                holder.mViews.setInt(R.id.fact_ImageView, "setBackgroundColor", mBgColor);
+                //holder.mViews.setInt(R.id.fact_ImageView, "setBackgroundColor", mBgColor);
             }
 
             // show/hide year textView

@@ -3,6 +3,7 @@ package ru.vodnouho.android.atthisdaywidgetapp;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.support.annotation.Nullable;
 import android.support.v4.util.LruCache;
 import android.util.Log;
@@ -139,8 +140,14 @@ public class NetworkFetcher {
                     public void onResponse(Bitmap bitmap) {
                         if(LOGD)
                             Log.d(TAG, "onResponse bitmap:"+url);
+                        Bitmap shadow = Utils.addShadow(bitmap,
+                                bitmap.getHeight(),
+                                bitmap.getWidth(),
+                                Color.BLACK,
+                                3,1,1);
+                       // bitmap.recycle();
 
-                        sImageCache.put(url, bitmap);
+                        sImageCache.put(url, shadow);
                         listener.onImageLoaded(url, bitmap);
                         isNewImageLoaded = true;
                     }
@@ -254,8 +261,8 @@ public class NetworkFetcher {
                 Bitmap bitmap = sImageCache.get(key);
                 try {
                     if(bitmap != null){
-                        saveBitmapToFile(bitmap, imageFileName, sContext);
-                        jsonObject.put(key, imageFileName);
+                       // saveBitmapToFile(bitmap, imageFileName, sContext);
+                       // jsonObject.put(key, imageFileName);
                     }
 
                     i++;
@@ -369,7 +376,7 @@ public class NetworkFetcher {
             outputStream = new FileOutputStream(imageFile);
 
             int quality = 100;
-            bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream);
+            bitmap.compress(Bitmap.CompressFormat.PNG, quality, outputStream);
             outputStream.flush();
 
         } catch (Throwable e) {
