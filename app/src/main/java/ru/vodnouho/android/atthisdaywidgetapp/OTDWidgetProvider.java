@@ -18,6 +18,8 @@ import android.widget.Toast;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import static ru.vodnouho.android.atthisdaywidgetapp.BuildConfig.DEBUG;
+
 /**
  * Created on 13.08.2015.
  */
@@ -185,7 +187,9 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         bgColor = Utils.setTransparency(transparency, bgColor);
         //headerBgColor = bgColor;
 
+        int textSize = SettingsActivity.loadPrefTextSize(context, appWidgetId);
 
+        if(DEBUG)  Log.d(TAG, "textSize:"+textSize);
 
         rv.setInt(R.id.loading_textView, "setTextColor", textColor);
         rv.setInt(R.id.emptyView, "setBackgroundColor", bgColor);
@@ -195,7 +199,9 @@ public class OTDWidgetProvider extends AppWidgetProvider {
 
         setTitleText(rv, context, settingLang, currentDate);
         rv.setInt(R.id.titleTextView, "setTextColor", textColor);
+        rv.setFloat(R.id.titleTextView, "setTextSize", textSize + SettingsActivity.TEXT_SIZE_DIFF);
         rv.setInt(R.id.title_ViewGroup, "setBackgroundColor", bgColor);
+
         rv.setInt(R.id.settingsImageButton, "setColorFilter", textColor);
 
         rv.setOnClickPendingIntent(R.id.titleTextView, getPendingSelfIntent(context, ACTION_REFRESH, appWidgetId));
@@ -387,6 +393,8 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         int transparency = SettingsActivity.loadPrefTransparency(context, appWidgetId, 128);
         bgColor = Utils.setTransparency(transparency, bgColor);
 
+        int textSize = SettingsActivity.loadPrefTextSize(context, appWidgetId);
+
         // Set up the intent that starts the ATDAppWidgetService service, which will
         // provide the views for this collection.
         Intent adapter = new Intent(context, ATDAppWidgetService.class);
@@ -396,6 +404,7 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         adapter.putExtra(ATDAppWidgetService.EXTRA_WIDGET_THEME, settingTheme);
         adapter.putExtra(ATDAppWidgetService.EXTRA_WIDGET_DATE, dateS);
         adapter.putExtra(ATDAppWidgetService.EXTRA_BG_COLOR, bgColor);
+        adapter.putExtra(ATDAppWidgetService.EXTRA_TEXT_SIZE, textSize );
         adapter.setData(Uri.parse(adapter.toUri(Intent.URI_INTENT_SCHEME)));
         Log.d(TAG, "setRemoteAdapter id:"+appWidgetId + " lang:"+lang + " dateS:"+dateS);
         rv.setRemoteAdapter(R.id.listView, adapter);

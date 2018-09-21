@@ -23,6 +23,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -53,6 +54,9 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
     private static final String PREF_THEME_KEY = "theme_widget_";
     private static final String PREF_TRANSPARENCY_KEY = "transparency_widget_";
     private static final String PREF_TEXT_SIZE_KEY = "textsize_widget_";
+
+    public static final int BASE_TEXT_SIZE_SP = 12;
+    public static final int TEXT_SIZE_DIFF = 4;
 
     public static final String THEME_LIGHT = "1";
     public static final String THEME_BLACK = "2";
@@ -121,6 +125,11 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
         mTransparency = calcTransparency(this, mAppWidgetId);
         prepareTransparencySeekBar(this, mTransparency);
         Log.d(TAG, "onCreate mTransparency:"+mTransparency);
+
+        //Set transparency and activate listener for seek bar
+        mTextSize = calcTextSize(this, mAppWidgetId);
+        prepareTextSizeSeekBar(this, mTextSize);
+        Log.d(TAG, "onCreate mTextSize:"+mTextSize);
 
         calcBgColor(mBgColor, mTransparency);
 
@@ -261,6 +270,7 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
         TextView titleTextView = (TextView) findViewById(R.id.titleTextView);
         titleTextView.setTextColor(mTextColor);
         titleTextView.setText(titleText);
+        titleTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP,mTextSize + TEXT_SIZE_DIFF);
         ((ImageView) findViewById(R.id.settingsImageButton)).setColorFilter(mTextColor);
     }
 
@@ -273,6 +283,7 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
         }
         mListAdapter.setTheme(this, mTheme);
         mListAdapter.setTransparency(mTransparency);
+        mListAdapter.setTextSize(mTextSize);
         mListView.setAdapter(mListAdapter);
     }
 
@@ -309,6 +320,11 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
 */
         return loadPrefTransparency(context, appWidgetId, transparency);
     }
+
+    private int calcTextSize(Context context, int appWidgetId) {
+        return loadPrefTextSize(context, appWidgetId, BASE_TEXT_SIZE_SP + 4);
+    }
+
 
 
     View.OnClickListener mOnClickListener = new View.OnClickListener() {
@@ -435,6 +451,40 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
         });
     }
 
+    /**
+     *
+     * @param context
+     * @param textSize - in sp
+     */
+    void prepareTextSizeSeekBar(Context context, int textSize) {
+        mTextSizeSeekBar = findViewById(R.id.testSize_seekBar);
+        int progress = (textSize - BASE_TEXT_SIZE_SP)/2;
+        mTextSizeSeekBar.setProgress(progress);
+        mTextSizeSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if(fromUser){
+                    mTextSize = progress*2 + BASE_TEXT_SIZE_SP;
+                    drawWidget(mLang, mDate, mTheme);
+                    mListAdapter.setTextSize(mTextSize);
+                    mListAdapter.notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+    }
+
+
+
     // Write settings to the SharedPreferences object for this widget
     void savePrefs(Context context, int appWidgetId) {
 
@@ -538,6 +588,18 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
         return prefs.getInt(PREF_TRANSPARENCY_KEY + appWidgetId, defValue);
     }
 
+    public static int loadPrefTextSize(Context context, int appWidgetId) {
+        return loadPrefTextSize(context, appWidgetId, BASE_TEXT_SIZE_SP);
+    }
+
+    static int loadPrefTextSize(Context context, int appWidgetId, int defValue) {
+
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
+        int anInt = prefs.getInt(PREF_TEXT_SIZE_KEY + appWidgetId, defValue);
+        Log.d(TAG, "loadPrefTextSize mTextSize:"+anInt);
+        return anInt;
+    }
+
     @Override
     public void onModelChanged(OnThisDayModel newModel) {
         if (DEBUG)
@@ -607,4 +669,6 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
         if (DEBUG)
             Log.d(TAG, "notifyWidgedProviderHasNoData...");
     }
+
+
 }

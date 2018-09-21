@@ -104,6 +104,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
         private String mDateString; //format "MMdd"
         private int mAppWidgetId;
         private int mTransparency;
+        private int mTextSize;
 
         private OnThisDayModel mModel;
         private List<RemoteViewsHolder> mViewsHolder;
@@ -217,6 +218,8 @@ public class ATDAppWidgetService extends RemoteViewsService {
             Log.d(TAG, "refreshParameters mTransparency:"+mTransparency);
             mBgColor = Utils.setTransparency(mTransparency, mBgColor);
 
+            mTextSize = SettingsActivity.loadPrefTextSize(context, mAppWidgetId);
+            Log.d(TAG, "textSize:"+mTextSize);
             Log.d(TAG, "refreshParameters mBgColor:"+mBgColor);
 
             //updateViews();
@@ -384,6 +387,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
 
                 rView.setTextViewText(R.id.tvItemText, c.name);
                 rView.setInt(R.id.tvItemText, "setTextColor", mTextColor);
+                rView.setFloat(R.id.tvItemText, "setTextSize", mTextSize + SettingsActivity.TEXT_SIZE_DIFF);
 
 
                 setOnClickFillInIntent(rView, R.id.list_item_ViewGroup, c.id, null);
@@ -401,6 +405,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
                     rView.setTextViewText(R.id.tvItemText, Html.fromHtml(f.text));
                     rView.setInt(R.id.tvItemText, "setTextColor", mTextColor);
                     rView.setInt(R.id.tvItemText, "setLinkTextColor", mTextColor);
+                    rView.setFloat(R.id.tvItemText, "setTextSize", mTextSize);
                     rView.setInt(R.id.list_item_ViewGroup, "setBackgroundColor", mBgColor);
 
                     setOnClickFillInIntent(rView, R.id.list_item_ViewGroup, c.id, f.id);

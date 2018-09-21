@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.support.v4.content.ContextCompat;
 import android.text.Html;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +17,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static ru.vodnouho.android.atthisdaywidgetapp.BuildConfig.DEBUG;
+import static ru.vodnouho.android.atthisdaywidgetapp.SettingsActivity.TEXT_SIZE_DIFF;
 
 public class DataAdapter extends BaseAdapter {
     private static final String TAG = "vdnh.DataAdapter";
@@ -35,6 +37,7 @@ public class DataAdapter extends BaseAdapter {
     private int mTransparency;
     private int mLinkTextColor;
     private String mTheme;
+    private int mTextSize;
 
     public DataAdapter(Context context) {
         mContext = context;
@@ -186,11 +189,13 @@ public class DataAdapter extends BaseAdapter {
         if(TYPE_CATEGORY_NAME == dataHolder.mViewType){
             viewHolder.categoryNameTextView.setText(dataHolder.categoryName);
             viewHolder.categoryNameTextView.setTextColor(mTextColor);
+            viewHolder.categoryNameTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP,mTextSize + TEXT_SIZE_DIFF);
 
         }else{
             viewHolder.factTextTextView.setText(dataHolder.factText);
             viewHolder.factTextTextView.setTextColor(mTextColor);
             viewHolder.factTextTextView.setLinkTextColor(mTextColor);
+            viewHolder.factTextTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP,mTextSize);
             viewHolder.mListItemView.setBackgroundColor(mBgColor);
         }
 
@@ -229,6 +234,9 @@ public class DataAdapter extends BaseAdapter {
         mBgColor = Utils.setTransparency(transparency, mBaseBgColor);
     }
 
+    public void setTextSize(int textSize) {
+        mTextSize = textSize;
+    }
 
 
     private class DataHolder{
