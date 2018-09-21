@@ -44,8 +44,11 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
     private static final String PREF_LANG_KEY = "lang_widget_";
     private static final String PREF_THEME_KEY = "theme_widget_";
     private static final String PREF_TRANSPARENCY_KEY = "transparency_widget_";
+    private static final String PREF_TEXT_SIZE_KEY = "textsize_widget_";
+
     public static final String THEME_LIGHT = "1";
     public static final String THEME_BLACK = "2";
+
 
 
     int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
@@ -97,6 +100,7 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
         //Set land and activate listener for lang spinner
         mLang = calcLang(this, mAppWidgetId);
         prepareLangSpinner(this, mLang);
+        Log.d(TAG, "onCreate mLang:"+mLang);
 
         //Set theme and activate listener for theme spinner
         mTheme = calcTheme(this, mAppWidgetId);
@@ -107,6 +111,7 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
         //Set transparency and activate listener for seek bar
         mTransparency = calcTransparency(this, mAppWidgetId);
         prepareTransparencySeekBar(this, mTransparency);
+        Log.d(TAG, "onCreate mTransparency:"+mTransparency);
 
         calcBgColor(mBgColor, mTransparency);
 
@@ -129,6 +134,37 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
 
         drawListView();
 
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        if(savedInstanceState != null){
+            mLang = savedInstanceState.getString(PREF_LANG_KEY, mLang);
+            mTheme = savedInstanceState.getString(PREF_THEME_KEY, mTheme);
+            mTransparency = savedInstanceState.getInt(PREF_TRANSPARENCY_KEY, mTransparency);
+            mTextSize = savedInstanceState.getInt(PREF_TEXT_SIZE_KEY, mTextSize);
+        }
+
+        prepareLangSpinner(this, mLang);
+        prepareThemeSpinner(this, mTheme);
+        prepareTransparencySeekBar(this, mTransparency);
+        drawListView();
+
+        Log.d(TAG, "onRestoreInstanceState mLang:"+mLang);
+        Log.d(TAG, "onRestoreInstanceState mTransparency:"+mTransparency);
+
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        if(outState != null){
+            outState.putString(PREF_LANG_KEY, mLang);
+            outState.putString(PREF_THEME_KEY, mTheme);
+            outState.putInt(PREF_TRANSPARENCY_KEY, mTransparency);
+            outState.putInt(PREF_TEXT_SIZE_KEY, mTextSize);
+        }
+        super.onSaveInstanceState(outState);
     }
 
     private void drawWallpaper(Context context) {
@@ -345,6 +381,8 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
         SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
         prefs.putString(PREF_LANG_KEY + appWidgetId, mLang);
         prefs.putString(PREF_THEME_KEY + appWidgetId, mTheme);
+        prefs.putInt(PREF_TRANSPARENCY_KEY + appWidgetId, mTransparency);
+        prefs.putInt(PREF_TEXT_SIZE_KEY + appWidgetId, mTextSize);
         prefs.apply();
     }
 
