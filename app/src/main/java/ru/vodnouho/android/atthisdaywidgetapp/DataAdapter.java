@@ -189,6 +189,7 @@ public class DataAdapter extends BaseAdapter {
         }else{
             viewHolder.factTextTextView.setText(dataHolder.factText);
             viewHolder.factTextTextView.setTextColor(mTextColor);
+            viewHolder.factTextTextView.setLinkTextColor(mTextColor);
             viewHolder.mListItemView.setBackgroundColor(mBgColor);
         }
 

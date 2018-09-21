@@ -386,7 +386,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
                     rView.setInt(R.id.list_item_ViewGroup, "setBackgroundColor", mBgColor);
                     rView.setTextViewText(R.id.tvItemText, Html.fromHtml(f.text));
                     rView.setInt(R.id.tvItemText, "setTextColor", mTextColor);
-                    rView.setInt(R.id.tvItemText, "setLinkTextColor", mLinkTextColor);
+                    rView.setInt(R.id.tvItemText, "setLinkTextColor", mTextColor);
 
 
                     setOnClickFillInIntent(rView, R.id.list_item_ViewGroup, c.id, f.id);
