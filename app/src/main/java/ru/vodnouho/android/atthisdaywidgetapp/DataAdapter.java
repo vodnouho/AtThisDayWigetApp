@@ -186,6 +186,7 @@ public class DataAdapter extends BaseAdapter {
         if(TYPE_CATEGORY_NAME == dataHolder.mViewType){
             viewHolder.categoryNameTextView.setText(dataHolder.categoryName);
             viewHolder.categoryNameTextView.setTextColor(mTextColor);
+
         }else{
             viewHolder.factTextTextView.setText(dataHolder.factText);
             viewHolder.factTextTextView.setTextColor(mTextColor);

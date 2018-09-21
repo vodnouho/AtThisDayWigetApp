@@ -168,30 +168,34 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         }
 
         int bgColor = -1;
-        int headerBgColor = -1;
+        //int headerBgColor = -1;
         int textColor = -1;
         if(SettingsActivity.THEME_LIGHT.equals(settingTheme)){
 
             bgColor = ContextCompat.getColor(context, R.color.bgColor);
-            headerBgColor = ContextCompat.getColor(context, R.color.headerBgColor);
+            //headerBgColor = ContextCompat.getColor(context, R.color.headerBgColor);
             textColor = ContextCompat.getColor(context, R.color.textColor);
         }else{
             bgColor = ContextCompat.getColor(context, R.color.bgBlackColor);
-            headerBgColor = ContextCompat.getColor(context, R.color.headerBgBlackColor);
+            //headerBgColor = ContextCompat.getColor(context, R.color.headerBgBlackColor);
             textColor = ContextCompat.getColor(context, R.color.textBlackColor);
         }
 
+        int transparency = SettingsActivity.loadPrefTransparency(context, appWidgetId, 128);
+        bgColor = Utils.setTransparency(transparency, bgColor);
+        //headerBgColor = bgColor;
+
+
+
         rv.setInt(R.id.loading_textView, "setTextColor", textColor);
         rv.setInt(R.id.emptyView, "setBackgroundColor", bgColor);
-
         rv.setInt(R.id.widget_container_ViewGroup, "setBackgroundColor", bgColor);
 
         Date currentDate = new Date();
 
         setTitleText(rv, context, settingLang, currentDate);
         rv.setInt(R.id.titleTextView, "setTextColor", textColor);
-        rv.setInt(R.id.title_ViewGroup, "setBackgroundColor", headerBgColor);
-       // rv.setInt(R.id.settingsImageButton, "setBackgroundColor", headerBgColor);
+        rv.setInt(R.id.title_ViewGroup, "setBackgroundColor", bgColor);
         rv.setInt(R.id.settingsImageButton, "setColorFilter", textColor);
 
         rv.setOnClickPendingIntent(R.id.titleTextView, getPendingSelfIntent(context, ACTION_REFRESH, appWidgetId));
@@ -380,6 +384,8 @@ public class OTDWidgetProvider extends AppWidgetProvider {
             textColor = ContextCompat.getColor(context,R.color.textBlackColor);
         }
 
+        int transparency = SettingsActivity.loadPrefTransparency(context, appWidgetId, 128);
+        bgColor = Utils.setTransparency(transparency, bgColor);
 
         // Set up the intent that starts the ATDAppWidgetService service, which will
         // provide the views for this collection.
@@ -389,10 +395,11 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         adapter.putExtra(ATDAppWidgetService.EXTRA_WIDGET_LANG, lang);
         adapter.putExtra(ATDAppWidgetService.EXTRA_WIDGET_THEME, settingTheme);
         adapter.putExtra(ATDAppWidgetService.EXTRA_WIDGET_DATE, dateS);
+        adapter.putExtra(ATDAppWidgetService.EXTRA_BG_COLOR, bgColor);
         adapter.setData(Uri.parse(adapter.toUri(Intent.URI_INTENT_SCHEME)));
         Log.d(TAG, "setRemoteAdapter id:"+appWidgetId + " lang:"+lang + " dateS:"+dateS);
         rv.setRemoteAdapter(R.id.listView, adapter);
-        rv.setInt(R.id.listView, "setBackgroundColor", bgColor);
+        //rv.setInt(R.id.listView, "setBackgroundColor", bgColor);
 
 
         rv.setEmptyView(R.id.listView, R.id.emptyView);

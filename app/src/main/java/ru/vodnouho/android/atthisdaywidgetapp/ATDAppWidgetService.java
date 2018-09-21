@@ -47,6 +47,8 @@ public class ATDAppWidgetService extends RemoteViewsService {
     public static final String EXTRA_WIDGET_LANG = "ru.vodnouho.android.atthisdaywigetapp.EXTRA_WIDGET_LANG";
     public static final String EXTRA_WIDGET_DATE = "ru.vodnouho.android.atthisdaywigetapp.EXTRA_WIDGET_DATE";
     public static final String EXTRA_WIDGET_THEME = "ru.vodnouho.android.atthisdaywigetapp.EXTRA_WIDGET_THEME";
+    public static final String EXTRA_BG_COLOR = "ru.vodnouho.android.atthisdaywigetapp.EXTRA_BG_COLOR";
+    public static final String EXTRA_TEXT_SIZE = "ru.vodnouho.android.atthisdaywigetapp.EXTRA_TEXT_SIZE";
 
     public static final String ACTION_IMAGE_LOADED = "ru.vodnouho.android.atthisdaywidgetapp.ACTION_IMAGE_LOADED";
     public static final String ACTION_NO_DATA = "ru.vodnouho.android.atthisdaywidgetapp.ACTION_NO_DATA";
@@ -100,6 +102,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
         private String mLang;
         private String mDateString; //format "MMdd"
         private int mAppWidgetId;
+        private int mTransparency;
 
         private OnThisDayModel mModel;
         private List<RemoteViewsHolder> mViewsHolder;
@@ -154,6 +157,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
                 = Collections.synchronizedMap(new HashMap<String, ArrayList<Fact>>());
 
 
+
         public CategoryListRemoteViewsFactory() {
             super();
         }
@@ -206,6 +210,13 @@ public class ATDAppWidgetService extends RemoteViewsService {
                 mTextColor = ContextCompat.getColor(context, R.color.textBlackColor);
                 mLinkTextColor = ContextCompat.getColor(context, R.color.linkTextBlackColor);
             }
+
+            //
+            mTransparency = SettingsActivity.loadPrefTransparency(context, mAppWidgetId, mTransparency);
+            Log.d(TAG, "refreshParameters mTransparency:"+mTransparency);
+            mBgColor = Utils.setTransparency(mTransparency, mBgColor);
+
+            Log.d(TAG, "refreshParameters mBgColor:"+mBgColor);
 
             //updateViews();
         }
@@ -373,6 +384,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
                 rView.setTextViewText(R.id.tvItemText, c.name);
                 rView.setInt(R.id.tvItemText, "setTextColor", mTextColor);
 
+
                 setOnClickFillInIntent(rView, R.id.list_item_ViewGroup, c.id, null);
 
                 mViewsHolder.add(new ATDAppWidgetService.CategoryListRemoteViewsFactory.RemoteViewsHolder(rView, ATDAppWidgetService.CategoryListRemoteViewsFactory.RemoteViewsHolder.TYPE_CATEGORY_NAME));
@@ -383,11 +395,12 @@ public class ATDAppWidgetService extends RemoteViewsService {
 
                     rView = new RemoteViews(mContext.getPackageName(),
                             R.layout.widget_item);
-                    rView.setInt(R.id.list_item_ViewGroup, "setBackgroundColor", mBgColor);
+
+                    Log.d(TAG, "updateViews mBgColor:"+mBgColor);
                     rView.setTextViewText(R.id.tvItemText, Html.fromHtml(f.text));
                     rView.setInt(R.id.tvItemText, "setTextColor", mTextColor);
                     rView.setInt(R.id.tvItemText, "setLinkTextColor", mTextColor);
-
+                    rView.setInt(R.id.list_item_ViewGroup, "setBackgroundColor", mBgColor);
 
                     setOnClickFillInIntent(rView, R.id.list_item_ViewGroup, c.id, f.id);
 

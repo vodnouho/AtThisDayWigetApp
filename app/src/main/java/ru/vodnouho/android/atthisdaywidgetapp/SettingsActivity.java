@@ -244,9 +244,11 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
         int transparency = Utils.getTransparency(mBaseBgColor);
 
         //search in preference
+/*
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
         transparency = prefs.getInt(PREF_TRANSPARENCY_KEY + appWidgetId, transparency);
-        return transparency;
+*/
+        return loadPrefTransparency(context, appWidgetId, transparency);
     }
 
 
@@ -461,6 +463,20 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
 
         return prefs.getString(PREF_THEME_KEY + appWidgetId, SettingsActivity.THEME_LIGHT);
+    }
+
+    /**
+     * Read the theme from the SharedPreferences object for this widget.
+     * If there is no preference saved, return SettingsActivity.THEME_LIGHT
+     *
+     * @param context
+     * @param appWidgetId
+     * @return
+     */
+    static int loadPrefTransparency(Context context, int appWidgetId, int defValue) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
+
+        return prefs.getInt(PREF_TRANSPARENCY_KEY + appWidgetId, defValue);
     }
 
     @Override

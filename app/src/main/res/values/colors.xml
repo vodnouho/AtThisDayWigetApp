@@ -2,13 +2,13 @@
 <resources>
 
 
-    <color name="bgBlackColor">#88444444</color>
+    <color name="bgBlackColor">#000000</color>
     <color name="imageBgBlackColor">#11020202</color>
     <color name="textBlackColor">#FFFFFF</color>
     <color name="linkTextBlackColor">#00e1cb</color>
     <color name="headerBgBlackColor">#ff424242</color>
 
-    <color name="bgColor">#88FFFFFF</color>
+    <color name="bgColor">#FFFFFF</color>
     <color name="imageBgColor">#88FFFFFF</color>
     <color name="textColor">#111111</color>
     <color name="linkTextColor">#007668</color>
