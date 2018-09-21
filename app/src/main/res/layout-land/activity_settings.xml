@@ -51,6 +51,8 @@
             android:layout_margin="16dp" />
     </FrameLayout>
 
+
+
     <TextView
         android:id="@+id/settings_langRadioGroup_textView"
         android:layout_width="wrap_content"
@@ -213,5 +215,18 @@
         app:barrierDirection="left"
         app:constraint_referenced_ids="settings_langRadioGroup_textView,settings_themeRadioGroup_textView,transparency_textView"
        />
+
+    <ImageView
+        android:id="@+id/needpermission_ImageView"
+        android:src="@drawable/ic_message_alert_white_24dp"
+
+        android:visibility="gone"
+
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginTop="8dp"
+
+        app:layout_constraintStart_toEndOf="@+id/viewExample"
+        app:layout_constraintTop_toTopOf="@+id/viewExample" />
 
 </android.support.constraint.ConstraintLayout>

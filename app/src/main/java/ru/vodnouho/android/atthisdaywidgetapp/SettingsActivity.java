@@ -4,14 +4,21 @@ package ru.vodnouho.android.atthisdaywidgetapp;
  * Activity to set UI settings for instance of widget.
  */
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.WallpaperManager;
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
+import android.support.annotation.RequiresApi;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -34,6 +41,7 @@ import java.util.Locale;
 import static ru.vodnouho.android.atthisdaywidgetapp.BuildConfig.DEBUG;
 
 public class SettingsActivity extends AppCompatActivity implements OnThisDayLogic.ModelChangedListener {
+    private static final int READ_STORAGE_PERMISSION_REQUEST_CODE = 111;
     private static final String TAG = "vdnh.SettingsActivity";
     private static final String LANG_RU = "ru";
     private static final String LANG_EN = "en";
@@ -71,6 +79,7 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
     private TextView mLoadingView;
     private SeekBar mTransparencySeekBar;
     private SeekBar mTextSizeSeekBar;
+    private ImageView mPermissionAlertView;
 
 
     @Override
@@ -168,11 +177,61 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
     }
 
     private void drawWallpaper(Context context) {
+        ImageView wallpaperImageView = findViewById(R.id.wallpaper_ImageView);
+        if(!checkPermissionForReadExtertalStorage(context)){
+            wallpaperImageView.setBackgroundColor(Color.GRAY);
+            return;
+        }
+
         final WallpaperManager wallpaperManager = WallpaperManager.getInstance(context);
         final Drawable wallpaperDrawable = wallpaperManager.getDrawable();
 
-        ImageView wallpaperImageView = findViewById(R.id.wallpaper_ImageView);
+
         wallpaperImageView.setImageDrawable(wallpaperDrawable);
+    }
+
+    private boolean checkPermissionForReadExtertalStorage(final Context context) {
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N) {
+            int result = context.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE);
+            if(result == PackageManager.PERMISSION_GRANTED){
+                return true;
+            }else{
+                mPermissionAlertView = findViewById(R.id.needpermission_ImageView);
+                mPermissionAlertView.setClickable(true);
+                mPermissionAlertView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (DEBUG)Log.d(TAG, "checkPermissionForReadExtertalStorage");
+                        requestPermissionForReadExtertalStorage( context);
+                    }
+                });
+                mPermissionAlertView.setVisibility(View.VISIBLE);
+                return false;
+            }
+        }
+        return true;
+    }
+
+
+    public void requestPermissionForReadExtertalStorage(Context context){
+        try {
+            ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    READ_STORAGE_PERMISSION_REQUEST_CODE);
+        } catch (Exception e) {
+            Log.e(TAG, "Can't requestPermissionForReadExtertalStorage",e);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case READ_STORAGE_PERMISSION_REQUEST_CODE:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    mPermissionAlertView.setVisibility(View.GONE);
+                    drawWallpaper(this);
+                }
+                break;
+        }
     }
 
     private void calcBaseColors(String theme){

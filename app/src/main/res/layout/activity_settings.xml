@@ -50,7 +50,11 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_margin="16dp" />
+
+
     </FrameLayout>
+
+
 
     <TextView
         android:id="@+id/settings_langRadioGroup_textView"
@@ -204,5 +208,21 @@
         app:layout_constraintStart_toStartOf="@+id/guideline2"
         app:layout_constraintTop_toTopOf="@+id/testSize_textView" />
 
+
+    <ImageView
+        android:id="@+id/needpermission_ImageView"
+        android:src="@drawable/ic_message_alert_white_24dp"
+
+        android:visibility="gone"
+
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        />
 
 </android.support.constraint.ConstraintLayout>

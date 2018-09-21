@@ -8,8 +8,8 @@ android {
         applicationId "ru.vodnouho.android.atthisdaywidgetapp"
         minSdkVersion 14
         targetSdkVersion 27
-        versionCode 13
-        versionName "0.6.2"
+        versionCode 14
+        versionName "1.0.0"
     }
     buildTypes {
         release {
@@ -20,6 +20,15 @@ android {
     }
 
     useLibrary  'org.apache.http.legacy'
+
+    android {
+        lintOptions {
+            checkReleaseBuilds false
+            // Or, if you prefer, you can continue to check for errors in release builds,
+            // but continue the build even when errors are found:
+            //abortOnError false
+        }
+    }
 }
 
 dependencies {
