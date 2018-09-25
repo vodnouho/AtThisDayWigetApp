@@ -391,7 +391,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
 
                 setOnClickFillInIntent(rView, R.id.list_item_ViewGroup, c.id, null);
 
-                mViewsHolder.add(new ATDAppWidgetService.CategoryListRemoteViewsFactory.RemoteViewsHolder(rView, ATDAppWidgetService.CategoryListRemoteViewsFactory.RemoteViewsHolder.TYPE_CATEGORY_NAME));
+                mViewsHolder.add(new RemoteViewsHolder(rView, RemoteViewsHolder.TYPE_CATEGORY_NAME));
 
                 ArrayList<Fact> facts = c.getFavFacts();
                 for (int i = 0; i < facts.size(); i++) {
@@ -419,7 +419,6 @@ public class ATDAppWidgetService extends RemoteViewsService {
 
                     //better start parallel request after mViewsHolder.add()
                     if (factViewHolder.mFact != null && factViewHolder.mFact.getThumbnailUrl() != null) {
-
                         mNetworkFetcher.requestImage(factViewHolder.mFact.getThumbnailUrl(), this);
                     } else if (f.mayHasThumbnail()) {
                         String findPictureUrlAt = f.getTitleForPicture();
