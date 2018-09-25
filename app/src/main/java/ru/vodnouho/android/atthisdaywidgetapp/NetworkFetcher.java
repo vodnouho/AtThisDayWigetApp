@@ -8,13 +8,18 @@ import androidx.annotation.Nullable;
 import androidx.collection.LruCache;
 import android.util.Log;
 
+import com.android.volley.Cache;
 import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.Network;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.RetryPolicy;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.BasicNetwork;
+import com.android.volley.toolbox.DiskBasedCache;
+import com.android.volley.toolbox.HurlStack;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
@@ -44,6 +49,8 @@ public class NetworkFetcher {
     private static final String CACHE_JSON_FILE_NAME = "cacheJsonSummary";
     private static final String CACHE_BITMAP_FILE_NAME = "cacheJsonBitmaps";
     private static final String CACHE_BITMAP_DIRECTORY_NAME = "cache/bitmaps";
+    private static final String CACHE_VOLLEY_DIRECTORY_NAME = "cache/volley";
+    private static final String CACHE_BITMAP_EXTENSION = ".png";
     private static final Object sLock = new Object();
 
     private static NetworkFetcher sInstance;
@@ -84,7 +91,7 @@ public class NetworkFetcher {
 
     private NetworkFetcher(Context applicationContext) {
         sContext = applicationContext;
-        mRequestQueue = getRequestQueue();
+        mRequestQueue = getRequestQueue(applicationContext);
 
         mImageLoader = new ImageLoader(mRequestQueue,
                 new ImageLoader.ImageCache() {
@@ -111,7 +118,8 @@ public class NetworkFetcher {
      * @param listener - Listener
      */
     public void requestImage(final String url, final OnLoadListener listener) {
-
+        if(LOGD)
+            Log.d(TAG, "requestImage bitmap:"+url);
         //lets find in cache
         Bitmap cachedBitmap = sImageCache.get(url);
         if (cachedBitmap != null) {
@@ -194,17 +202,19 @@ public class NetworkFetcher {
      *
      * @return
      */
-    private RequestQueue getRequestQueue() {
+    private RequestQueue getRequestQueue(Context context) {
         if (mRequestQueue == null) {
             // getApplicationContext() is key, it keeps you from leaking the
             // Activity or BroadcastReceiver if someone passes one in.
-            mRequestQueue = Volley.newRequestQueue(sContext.getApplicationContext(), new OkHttpStack());
+            mRequestQueue = Volley.newRequestQueue(sContext.getApplicationContext()); //deprecated
         }
         return mRequestQueue;
     }
 
     private <T> void addToRequestQueue(Request<T> req) {
-        getRequestQueue().add(req);
+
+
+        getRequestQueue(sContext).add(req);
     }
 
     /**
@@ -226,6 +236,7 @@ public class NetworkFetcher {
         if (LOGD)
             Log.d(TAG, "saveCacheToFiles ");
 
+
         if (sSummaryCache != null) {
             Map<String, JSONObject> snapshot = sSummaryCache.snapshot();
             JSONObject jsonObject = new JSONObject(snapshot);
@@ -238,26 +249,25 @@ public class NetworkFetcher {
             }
         }
 
+
         boolean isFilesWroteCorrectly = true;
         if(sImageCache != null){
             Map<String, Bitmap> snapshot = sImageCache.snapshot();
             JSONObject jsonObject = new JSONObject();
-            int i = 0;
-            Iterator<String> iterator = snapshot.keySet().iterator();
-            while(iterator.hasNext()){
-                String key = iterator.next();
-                String imageFileName = i + ".png";
+            //int i = 0;
+            for (String key : snapshot.keySet()) {
+                String imageFileName = Utils.getMD5EncryptedString(key) + CACHE_BITMAP_EXTENSION;
                 Bitmap bitmap = sImageCache.get(key);
                 try {
-                    if(bitmap != null){
+                    if (bitmap != null) {
                         saveBitmapToFile(bitmap, imageFileName, sContext);
                         jsonObject.put(key, imageFileName);
                     }
 
-                    i++;
+                    //i++;
 
                 } catch (Throwable e) {
-                    Log.e(TAG, "Can't put key:"+key);
+                    Log.e(TAG, "Can't put key:" + key);
 
                     isFilesWroteCorrectly = false;
                 }
@@ -273,9 +283,11 @@ public class NetworkFetcher {
 
             if(!isFilesWroteCorrectly){
                 //clear all imageFiles
+/*
                 for(;i>=0;i--){
-                    deleteBitmapFile(i + ".png", sContext);
+                    deleteBitmapFile(i + CACHE_BITMAP_EXTENSION, sContext);
                 }
+*/
                 context.deleteFile(CACHE_BITMAP_FILE_NAME);
             }
         }
@@ -285,8 +297,9 @@ public class NetworkFetcher {
 
 
 
-    private void loadCacheFromFiles() {
+    private synchronized void loadCacheFromFiles() {
         //load summaries
+
         try {
             JSONObject savedJsonCache = readJson(CACHE_JSON_FILE_NAME, sContext);
             if(savedJsonCache != null){
@@ -309,6 +322,7 @@ public class NetworkFetcher {
         }
 
 
+
         //load bitmaps
         try {
             JSONObject savedJsonCache = readJson(CACHE_BITMAP_FILE_NAME, sContext);
@@ -316,9 +330,11 @@ public class NetworkFetcher {
                 Iterator<String> keysItr = savedJsonCache.keys();
                 while(keysItr.hasNext()) {
                     String key = keysItr.next();
-                    Object value = savedJsonCache.get(key);
+                    //Object value = savedJsonCache.get(key);
+                    String value = Utils.getMD5EncryptedString(key);
 
-                    if(value instanceof String) {
+
+
                         Bitmap bitmap = loadBitmapFromFile((String) value, sContext);
                         if(key != null && bitmap !=null){
                             sImageCache.put(key, bitmap);
@@ -326,7 +342,7 @@ public class NetworkFetcher {
 
                         if(LOGD)
                             Log.d(TAG, "loadBitmapCacheFromFiles key:"+key);
-                    }
+
                 }
             }
         } catch (IOException e) {
@@ -336,7 +352,7 @@ public class NetworkFetcher {
         }
     }
 
-    public static void deleteBitmapFile(String fileName, Context context){
+    public synchronized static void deleteBitmapFile(String fileName, Context context){
         File appDir = null;
         appDir = new File(context.getFilesDir(), CACHE_BITMAP_DIRECTORY_NAME);
         if (!appDir.exists()) {
@@ -348,7 +364,7 @@ public class NetworkFetcher {
         deletingFile.delete();
     }
 
-    public static void saveBitmapToFile(Bitmap bitmap, String fileName, Context context) throws Throwable{
+    public synchronized static void saveBitmapToFile(Bitmap bitmap, String fileName, Context context) throws Throwable{
         Throwable error = null;
         File imageFile = null;
         OutputStream outputStream = null;
@@ -360,7 +376,13 @@ public class NetworkFetcher {
                 appDir.mkdirs();
             }
 
+
+
             imageFile = new File(appDir, fileName);
+
+            if(imageFile.exists()){
+                return;
+            }
 
             outputStream = new FileOutputStream(imageFile);
 

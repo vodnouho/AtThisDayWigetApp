@@ -400,7 +400,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
                     rView = new RemoteViews(mContext.getPackageName(),
                             R.layout.widget_item);
 
-                    Log.d(TAG, "updateViews mBgColor:"+mBgColor);
+
                     rView.setTextViewText(R.id.tvItemText, Html.fromHtml(f.text));
                     rView.setInt(R.id.tvItemText, "setTextColor", mTextColor);
                     rView.setInt(R.id.tvItemText, "setLinkTextColor", mTextColor);
@@ -413,8 +413,13 @@ public class ATDAppWidgetService extends RemoteViewsService {
                     factViewHolder.mFact = f;
                     mViewsHolder.add(factViewHolder);
 
+                    if(DEBUG && factViewHolder.mFact != null){
+                        Log.wtf(TAG, "factViewHolder.mFact.getThumbnailUrl()"+factViewHolder.mFact.getThumbnailUrl());
+                    }
+
                     //better start parallel request after mViewsHolder.add()
                     if (factViewHolder.mFact != null && factViewHolder.mFact.getThumbnailUrl() != null) {
+
                         mNetworkFetcher.requestImage(factViewHolder.mFact.getThumbnailUrl(), this);
                     } else if (f.mayHasThumbnail()) {
                         String findPictureUrlAt = f.getTitleForPicture();

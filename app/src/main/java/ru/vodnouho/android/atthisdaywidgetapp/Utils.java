@@ -9,11 +9,18 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 
+import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 /**
  * Created by petukhov on 07.04.2017.
  */
 
 public class Utils {
+
+    public static MessageDigest sMdEnc;
 
     public static int getTransparency(int rgb){
         int result = rgb & 0xFF000000;
@@ -65,4 +72,28 @@ public class Utils {
         return ret;
     }
 
+
+    public static String getMD5EncryptedString(String encTarget) {
+
+        try {
+            if(sMdEnc == null){
+                sMdEnc  = MessageDigest.getInstance("MD5");
+            }
+
+            byte[] b = encTarget.getBytes("UTF-8");
+            sMdEnc.update(b, 0, b.length);
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("Exception while encrypting to md5");
+            e.printStackTrace();
+        } // Encryption algorithm
+        catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+        String md5 = new BigInteger(1, sMdEnc.digest()).toString(16);
+        while (md5.length() < 32) {
+            md5 = "0" + md5;
+        }
+        return md5;
+    }
 }
