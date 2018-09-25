@@ -2,7 +2,7 @@ package ru.vodnouho.android.atthisdaywidgetapp;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.support.v4.content.ContextCompat;
+import androidx.core.content.ContextCompat;
 import android.text.Html;
 import android.util.Log;
 import android.util.TypedValue;

@@ -1,6 +1,6 @@
 package ru.vodnouho.android.atthisdaywidgetapp;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import android.text.Html;
 import android.util.Log;
 
@@ -8,7 +8,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Calendar;

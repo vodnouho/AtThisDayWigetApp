@@ -4,8 +4,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.support.annotation.Nullable;
-import android.support.v4.util.LruCache;
+import androidx.annotation.Nullable;
+import androidx.collection.LruCache;
 import android.util.Log;
 
 import com.android.volley.DefaultRetryPolicy;
@@ -21,27 +21,16 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
-import static android.R.attr.keySet;
 import static ru.vodnouho.android.atthisdaywidgetapp.SaveLoadHelper.readJson;
 import static ru.vodnouho.android.atthisdaywidgetapp.SaveLoadHelper.writeJson;
 
@@ -257,12 +246,12 @@ public class NetworkFetcher {
             Iterator<String> iterator = snapshot.keySet().iterator();
             while(iterator.hasNext()){
                 String key = iterator.next();
-                String imageFileName = i + ".jpg";
+                String imageFileName = i + ".png";
                 Bitmap bitmap = sImageCache.get(key);
                 try {
                     if(bitmap != null){
-                       // saveBitmapToFile(bitmap, imageFileName, sContext);
-                       // jsonObject.put(key, imageFileName);
+                        saveBitmapToFile(bitmap, imageFileName, sContext);
+                        jsonObject.put(key, imageFileName);
                     }
 
                     i++;
@@ -285,7 +274,7 @@ public class NetworkFetcher {
             if(!isFilesWroteCorrectly){
                 //clear all imageFiles
                 for(;i>=0;i--){
-                    deleteBitmapFile(i + ".jpg", sContext);
+                    deleteBitmapFile(i + ".png", sContext);
                 }
                 context.deleteFile(CACHE_BITMAP_FILE_NAME);
             }
