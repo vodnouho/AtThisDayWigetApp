@@ -426,12 +426,12 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
 
     void prepareTransparencySeekBar(Context context, int transparency) {
         mTransparencySeekBar = findViewById(R.id.transparency_seekBar);
-        mTransparencySeekBar.setProgress(transparency);
+        mTransparencySeekBar.setProgress(invert(transparency));
         mTransparencySeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if(fromUser){
-                   mTransparency = progress;
+                   mTransparency = invert(progress);
                    calcBgColor(mTransparency, mBaseBgColor);
                    drawWidget(mLang, mDate, mTheme);
                    mListAdapter.setTransparency(mTransparency);
@@ -449,6 +449,10 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
 
             }
         });
+    }
+
+    private int invert(int transparency) {
+        return 255 - transparency;
     }
 
     /**
