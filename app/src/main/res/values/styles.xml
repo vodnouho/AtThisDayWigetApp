@@ -5,4 +5,7 @@
         <!-- Customize your theme here. -->
     </style>
 
+    <style name="settingText" parent="@style/TextAppearance.AppCompat.Medium">
+        <item name="android:textSize">16sp</item>
+    </style>
 </resources>

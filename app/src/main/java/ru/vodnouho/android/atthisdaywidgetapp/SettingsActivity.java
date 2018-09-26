@@ -55,7 +55,7 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
     private static final String PREF_TRANSPARENCY_KEY = "transparency_widget_";
     private static final String PREF_TEXT_SIZE_KEY = "textsize_widget_";
 
-    public static final int BASE_TEXT_SIZE_SP = 12;
+    public static final int BASE_TEXT_SIZE_SP = 10;
     public static final int TEXT_SIZE_DIFF = 4;
 
     public static final String THEME_LIGHT = "1";

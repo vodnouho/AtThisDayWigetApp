@@ -212,6 +212,20 @@ public class DataAdapter extends BaseAdapter implements NetworkFetcher.OnLoadLis
             viewHolder.factTextTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, mTextSize);
             viewHolder.mListItemView.setBackgroundColor(mBgColor);
 
+            // show/hide year textView
+            if (dataHolder.fact == null || dataHolder.fact.getYearsAgoString() == null) {
+                viewHolder.yearTextView.setVisibility(View.GONE);
+
+            } else {
+                String localizedYearsAgoString = LocalizationUtils.getLocalizedString(
+                        R.string.years_ago, mLang, mContext,  dataHolder.fact.getYearsAgoString());
+
+                viewHolder.yearTextView.setText(localizedYearsAgoString);
+                viewHolder.yearTextView.setTextColor(mTextColor);
+                viewHolder.yearTextView.setVisibility(View.VISIBLE);
+            }
+
+
             // show/hide image
             if (dataHolder.fact == null || dataHolder.fact.getThumbnailUrl() == null || dataHolder.mImageBitmap == null) {
                 viewHolder.mImageView.setVisibility(View.GONE);
@@ -392,6 +406,7 @@ public class DataAdapter extends BaseAdapter implements NetworkFetcher.OnLoadLis
         TextView categoryNameTextView;
 
         //fact
+        TextView yearTextView;
         TextView factTextTextView;
         ImageView mImageView;
 
@@ -408,6 +423,7 @@ public class DataAdapter extends BaseAdapter implements NetworkFetcher.OnLoadLis
             mListItemView = convertView.findViewById(R.id.list_item_ViewGroup);
             factTextTextView = convertView.findViewById(R.id.tvItemText);
             mImageView = convertView.findViewById(R.id.fact_ImageView);
+            yearTextView = convertView.findViewById(R.id.yearItemText);
         }
     }
 }
