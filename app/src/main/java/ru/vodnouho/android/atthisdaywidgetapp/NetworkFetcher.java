@@ -4,26 +4,18 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import androidx.annotation.Nullable;
+
 import androidx.collection.LruCache;
 import android.util.Log;
 
-import com.android.volley.Cache;
 import com.android.volley.DefaultRetryPolicy;
-import com.android.volley.Network;
-import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
-import com.android.volley.RetryPolicy;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.BasicNetwork;
-import com.android.volley.toolbox.DiskBasedCache;
-import com.android.volley.toolbox.HurlStack;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
 import org.json.JSONException;
@@ -36,6 +28,7 @@ import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.Map;
 
+import static ru.vodnouho.android.atthisdaywidgetapp.BuildConfig.DEBUG;
 import static ru.vodnouho.android.atthisdaywidgetapp.SaveLoadHelper.readJson;
 import static ru.vodnouho.android.atthisdaywidgetapp.SaveLoadHelper.writeJson;
 
@@ -52,6 +45,11 @@ public class NetworkFetcher {
     private static final String CACHE_VOLLEY_DIRECTORY_NAME = "cache/volley";
     private static final String CACHE_BITMAP_EXTENSION = ".png";
     private static final Object sLock = new Object();
+    private static final long TIME_TO_LIVE_MILLIS = 1000 * 60 * 60 * 24 * 2; //two days
+
+
+
+
 
     private static NetworkFetcher sInstance;
     private static Context sContext;
@@ -72,9 +70,12 @@ public class NetworkFetcher {
         if (sInstance == null) {
             sInstance = new NetworkFetcher(context.getApplicationContext());
             sInstance.loadCacheFromFiles();
+            sInstance.deleteOldBitmapFiles(context.getApplicationContext());
         }
         return sInstance;
     }
+
+
 
     public static void saveState() {
         if (LOGD)
@@ -362,6 +363,28 @@ public class NetworkFetcher {
 
         File deletingFile = new File(appDir, fileName);
         deletingFile.delete();
+    }
+
+    private void deleteOldBitmapFiles(Context context) {
+        File appDir = null;
+        appDir = new File(context.getFilesDir(), CACHE_BITMAP_DIRECTORY_NAME);
+        if (!appDir.exists()) {
+            //no dirs - no file
+            return;
+        }
+
+        String[] fileNames = appDir.list();
+        if(fileNames != null){
+            long oldDate = System.currentTimeMillis() - TIME_TO_LIVE_MILLIS;
+            for (String fileName: fileNames ) {
+                File candidate = new File(appDir, fileName);
+                if(candidate.lastModified() < oldDate){
+                    candidate.delete();
+                    if(DEBUG) Log.d(TAG, "File:" + fileName + " deleted");
+                }
+            }
+        }
+
     }
 
     public synchronized static void saveBitmapToFile(Bitmap bitmap, String fileName, Context context) throws Throwable{
