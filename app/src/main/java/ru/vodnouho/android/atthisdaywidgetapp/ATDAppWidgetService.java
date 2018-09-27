@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import androidx.core.content.ContextCompat;
@@ -51,6 +52,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
     public static final String EXTRA_TEXT_SIZE = "ru.vodnouho.android.atthisdaywigetapp.EXTRA_TEXT_SIZE";
 
     public static final String ACTION_IMAGE_LOADED = "ru.vodnouho.android.atthisdaywidgetapp.ACTION_IMAGE_LOADED";
+
     public static final String ACTION_NO_DATA = "ru.vodnouho.android.atthisdaywidgetapp.ACTION_NO_DATA";
     public static final String ACTION_CONNECTIVITY_CHANGE = "android.net.conn.CONNECTIVITY_CHANGE";
 
@@ -135,8 +137,12 @@ public class ATDAppWidgetService extends RemoteViewsService {
                 if (LOGD)
                     Log.d(TAG, "WatchDog alive.");
 
-                Intent intent = new Intent(ACTION_IMAGE_LOADED);
+
+                //Intent intent = new Intent(ACTION_IMAGE_LOADED);
+                Intent intent = new Intent(CategoryListRemoteViewsFactory.this.mContext, OTDWidgetProvider.class);
+                intent.setAction(ACTION_IMAGE_LOADED);
                 intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
+                intent.setData(Uri.parse(intent.toUri(Intent.URI_INTENT_SCHEME)));
                 mContext.sendBroadcast(intent);
                 NetworkFetcher.saveState();
 
@@ -631,9 +637,9 @@ public class ATDAppWidgetService extends RemoteViewsService {
 
         @Override
         public void onError(String url, Object error) {
-            if (LOGD)
-                Log.d(TAG, "onError() reason:" + error.toString());
-
+            if (LOGD) {
+                Log.d(TAG, "onError() url:"+url+" reason:" + error.toString());
+            }
             ArrayList<Fact> isUrlRequest = mImageUrlRequests.get(url);
             if (isUrlRequest != null) {
                 wasErrorOnUrlLoad = true;

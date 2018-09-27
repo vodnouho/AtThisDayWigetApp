@@ -124,8 +124,9 @@ public class NetworkFetcher {
         //lets find in cache
         Bitmap cachedBitmap = sImageCache.get(url);
         if (cachedBitmap != null) {
-            if(LOGD)
+            if(LOGD){
                 Log.d(TAG, "from cache bitmap:"+url);
+            }
             listener.onImageLoaded(url, cachedBitmap);
             return;
         }
@@ -136,8 +137,9 @@ public class NetworkFetcher {
                 new Response.Listener<Bitmap>() {
                     @Override
                     public void onResponse(Bitmap bitmap) {
-                        if(LOGD)
+                        if(LOGD){
                             Log.d(TAG, "onResponse bitmap:"+url);
+                        }
                         Bitmap shadow = Utils.addShadow(bitmap,
                                 bitmap.getHeight(),
                                 bitmap.getWidth(),
