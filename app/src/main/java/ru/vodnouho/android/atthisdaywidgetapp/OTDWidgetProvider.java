@@ -195,8 +195,8 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         rv.setInt(R.id.emptyView, "setBackgroundColor", bgColor);
         rv.setInt(R.id.widget_container_ViewGroup, "setBackgroundColor", bgColor);
 
+        //title
         Date currentDate = new Date();
-
         setTitleText(rv, context, settingLang, currentDate);
         rv.setInt(R.id.titleTextView, "setTextColor", textColor);
         rv.setFloat(R.id.titleTextView, "setTextSize", textSize + SettingsActivity.TEXT_SIZE_DIFF);

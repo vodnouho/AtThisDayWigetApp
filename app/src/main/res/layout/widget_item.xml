@@ -44,15 +44,15 @@
 
     <ImageView
         android:id="@+id/fact_ImageView"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
+        android:layout_width="56dp"
+        android:layout_height="wrap_content"
         android:layout_gravity="top|right"
-        android:layout_marginBottom="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginTop="8dp"
 
+        android:layout_margin="8dp"
 
-        android:scaleType="fitCenter"
+        android:adjustViewBounds="true"
+
+        android:scaleType="fitXY"
         />
 
 </LinearLayout>
