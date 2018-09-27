@@ -40,6 +40,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import static ru.vodnouho.android.atthisdaywidgetapp.BuildConfig.DEBUG;
+import static ru.vodnouho.android.atthisdaywidgetapp.OTDWidgetProvider.HEADER_TRANSPARENCY_DIFF;
 
 public class SettingsActivity extends AppCompatActivity implements OnThisDayLogic.ModelChangedListener {
     private static final int READ_STORAGE_PERMISSION_REQUEST_CODE = 111;
@@ -264,7 +265,12 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
         findViewById(R.id.widget_container_ViewGroup).setBackgroundColor(mBgColor);
 
         //header
-        findViewById(R.id.title_ViewGroup).setBackgroundColor(mBgColor);
+        int headerTransparency = Utils.getTransparency(mBgColor) + HEADER_TRANSPARENCY_DIFF;
+        if(headerTransparency > 255){
+            headerTransparency = 255;
+        }
+        int headerColor = Utils.setTransparency(headerTransparency, mBgColor);
+        findViewById(R.id.title_ViewGroup).setBackgroundColor(headerColor);
 
         String titleText = LocalizationUtils.createLocalizedTitle(this, lang, date);
         TextView titleTextView = (TextView) findViewById(R.id.titleTextView);

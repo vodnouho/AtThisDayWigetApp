@@ -37,6 +37,7 @@ public class OTDWidgetProvider extends AppWidgetProvider {
     public static final String ACTION_DATE_CHANGED = "android.intent.action.DATE_CHANGED"; //Action for refresh widget
 
     public static final String EXTRA_ITEM = "ru.vodnouho.android.EXTRA_ITEM"; //Action for run OTD app
+    public static final int HEADER_TRANSPARENCY_DIFF = 32;
 
 
 
@@ -170,22 +171,18 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         }
 
         int bgColor = -1;
-        //int headerBgColor = -1;
         int textColor = -1;
         if(SettingsActivity.THEME_LIGHT.equals(settingTheme)){
 
             bgColor = ContextCompat.getColor(context, R.color.bgColor);
-            //headerBgColor = ContextCompat.getColor(context, R.color.headerBgColor);
             textColor = ContextCompat.getColor(context, R.color.textColor);
         }else{
             bgColor = ContextCompat.getColor(context, R.color.bgBlackColor);
-            //headerBgColor = ContextCompat.getColor(context, R.color.headerBgBlackColor);
             textColor = ContextCompat.getColor(context, R.color.textBlackColor);
         }
 
         int transparency = SettingsActivity.loadPrefTransparency(context, appWidgetId, 128);
         bgColor = Utils.setTransparency(transparency, bgColor);
-        //headerBgColor = bgColor;
 
         int textSize = SettingsActivity.loadPrefTextSize(context, appWidgetId);
 
@@ -195,12 +192,18 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         rv.setInt(R.id.emptyView, "setBackgroundColor", bgColor);
         rv.setInt(R.id.widget_container_ViewGroup, "setBackgroundColor", bgColor);
 
-        //title
+        //header
         Date currentDate = new Date();
         setTitleText(rv, context, settingLang, currentDate);
         rv.setInt(R.id.titleTextView, "setTextColor", textColor);
         rv.setFloat(R.id.titleTextView, "setTextSize", textSize + SettingsActivity.TEXT_SIZE_DIFF);
-        rv.setInt(R.id.title_ViewGroup, "setBackgroundColor", bgColor);
+
+        int headerTransparency = transparency + HEADER_TRANSPARENCY_DIFF;
+        if(headerTransparency > 255){
+            headerTransparency = 255;
+        }
+        int headerBgColor = Utils.setTransparency(headerTransparency, bgColor);
+        rv.setInt(R.id.title_ViewGroup, "setBackgroundColor", headerBgColor);
 
         rv.setInt(R.id.settingsImageButton, "setColorFilter", textColor);
 
