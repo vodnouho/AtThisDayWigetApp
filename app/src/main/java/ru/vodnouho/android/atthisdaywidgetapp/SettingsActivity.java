@@ -100,6 +100,48 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
 
         // Find the widget id from the intent.
         Intent intent = getIntent();
+        processIntent(intent);
+
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        processIntent(intent);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        if(savedInstanceState != null){
+            mLang = savedInstanceState.getString(PREF_LANG_KEY, mLang);
+            mTheme = savedInstanceState.getString(PREF_THEME_KEY, mTheme);
+            mTransparency = savedInstanceState.getInt(PREF_TRANSPARENCY_KEY, mTransparency);
+            mTextSize = savedInstanceState.getInt(PREF_TEXT_SIZE_KEY, mTextSize);
+        }
+
+        prepareLangSpinner(this, mLang);
+        prepareThemeSpinner(this, mTheme);
+        prepareTransparencySeekBar(this, mTransparency);
+        drawListView();
+
+        Log.d(TAG, "onRestoreInstanceState mLang:"+mLang);
+        Log.d(TAG, "onRestoreInstanceState mTransparency:"+mTransparency);
+
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        if(outState != null){
+            outState.putString(PREF_LANG_KEY, mLang);
+            outState.putString(PREF_THEME_KEY, mTheme);
+            outState.putInt(PREF_TRANSPARENCY_KEY, mTransparency);
+            outState.putInt(PREF_TEXT_SIZE_KEY, mTextSize);
+        }
+        super.onSaveInstanceState(outState);
+    }
+
+    private void processIntent(Intent intent){
         Bundle extras = intent.getExtras();
         if (extras != null) {
             mAppWidgetId = extras.getInt(
@@ -153,37 +195,6 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
 
         drawListView();
 
-    }
-
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        if(savedInstanceState != null){
-            mLang = savedInstanceState.getString(PREF_LANG_KEY, mLang);
-            mTheme = savedInstanceState.getString(PREF_THEME_KEY, mTheme);
-            mTransparency = savedInstanceState.getInt(PREF_TRANSPARENCY_KEY, mTransparency);
-            mTextSize = savedInstanceState.getInt(PREF_TEXT_SIZE_KEY, mTextSize);
-        }
-
-        prepareLangSpinner(this, mLang);
-        prepareThemeSpinner(this, mTheme);
-        prepareTransparencySeekBar(this, mTransparency);
-        drawListView();
-
-        Log.d(TAG, "onRestoreInstanceState mLang:"+mLang);
-        Log.d(TAG, "onRestoreInstanceState mTransparency:"+mTransparency);
-
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        if(outState != null){
-            outState.putString(PREF_LANG_KEY, mLang);
-            outState.putString(PREF_THEME_KEY, mTheme);
-            outState.putInt(PREF_TRANSPARENCY_KEY, mTransparency);
-            outState.putInt(PREF_TEXT_SIZE_KEY, mTextSize);
-        }
-        super.onSaveInstanceState(outState);
     }
 
     private void drawWallpaper(Context context) {

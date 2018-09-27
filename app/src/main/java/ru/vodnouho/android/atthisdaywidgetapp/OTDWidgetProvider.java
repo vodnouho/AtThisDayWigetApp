@@ -300,6 +300,7 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         intent.setAction(action);
         intent.setData(Uri.parse(APPWIDGET_CONFIGURE_URI+widgetId));
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 
         if (LOGD)
             Log.d(TAG, "getSettingIntent widgetId=" + widgetId + " intent" + intent);
