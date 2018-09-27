@@ -34,6 +34,7 @@ import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -223,7 +224,9 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
                     @Override
                     public void onClick(View v) {
                         if (DEBUG)Log.d(TAG, "checkPermissionForReadExtertalStorage");
+
                         requestPermissionForReadExtertalStorage( context);
+
                     }
                 });
                 mPermissionAlertView.setVisibility(View.VISIBLE);
@@ -250,6 +253,9 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     mPermissionAlertView.setVisibility(View.GONE);
                     drawWallpaper(this);
+                }else{
+                    Toast toast = Toast.makeText(this, R.string.request_permission, Toast.LENGTH_LONG);
+                    toast.show();
                 }
                 break;
         }

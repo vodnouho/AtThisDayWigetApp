@@ -41,4 +41,8 @@
         <item>Oscuro</item>
     </string-array>
 
+    <string name="request_permission">Necesito tu permiso para Mostrar el papel tapiz de la pantalla principal.</string>
+    <string name="settings_text_size">Tamaño del texto:</string>
+    <string name="settings_transparency">Transparencia:</string>
+
 </resources>

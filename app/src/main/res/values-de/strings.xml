@@ -38,4 +38,8 @@
         <item>Dunkel</item>
     </string-array>
 
+    <string name="request_permission">Ich brauche deine Erlaubnis, um die Tapete des hauptbildschirms zu zeigen.</string>
+    <string name="settings_text_size">Textgröße:</string>
+    <string name="settings_transparency">Transparenz:</string>
+
 </resources>

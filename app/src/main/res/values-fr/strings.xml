@@ -39,6 +39,7 @@
         <item>Sombre</item>
     </string-array>
 
-
-
+    <string name="request_permission">J\'ai besoin de votre permission pour montrer le papier peint de l\'écran principal.</string>
+    <string name="settings_text_size">La taille du texte:</string>
+    <string name="settings_transparency">Transparence:</string>
 </resources>

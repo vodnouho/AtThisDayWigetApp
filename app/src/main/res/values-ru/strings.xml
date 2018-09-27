@@ -45,5 +45,5 @@
     <string name="install">Установить</string>
     <string name="plz_resfresh">и обновите виджет</string>
     <string name="refresh">Обновить</string>
-
+    <string name="request_permission">Мне нужно ваше разрешение, чтобы показать обои основного экрана.</string>
 </resources>

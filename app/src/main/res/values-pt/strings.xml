@@ -43,4 +43,9 @@
     <string name="install">Install</string>
     <string name="refresh">Refresh</string>
     <string name="plz_resfresh">and refresh widget</string>
+
+    <string name="request_permission">Eu preciso de sua permissão para mostrar o papel de parede da tela.</string>
+    <string name="settings_text_size">Tamanho do texto:</string>
+    <string name="settings_transparency">Transparência:</string>
+
 </resources>
