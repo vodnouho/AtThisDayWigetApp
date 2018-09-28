@@ -201,7 +201,7 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
     private void drawWallpaper(Context context) {
         ImageView wallpaperImageView = findViewById(R.id.wallpaper_ImageView);
         if(!checkPermissionForReadExtertalStorage(context)){
-            wallpaperImageView.setBackgroundColor(Color.GRAY);
+            wallpaperImageView.setBackgroundColor(getResources().getColor(R.color.linkTextColor));
             return;
         }
 
@@ -334,7 +334,7 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
 
     private int calcTransparency(Context context, int appWidgetId) {
         //transparency
-        int transparency = Utils.getTransparency(mBaseBgColor);
+        int transparency = 128;//Utils.getTransparency(mBaseBgColor);
 
         //search in preference
 /*
@@ -395,6 +395,11 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
                     mLogic.unregisterModelChangedListener(SettingsActivity.this);
                     mLogic = OnThisDayLogic.getInstance(mDateString, mLang, SettingsActivity.this);
                     mLogic.registerModelChangedListener(SettingsActivity.this);
+
+                    if(mListAdapter != null){
+                        mListAdapter.clearData();
+                        mListAdapter.notifyDataSetChanged();
+                    }
 
                     showLoading();
                     mLogic.loadData();

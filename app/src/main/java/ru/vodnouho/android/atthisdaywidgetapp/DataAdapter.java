@@ -77,6 +77,16 @@ public class DataAdapter extends BaseAdapter implements NetworkFetcher.OnLoadLis
         }
     }
 
+    public void clearData() {
+        if(mData != null){
+            mData.clear();
+        }
+        if(mDataHolders != null){
+            mDataHolders.clear();
+        }
+    }
+
+
     public void setData(ArrayList<Category> data, String lang) {
         mData = data;
         mLang = lang;

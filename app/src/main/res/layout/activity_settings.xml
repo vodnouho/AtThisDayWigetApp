@@ -206,7 +206,7 @@
         android:paddingRight="8dp"
         android:paddingEnd="8dp"
 
-        android:max="4"
+        android:max="6"
         android:progress="3"
 
         app:layout_constraintEnd_toEndOf="parent"
