@@ -470,6 +470,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
             }
             Intent fillInIntent = new Intent();
             fillInIntent.replaceExtras(extras);
+            fillInIntent.setData(Uri.parse(fillInIntent.toUri(Intent.URI_INTENT_SCHEME)));
             // Make it possible to distinguish the individual on-click
             // action of a given item
             rv.setOnClickFillInIntent(viewId, fillInIntent);
@@ -514,7 +515,6 @@ public class ATDAppWidgetService extends RemoteViewsService {
             // show/hide year textView
             if (holder.mFact == null || holder.mFact.getYearsAgoString() == null) {
                 holder.mViews.setViewVisibility(R.id.yearItemText, View.GONE);
-
             } else {
                 String localizedYearsAgoString = LocalizationUtils.getLocalizedString(
                         R.string.years_ago, mLang, mContext, holder.mFact.getYearsAgoString());
@@ -522,6 +522,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
                 holder.mViews.setViewVisibility(R.id.yearItemText, View.VISIBLE);
                 holder.mViews.setInt(R.id.yearItemText, "setTextColor", mTextColor);
             }
+
 
             return mViewsHolder.get(position).mViews;
         }
