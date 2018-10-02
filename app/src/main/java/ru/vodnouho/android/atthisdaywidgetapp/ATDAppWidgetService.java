@@ -420,7 +420,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
                     mViewsHolder.add(factViewHolder);
 
                     if(DEBUG && factViewHolder.mFact != null){
-                        Log.wtf(TAG, "factViewHolder.mFact.getThumbnailUrl()"+factViewHolder.mFact.getThumbnailUrl());
+                        Log.d(TAG, "factViewHolder.mFact.getThumbnailUrl():"+factViewHolder.mFact.getThumbnailUrl());
                     }
 
                     //better start parallel request after mViewsHolder.add()

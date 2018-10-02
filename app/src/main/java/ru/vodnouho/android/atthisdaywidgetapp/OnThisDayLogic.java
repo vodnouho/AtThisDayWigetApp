@@ -106,6 +106,9 @@ public class OnThisDayLogic implements Loader.OnLoadCompleteListener<Cursor> {
     private boolean isModelLoadedFromFile() {
         if(LOGD) Log.d(TAG, "isModelLoadedFromFile" );
 
+        return false;
+
+/*
         if(isFileExist(mCacheFileName, mContext)){
             try {
                 JSONObject jsonObject = readJson(mCacheFileName, mContext);
@@ -117,14 +120,17 @@ public class OnThisDayLogic implements Loader.OnLoadCompleteListener<Cursor> {
             }
         }
         return false;
+*/
     }
 
     private boolean isModelLoaded() {
+/*
         if(mModel != null
                 && mModel.categories != null
                 && mModel.categories.size() > 0){
             return true;
         }
+*/
         return false;
     }
 
@@ -150,11 +156,13 @@ public class OnThisDayLogic implements Loader.OnLoadCompleteListener<Cursor> {
 
             mModel = new OnThisDayModel(mDateString, mLang, categories, false, isError);
             if(!isError){
+/*
                 try {
                     saveModelToFile(mModel, mCacheFileName, mContext);
                 } catch (JSONException | IOException e) {
                     Log.e(TAG, "Can't save model", e);
                 }
+*/
             }
             notifyListeners();
         }
