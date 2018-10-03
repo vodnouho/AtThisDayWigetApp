@@ -3,6 +3,8 @@ package ru.vodnouho.android.atthisdaywidgetapp;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.loader.content.CursorLoader;
 import androidx.loader.content.Loader;
@@ -28,12 +30,12 @@ import static ru.vodnouho.android.atthisdaywidgetapp.SaveLoadHelper.writeJson;
  * 3. обрабатывает события, которые могут привести к созданию модели
  */
 
-public class OnThisDayLogic implements Loader.OnLoadCompleteListener<Cursor> {
+public class OnThisDayLogic implements Loader.OnLoadCompleteListener<Cursor>, Loader.OnLoadCanceledListener<Cursor> {
     private static final String TAG = "vdnh.OnThisDayLogic";
     //храним живые сервисы по EXTRA_APPWIDGET_ID
     private static ConcurrentHashMap<String, OnThisDayLogic> mapByWDateLang = new ConcurrentHashMap<String, OnThisDayLogic>(3);
     //TODO убрать костыль. массив поддерживаемых языков для генерации ID лоадера
-    private static String[] sLangArray = {"ff", "de","en","es","fr","ru"};
+    private static String[] sLangArray = {"ff", "de","en","es","fr","ru","pt"};
 
     private ArrayList<ModelChangedListener> mListeners = new ArrayList<>();
     private OnThisDayModel mModel;
@@ -49,7 +51,7 @@ public class OnThisDayLogic implements Loader.OnLoadCompleteListener<Cursor> {
         String key = dateString + "_" + lang;
         OnThisDayLogic onThisDayLogic = mapByWDateLang.get(key);
         if (onThisDayLogic == null) {
-            onThisDayLogic = new OnThisDayLogic(dateString, lang, context);
+            onThisDayLogic = new OnThisDayLogic(dateString, lang, context.getApplicationContext());
             mapByWDateLang.put(key, onThisDayLogic);
         }
         return onThisDayLogic;
@@ -84,6 +86,15 @@ public class OnThisDayLogic implements Loader.OnLoadCompleteListener<Cursor> {
         }
     }
 
+    public void refreshData(){
+        if(mCategoryLoader != null){
+            mCategoryLoader.cancelLoad();
+            mCategoryLoader = null;
+        }
+        initCategoryLoader();
+        loadData();
+    }
+
     public void loadData() {
         if(LOGD) Log.d(TAG, "loadData" );
 
@@ -99,7 +110,7 @@ public class OnThisDayLogic implements Loader.OnLoadCompleteListener<Cursor> {
             if(mCategoryLoader == null){
                 initCategoryLoader();
             }
-            mCategoryLoader.forceLoad();
+            mCategoryLoader.startLoading(); //mCategoryLoader.forceLoad();
         }
     }
 
@@ -133,6 +144,14 @@ public class OnThisDayLogic implements Loader.OnLoadCompleteListener<Cursor> {
 */
         return false;
     }
+
+
+    @Override
+    public void onLoadCanceled(@NonNull Loader<Cursor> loader) {
+        mModel = new OnThisDayModel(mDateString, mLang, null, false, true);
+
+        notifyListeners();
+     }
 
 
     @Override
@@ -238,7 +257,6 @@ public class OnThisDayLogic implements Loader.OnLoadCompleteListener<Cursor> {
         mCategoryLoader.registerListener(loaderId, this);
         mCategoryLoader.startLoading();
 
-
         if (LOGD)
             Log.d(TAG, "Start loading " + uri);
 
@@ -277,6 +295,8 @@ public class OnThisDayLogic implements Loader.OnLoadCompleteListener<Cursor> {
 
         return categories;
     }
+
+
 
 
     public interface ModelChangedListener {

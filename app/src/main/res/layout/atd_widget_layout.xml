@@ -1,57 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
 
-             android:id="@+id/widget_container_ViewGroup"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent"
-             android:padding="1dp"
-    >
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_container_ViewGroup"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <LinearLayout
+        android:id="@+id/title_ViewGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_gravity="center"
+            android:padding="4dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_widget"
+
+            />
+
+        <TextView
+            android:id="@+id/titleTextView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/title"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+
+            />
+
+        <ImageView
+            android:id="@+id/settingsImageButton"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center"
+
+            android:layout_margin="8dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_settings_white_24dp"
+
+            />
+    </LinearLayout>
+
+    <FrameLayout
+
+
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
+
         >
-
-        <LinearLayout
-            android:id="@+id/title_ViewGroup"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <ImageView
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:src="@drawable/ic_widget"
-                android:layout_gravity="center"
-                android:scaleType="fitCenter"
-                android:padding="4dp"
-
-                />
-
-            <TextView
-                android:id="@+id/titleTextView"
-                android:layout_width="match_parent"
-                android:layout_weight="1"
-
-                android:layout_height="match_parent"
-                android:text="@string/title"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                android:gravity="center"
-
-                />
-            <ImageView
-                android:id="@+id/settingsImageButton"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_settings_white_24dp"
-
-                android:layout_gravity="center"
-                android:scaleType="fitCenter"
-                android:layout_margin="8dp"
-
-                />
-        </LinearLayout>
 
         <ListView
             android:id="@+id/listView"
@@ -60,38 +63,35 @@
             android:divider="#00444444"
             android:dividerHeight="4dp"
             android:fadeScrollbars="false"
-            android:padding="0dp"
-            />
+            android:padding="0dp" />
 
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/emptyView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:showDividers="middle"
-
-        >
-
-        <TextView
-
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:text=" "
-            android:textAppearance="?android:attr/textAppearanceLarge"/>
-
-
-        <TextView
-            android:id="@+id/loading_textView"
+        <LinearLayout
+            android:id="@+id/emptyView"
             android:layout_width="match_parent"
-            android:layout_height="75dp"
-            android:gravity="center_vertical|center_horizontal"
-            android:text="@string/loading_inprogress"
-            android:textColor="@color/textBlackColor"
-            android:textAppearance="?android:attr/textAppearanceLarge"/>
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:showDividers="middle"
 
-    </LinearLayout>
+            >
 
-</FrameLayout>
+            <TextView
+
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text=" "
+                android:textAppearance="?android:attr/textAppearanceLarge" />
+
+
+            <TextView
+                android:id="@+id/loading_textView"
+                android:layout_width="match_parent"
+                android:layout_height="75dp"
+                android:gravity="center_vertical|center_horizontal"
+                android:text="@string/loading_inprogress"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textColor="@color/textBlackColor" />
+
+        </LinearLayout>
+    </FrameLayout>
+</LinearLayout>

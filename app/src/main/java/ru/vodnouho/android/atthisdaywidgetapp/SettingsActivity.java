@@ -402,7 +402,7 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
                     }
 
                     showLoading();
-                    mLogic.loadData();
+                    mLogic.refreshData();
                     drawWidget(mLang, mDate, mTheme);
                 }
                 //TODO Update argument to preserve selected value on rotation

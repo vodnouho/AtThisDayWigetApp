@@ -66,6 +66,9 @@ public class OTDWidgetProvider extends AppWidgetProvider {
 
         }else if (intent.getAction().equals(ACTION_REFRESH) ) {
             Log.d(TAG, "OTDWidgetProvider catch the intent: " + intent.toString());
+
+            refreshData(intent, context);
+
             int appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
                     AppWidgetManager.INVALID_APPWIDGET_ID);
 
@@ -89,6 +92,15 @@ public class OTDWidgetProvider extends AppWidgetProvider {
             //super.onReceive(context, intent);
         }
 
+    }
+
+    private void refreshData(Intent intent, Context context) {
+        String dateString = intent.getStringExtra(ATDAppWidgetService.EXTRA_WIDGET_DATE);
+        String langString = intent.getStringExtra(ATDAppWidgetService.EXTRA_WIDGET_LANG);
+
+        if(dateString != null && langString != null){
+            OnThisDayLogic.getInstance(dateString, langString, context).refreshData();
+        }
     }
 
 
@@ -207,7 +219,7 @@ public class OTDWidgetProvider extends AppWidgetProvider {
 
         rv.setInt(R.id.settingsImageButton, "setColorFilter", textColor);
 
-        rv.setOnClickPendingIntent(R.id.titleTextView, getPendingSelfIntent(context, ACTION_REFRESH, appWidgetId));
+        rv.setOnClickPendingIntent(R.id.titleTextView, getPendingSelfIntent(context, ACTION_REFRESH, appWidgetId, currentDate, currentLang));
         rv.setOnClickPendingIntent(R.id.settingsImageButton, getSettingIntent(context,
                 AppWidgetManager.ACTION_APPWIDGET_CONFIGURE,
                 appWidgetId));
@@ -289,7 +301,7 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         plzInstallString = LocalizationUtils.getLocalizedString(R.string.refresh, settingLang, context);
         rv.setTextViewText(R.id.refreshButton, plzInstallString);
 
-        rv.setOnClickPendingIntent(R.id.refreshButton, getPendingSelfIntent(context, ACTION_REFRESH, appWidgetId));
+        rv.setOnClickPendingIntent(R.id.refreshButton, getPendingSelfIntent(context, ACTION_REFRESH, appWidgetId, new Date(), currentLang ));
 
         return rv;
 
@@ -308,10 +320,15 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         return PendingIntent.getActivity(context, widgetId, intent, 0);
     }
 
-    protected static PendingIntent getPendingSelfIntent(Context context, String action, int widgetId) {
+    protected static PendingIntent getPendingSelfIntent(Context context, String action, int widgetId, Date date, String lang) {
+        String dateS = dateString(date);
+
         Intent intent = new Intent(context, OTDWidgetProvider.class);
         intent.setAction(action);
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
+        intent.putExtra(ATDAppWidgetService.EXTRA_WIDGET_DATE, dateS);
+        intent.putExtra(ATDAppWidgetService.EXTRA_WIDGET_LANG, lang);
+        intent.setData(Uri.parse(intent.toUri(Intent.URI_INTENT_SCHEME)));
 
         if (LOGD)
             Log.d(TAG, "getPendingSelfIntent widgetId=" + widgetId + " intent" + intent);
@@ -363,6 +380,11 @@ public class OTDWidgetProvider extends AppWidgetProvider {
 
     }
 
+    private static String dateString(Date date){
+        SimpleDateFormat sdf = new SimpleDateFormat("MMdd");
+        return sdf.format(date);
+    }
+
 
     /**
      * @param context
@@ -374,10 +396,7 @@ public class OTDWidgetProvider extends AppWidgetProvider {
      */
     private static void setList(RemoteViews rv, Context context, String lang, Date date, int appWidgetId, boolean isNoData) {
 
-
-        SimpleDateFormat sdf = new SimpleDateFormat("MMdd");
-        String dateS = sdf.format(date);
-
+        String dateS = dateString(date);
 
         String settingTheme = SettingsActivity.loadPrefTheme(context, appWidgetId);
         if (settingTheme == null || settingTheme.isEmpty()) {
