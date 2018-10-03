@@ -110,7 +110,7 @@ public class OnThisDayLogic implements Loader.OnLoadCompleteListener<Cursor>, Lo
             if(mCategoryLoader == null){
                 initCategoryLoader();
             }
-            mCategoryLoader.startLoading(); //mCategoryLoader.forceLoad();
+            mCategoryLoader.forceLoad();
         }
     }
 
@@ -157,7 +157,7 @@ public class OnThisDayLogic implements Loader.OnLoadCompleteListener<Cursor>, Lo
     @Override
     public void onLoadComplete(Loader<Cursor> loader, Cursor data) {
         if (LOGD)
-            Log.d(TAG, "onLoadComplete() id=" + loader.getId());
+            Log.d(TAG, "onLoadComplete() id=" + loader.getId() + " data:"+data);
         int loaderType = loader.getId();
 
         if (mCategoryLoader.equals(loader)) {
