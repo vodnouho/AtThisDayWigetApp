@@ -295,6 +295,7 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
         titleTextView.setText(titleText);
         titleTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP,mTextSize + TEXT_SIZE_DIFF);
         ((ImageView) findViewById(R.id.settingsImageButton)).setColorFilter(mTextColor);
+        ((ImageView) findViewById(R.id.refreshImageButton)).setColorFilter(mTextColor);
     }
 
     private void  drawListView(){

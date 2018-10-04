@@ -218,8 +218,10 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         rv.setInt(R.id.title_ViewGroup, "setBackgroundColor", headerBgColor);
 
         rv.setInt(R.id.settingsImageButton, "setColorFilter", textColor);
+        rv.setInt(R.id.refreshImageButton, "setColorFilter", textColor);
 
-        rv.setOnClickPendingIntent(R.id.titleTextView, getRefreshIntent(context, ACTION_REFRESH, appWidgetId, currentDate, currentLang));
+        rv.setOnClickPendingIntent(R.id.titleTextView, getRefreshIntent(context, ACTION_REFRESH, appWidgetId, currentDate, settingLang));
+        rv.setOnClickPendingIntent(R.id.refreshImageButton, getRefreshIntent(context, ACTION_REFRESH, appWidgetId, currentDate, settingLang));
         rv.setOnClickPendingIntent(R.id.settingsImageButton, getSettingIntent(context,
                 AppWidgetManager.ACTION_APPWIDGET_CONFIGURE,
                 appWidgetId));
@@ -301,7 +303,7 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         plzInstallString = LocalizationUtils.getLocalizedString(R.string.refresh, settingLang, context);
         rv.setTextViewText(R.id.refreshButton, plzInstallString);
 
-        rv.setOnClickPendingIntent(R.id.refreshButton, getRefreshIntent(context, ACTION_REFRESH, appWidgetId, new Date(), currentLang ));
+        rv.setOnClickPendingIntent(R.id.refreshButton, getRefreshIntent(context, ACTION_REFRESH, appWidgetId, new Date(), settingLang ));
 
         return rv;
 
