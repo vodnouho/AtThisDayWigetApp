@@ -300,7 +300,7 @@ public class NetworkFetcher {
 
 
 
-    private synchronized void loadCacheFromFiles() {
+    private static synchronized void loadCacheFromFiles() {
         //load summaries
 
         try {
@@ -334,7 +334,7 @@ public class NetworkFetcher {
                 while(keysItr.hasNext()) {
                     String key = keysItr.next();
                     //Object value = savedJsonCache.get(key);
-                    String value = Utils.getMD5EncryptedString(key);
+                    String value = Utils.getMD5EncryptedString(key) + CACHE_BITMAP_EXTENSION;
 
 
 
@@ -437,13 +437,19 @@ public class NetworkFetcher {
 
     }
 
-    private Bitmap loadBitmapFromFile(String fileName, Context context){
+    private static Bitmap loadBitmapFromFile(String fileName, Context context){
         File appDir = new File(context.getFilesDir(), CACHE_BITMAP_DIRECTORY_NAME);
         File imageFile = new File(appDir, fileName);
         Bitmap bitmap = BitmapFactory.decodeFile(imageFile.getPath());
         return bitmap;
     }
 
+    public static Bitmap getCachedBitmap(String thumbnailUrl) {
+        Bitmap bitmap = sImageCache.get(thumbnailUrl);
+        if(DEBUG)
+            Log.d(TAG, "bitmap from cache:"+bitmap);
+        return bitmap;
+    }
 
 
     public interface OnLoadListener {

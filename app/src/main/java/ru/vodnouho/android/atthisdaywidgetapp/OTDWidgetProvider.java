@@ -219,7 +219,7 @@ public class OTDWidgetProvider extends AppWidgetProvider {
 
         rv.setInt(R.id.settingsImageButton, "setColorFilter", textColor);
 
-        rv.setOnClickPendingIntent(R.id.titleTextView, getPendingSelfIntent(context, ACTION_REFRESH, appWidgetId, currentDate, currentLang));
+        rv.setOnClickPendingIntent(R.id.titleTextView, getRefreshIntent(context, ACTION_REFRESH, appWidgetId, currentDate, currentLang));
         rv.setOnClickPendingIntent(R.id.settingsImageButton, getSettingIntent(context,
                 AppWidgetManager.ACTION_APPWIDGET_CONFIGURE,
                 appWidgetId));
@@ -301,7 +301,7 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         plzInstallString = LocalizationUtils.getLocalizedString(R.string.refresh, settingLang, context);
         rv.setTextViewText(R.id.refreshButton, plzInstallString);
 
-        rv.setOnClickPendingIntent(R.id.refreshButton, getPendingSelfIntent(context, ACTION_REFRESH, appWidgetId, new Date(), currentLang ));
+        rv.setOnClickPendingIntent(R.id.refreshButton, getRefreshIntent(context, ACTION_REFRESH, appWidgetId, new Date(), currentLang ));
 
         return rv;
 
@@ -320,7 +320,7 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         return PendingIntent.getActivity(context, widgetId, intent, 0);
     }
 
-    protected static PendingIntent getPendingSelfIntent(Context context, String action, int widgetId, Date date, String lang) {
+    protected static PendingIntent getRefreshIntent(Context context, String action, int widgetId, Date date, String lang) {
         String dateS = dateString(date);
 
         Intent intent = new Intent(context, OTDWidgetProvider.class);
@@ -328,10 +328,11 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
         intent.putExtra(ATDAppWidgetService.EXTRA_WIDGET_DATE, dateS);
         intent.putExtra(ATDAppWidgetService.EXTRA_WIDGET_LANG, lang);
+        intent.putExtra("UNIQ_TIME", System.currentTimeMillis()); //system can't reuse old Intent
         intent.setData(Uri.parse(intent.toUri(Intent.URI_INTENT_SCHEME)));
 
         if (LOGD)
-            Log.d(TAG, "getPendingSelfIntent widgetId=" + widgetId + " intent" + intent);
+            Log.d(TAG, "getRefreshIntent widgetId=" + widgetId + " intent" + intent);
 
         return PendingIntent.getBroadcast(context, widgetId, intent, 0);
     }

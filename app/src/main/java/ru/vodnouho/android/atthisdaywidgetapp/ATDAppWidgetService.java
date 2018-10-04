@@ -129,7 +129,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
             @Override
             public void run() {
                 try {
-                    Thread.sleep(1500);
+                    Thread.sleep(3000);
                 } catch (InterruptedException e) {
                     Log.e(TAG, "Interrupted", e);
                 }
@@ -415,7 +415,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
 
                     setOnClickFillInIntent(rView, R.id.list_item_ViewGroup, c.id, f.id);
 
-                    ATDAppWidgetService.CategoryListRemoteViewsFactory.RemoteViewsHolder factViewHolder = new ATDAppWidgetService.CategoryListRemoteViewsFactory.RemoteViewsHolder(rView, ATDAppWidgetService.CategoryListRemoteViewsFactory.RemoteViewsHolder.TYPE_FACT);
+                    RemoteViewsHolder factViewHolder = new RemoteViewsHolder(rView, ATDAppWidgetService.CategoryListRemoteViewsFactory.RemoteViewsHolder.TYPE_FACT);
                     factViewHolder.mFact = f;
                     mViewsHolder.add(factViewHolder);
 
@@ -425,7 +425,13 @@ public class ATDAppWidgetService extends RemoteViewsService {
 
                     //better start parallel request after mViewsHolder.add()
                     if (factViewHolder.mFact != null && factViewHolder.mFact.getThumbnailUrl() != null) {
-                        mNetworkFetcher.requestImage(factViewHolder.mFact.getThumbnailUrl(), this);
+                        Bitmap image = mNetworkFetcher.getCachedBitmap(factViewHolder.mFact.getThumbnailUrl());
+                        if(image != null){
+                            factViewHolder.mImageBitmap = image;
+                        }else{
+                            mNetworkFetcher.requestImage(factViewHolder.mFact.getThumbnailUrl(), this);
+                        }
+
                     } else if (f.mayHasThumbnail()) {
                         String findPictureUrlAt = f.getTitleForPicture();
                         if (findPictureUrlAt != null) {
