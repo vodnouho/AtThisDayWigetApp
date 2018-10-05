@@ -651,7 +651,14 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
                 notifyOnDataChanged();
             }
         }
-        hideLoading();
+        this.runOnUiThread(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        hideLoading();
+                    }
+                }
+        );
     }
 
     private void hideLoading(){
