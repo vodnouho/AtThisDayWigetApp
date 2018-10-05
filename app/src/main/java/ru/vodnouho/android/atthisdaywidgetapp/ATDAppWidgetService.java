@@ -498,7 +498,9 @@ public class ATDAppWidgetService extends RemoteViewsService {
         //you can fetch some here !!!
         @Override
         public RemoteViews getViewAt(int position) {
-            if (mViewsHolder == null || mViewsHolder.size() == 0 || mViewsHolder.size() < (position - 1)) {
+            if (mViewsHolder == null
+                    || mViewsHolder.size() == 0
+                    || mViewsHolder.size() <= position ) {
                 return null;
             }
 
