@@ -28,6 +28,7 @@ public class SaveLoadHelper {
     private static String TAG = "vdnh.SaveLoadHelper";
 
     public static void writeJson(JSONObject json, String fileName, Context context) throws IOException {
+        if(LOGD) Log.d(TAG, "writeJson:"+fileName);
         Writer w = null;
         OutputStream out;
 
@@ -74,6 +75,11 @@ public class SaveLoadHelper {
         }
 
         return result;
+    }
+
+    public static boolean deleteFile(String fileName, Context context) {
+        if(LOGD) Log.d(TAG, "deleteFile:"+fileName);
+        return context.deleteFile(fileName);
     }
 
     public static boolean isFileExist(String cacheFileName, Context context) {

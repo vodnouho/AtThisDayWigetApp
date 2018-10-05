@@ -87,6 +87,7 @@ public class OnThisDayLogic implements Loader.OnLoadCompleteListener<Cursor>, Lo
     }
 
     public void refreshData(){
+        SaveLoadHelper.deleteFile(mCacheFileName, mContext);
         if(mCategoryLoader != null){
             mCategoryLoader.cancelLoad();
             mCategoryLoader = null;
@@ -117,9 +118,9 @@ public class OnThisDayLogic implements Loader.OnLoadCompleteListener<Cursor>, Lo
     private boolean isModelLoadedFromFile() {
         if(LOGD) Log.d(TAG, "isModelLoadedFromFile" );
 
-        return false;
+        //return false;
 
-/*
+
         if(isFileExist(mCacheFileName, mContext)){
             try {
                 JSONObject jsonObject = readJson(mCacheFileName, mContext);
@@ -131,7 +132,7 @@ public class OnThisDayLogic implements Loader.OnLoadCompleteListener<Cursor>, Lo
             }
         }
         return false;
-*/
+
     }
 
     private boolean isModelLoaded() {
@@ -174,14 +175,16 @@ public class OnThisDayLogic implements Loader.OnLoadCompleteListener<Cursor>, Lo
             }
 
             mModel = new OnThisDayModel(mDateString, mLang, categories, false, isError);
-            if(!isError){
-/*
+            if(!isError
+                    && mModel.categories != null
+                    && mModel.categories.size() > 2){
+
                 try {
                     saveModelToFile(mModel, mCacheFileName, mContext);
                 } catch (JSONException | IOException e) {
                     Log.e(TAG, "Can't save model", e);
                 }
-*/
+
             }
             notifyListeners();
         }
