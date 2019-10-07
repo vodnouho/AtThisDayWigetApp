@@ -10,8 +10,11 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.net.Uri;
+
 import androidx.core.content.ContextCompat;
+
 import android.util.Log;
+import android.view.View;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
@@ -24,68 +27,94 @@ import static ru.vodnouho.android.atthisdaywidgetapp.BuildConfig.DEBUG;
  * Created on 13.08.2015.
  */
 public class OTDWidgetProvider extends AppWidgetProvider {
+    private static final String WIDGET_PACKAGE = "ru.vodnouho.android.atthisdaywidgetapp";
     private static final String TAG = "vdnh.OTDWidgetProvider";
     public static final String APPWIDGET_CONFIGURE = "ru.vodnouho.android.atthisdaywidgetapp.APPWIDGET_CONFIGURE";
-    public static final String APPWIDGET_CONFIGURE_URI ="otd://ru.vodnouho.android.atthisdaywidgetapp.SettingsActivity/";
+    public static final String APPWIDGET_CONFIGURE_URI = "otd://ru.vodnouho.android.atthisdaywidgetapp.SettingsActivity/";
 
     public static final boolean LOGD = true;
 
     private static final String CONTENT_PROVIDER_PACKAGE = "ru.vodnouho.android.yourday";
     public static final String RUN_ACTION = "ru.vodnouho.android.RUN_ACTION"; //Action for run OTD app
     public static final String ACTION_REFRESH = "ru.vodnouho.android.ACTION_REFRESH"; //Action for refresh widget
+    public static final String ACTION_RATE = "ru.vodnouho.android.ACTION_RATE"; //Action for refresh widget
 
     public static final String ACTION_DATE_CHANGED = "android.intent.action.DATE_CHANGED"; //Action for refresh widget
 
     public static final String EXTRA_ITEM = "ru.vodnouho.android.EXTRA_ITEM"; //Action for run OTD app
     public static final int HEADER_TRANSPARENCY_DIFF = 32;
 
-
-
+    private static boolean isNeedRate = true;
 
     // Called when the BroadcastReceiver receives an Intent broadcast.
     @Override
     public void onReceive(Context context, Intent intent) {
         if (LOGD)
-            Log.d(TAG, "OTDWidgetProvider got the action:"+intent.getAction()+" intent: " + intent.toString());
+            Log.d(TAG, "OTDWidgetProvider got the action:" + intent.getAction() + " intent: " + intent.toString());
         super.onReceive(context, intent);
 
         AppWidgetManager mgr = AppWidgetManager.getInstance(context);
+
+        int appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
+                AppWidgetManager.INVALID_APPWIDGET_ID);
+
         if (intent.getAction().equals(RUN_ACTION)) {
-            int appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
-                    AppWidgetManager.INVALID_APPWIDGET_ID);
+
             String extra = intent.getStringExtra(EXTRA_ITEM);
             Toast.makeText(context, "Touched view " + extra, Toast.LENGTH_SHORT).show();
 
-        } else if (intent.getAction().equals(ACTION_DATE_CHANGED)){
+        } else if (intent.getAction().equals(ACTION_DATE_CHANGED)) {
             int[] appWidgetIds = mgr.getAppWidgetIds(
                     new ComponentName(context, OTDWidgetProvider.class)
             );
-            for(int i=0; i<appWidgetIds.length; i++){
+            for (int i = 0; i < appWidgetIds.length; i++) {
                 updateAppWidget(context, mgr, appWidgetIds[i], false);
             }
 
-        }else if (intent.getAction().equals(ACTION_REFRESH) ) {
+        } else if (intent.getAction().equals(ACTION_REFRESH)) {
             Log.d(TAG, "OTDWidgetProvider catch the intent: " + intent.toString());
 
             refreshData(intent, context);
-
-            int appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
-                    AppWidgetManager.INVALID_APPWIDGET_ID);
-
             AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
             updateAppWidget(context, appWidgetManager, appWidgetId, false);
+
         } else if (intent.getAction().equals(ATDAppWidgetService.ACTION_IMAGE_LOADED)) {
             if (LOGD)
                 Log.d(TAG, " Image loaded ! widgetId:" + intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID));
-            int appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
-                    AppWidgetManager.INVALID_APPWIDGET_ID);
+
             AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
             updateAppWidget(context, appWidgetManager, appWidgetId, false);
+
+        }else if(intent.getAction().equals(ACTION_RATE)){
+            //save action
+
+
+            SettingsActivity.setNeedRate(context, false);
+
+            Intent nIntent;
+
+            try {
+                //TODO link to BETA !!!
+                //intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/apps/testing/ru.vodnouho.android.yourday"));
+                nIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + WIDGET_PACKAGE));
+            } catch (android.content.ActivityNotFoundException anfe) {
+                nIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + WIDGET_PACKAGE));
+            }
+            nIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(nIntent);
+
+            int[] appWidgetIds = mgr.getAppWidgetIds(
+                    new ComponentName(context, OTDWidgetProvider.class)
+            );
+            for (int i = 0; i < appWidgetIds.length; i++) {
+                updateAppWidget(context, mgr, appWidgetIds[i], false);
+            }
+
+
         } else if (intent.getAction().equals(ATDAppWidgetService.ACTION_NO_DATA)) {
             if (LOGD)
                 Log.d(TAG, "No data received" + intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID));
-            int appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
-                    AppWidgetManager.INVALID_APPWIDGET_ID);
+
             AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
             updateAppWidget(context, appWidgetManager, appWidgetId, true);
         } else {
@@ -98,7 +127,7 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         String dateString = intent.getStringExtra(ATDAppWidgetService.EXTRA_WIDGET_DATE);
         String langString = intent.getStringExtra(ATDAppWidgetService.EXTRA_WIDGET_LANG);
 
-        if(dateString != null && langString != null){
+        if (dateString != null && langString != null) {
             OnThisDayLogic.getInstance(dateString, langString, context).refreshData();
         }
     }
@@ -159,7 +188,11 @@ public class OTDWidgetProvider extends AppWidgetProvider {
 
     }
 
-    private static RemoteViews createView(Context context, int appWidgetId, boolean isNoData){
+    private static boolean isNeedRate(Context context) {
+        return SettingsActivity.isNeedRate(context);
+    }
+
+    private static RemoteViews createView(Context context, int appWidgetId, boolean isNoData) {
         //no content provider
 
         RemoteViews rv = new RemoteViews(context.getPackageName(),
@@ -184,11 +217,11 @@ public class OTDWidgetProvider extends AppWidgetProvider {
 
         int bgColor = -1;
         int textColor = -1;
-        if(SettingsActivity.THEME_LIGHT.equals(settingTheme)){
+        if (SettingsActivity.THEME_LIGHT.equals(settingTheme)) {
 
             bgColor = ContextCompat.getColor(context, R.color.bgColor);
             textColor = ContextCompat.getColor(context, R.color.textColor);
-        }else{
+        } else {
             bgColor = ContextCompat.getColor(context, R.color.bgBlackColor);
             textColor = ContextCompat.getColor(context, R.color.textBlackColor);
         }
@@ -198,7 +231,7 @@ public class OTDWidgetProvider extends AppWidgetProvider {
 
         int textSize = SettingsActivity.loadPrefTextSize(context, appWidgetId);
 
-        if(DEBUG)  Log.d(TAG, "textSize:"+textSize);
+        if (DEBUG) Log.d(TAG, "textSize:" + textSize);
 
         rv.setInt(R.id.loading_textView, "setTextColor", textColor);
         rv.setInt(R.id.emptyView, "setBackgroundColor", bgColor);
@@ -211,7 +244,7 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         rv.setFloat(R.id.titleTextView, "setTextSize", textSize + SettingsActivity.TEXT_SIZE_DIFF);
 
         int headerTransparency = transparency + HEADER_TRANSPARENCY_DIFF;
-        if(headerTransparency > 255){
+        if (headerTransparency > 255) {
             headerTransparency = 255;
         }
         int headerBgColor = Utils.setTransparency(headerTransparency, bgColor);
@@ -229,10 +262,18 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         //start service for getData and create Views
         setList(rv, context, settingLang, currentDate, appWidgetId, isNoData);
 
+
+        if(isNeedRate(context)){
+            createViewPleaseRate(rv, context, appWidgetId);
+            rv.setViewVisibility(R.id.plz_rate_ViewGroup, View.VISIBLE);
+        }else{
+            rv.setViewVisibility(R.id.plz_rate_ViewGroup, View.GONE);
+        }
+
         return rv;
     }
 
-    private static RemoteViews createViewPleaseInstall(Context context, int appWidgetId){
+    private static RemoteViews createViewPleaseInstall(Context context, int appWidgetId) {
         //no content provider
 
         RemoteViews rv = new RemoteViews(context.getPackageName(),
@@ -258,12 +299,12 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         int bgColor = -1;
         int headerBgColor = -1;
         int textColor = -1;
-        if(SettingsActivity.THEME_LIGHT.equals(settingTheme)){
+        if (SettingsActivity.THEME_LIGHT.equals(settingTheme)) {
 
             bgColor = ContextCompat.getColor(context, R.color.bgColor);
             headerBgColor = ContextCompat.getColor(context, R.color.headerBgColor);
             textColor = ContextCompat.getColor(context, R.color.textColor);
-        }else{
+        } else {
             bgColor = ContextCompat.getColor(context, R.color.bgBlackColor);
             headerBgColor = ContextCompat.getColor(context, R.color.headerBgBlackColor);
             textColor = ContextCompat.getColor(context, R.color.textBlackColor);
@@ -303,7 +344,65 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         plzInstallString = LocalizationUtils.getLocalizedString(R.string.refresh, settingLang, context);
         rv.setTextViewText(R.id.refreshButton, plzInstallString);
 
-        rv.setOnClickPendingIntent(R.id.refreshButton, getRefreshIntent(context, ACTION_REFRESH, appWidgetId, new Date(), settingLang ));
+        rv.setOnClickPendingIntent(R.id.refreshButton, getRefreshIntent(context, ACTION_REFRESH, appWidgetId, new Date(), settingLang));
+
+        return rv;
+
+    }
+
+    private static RemoteViews createViewPleaseRate(RemoteViews rv, Context context, int appWidgetId) {
+        //no content provider
+
+
+        //save current Lang
+        Resources res = context.getResources();
+        Configuration conf = res.getConfiguration();
+        String currentLang = conf.locale.getLanguage();
+
+
+        //get settings lang
+        String settingLang = SettingsActivity.loadPrefLang(context, appWidgetId);
+        if (settingLang == null || settingLang.isEmpty()) {
+            settingLang = currentLang;
+        }
+
+        String settingTheme = SettingsActivity.loadPrefTheme(context, appWidgetId);
+        if (settingTheme == null || settingTheme.isEmpty()) {
+            settingTheme = SettingsActivity.THEME_LIGHT;
+        }
+
+        int bgColor = -1;
+        int headerBgColor = -1;
+        int textColor = -1;
+        if (SettingsActivity.THEME_LIGHT.equals(settingTheme)) {
+
+            bgColor = ContextCompat.getColor(context, R.color.bgColor);
+            headerBgColor = ContextCompat.getColor(context, R.color.headerBgColor);
+            textColor = ContextCompat.getColor(context, R.color.textColor);
+        } else {
+            bgColor = ContextCompat.getColor(context, R.color.bgBlackColor);
+            headerBgColor = ContextCompat.getColor(context, R.color.headerBgBlackColor);
+            textColor = ContextCompat.getColor(context, R.color.textBlackColor);
+        }
+
+
+        rv.setInt(R.id.plz_rate_ViewGroup, "setBackgroundColor", bgColor);
+
+
+        String plzInstallString = LocalizationUtils.getLocalizedString(R.string.plz_rate_otd, settingLang, context);
+        rv.setTextViewText(R.id.plz_rate_otd_TextView, plzInstallString);
+        rv.setInt(R.id.plz_rate_otd_TextView, "setTextColor", textColor);
+
+        plzInstallString = LocalizationUtils.getLocalizedString(R.string.rate, settingLang, context);
+        rv.setTextViewText(R.id.rateButton, plzInstallString);
+        //rv.setInt(R.id.installButton, "setTextColor", textColor);
+
+
+        // Create an Intent to launch Play Market
+
+        PendingIntent refreshIntent = getRefreshIntent(context, ACTION_RATE, appWidgetId, new Date(), settingLang);
+
+        rv.setOnClickPendingIntent(R.id.rateButton, refreshIntent);
 
         return rv;
 
@@ -312,7 +411,7 @@ public class OTDWidgetProvider extends AppWidgetProvider {
     protected static PendingIntent getSettingIntent(Context context, String action, int widgetId) {
         Intent intent = new Intent(context, SettingsActivity.class);
         intent.setAction(action);
-        intent.setData(Uri.parse(APPWIDGET_CONFIGURE_URI+widgetId));
+        intent.setData(Uri.parse(APPWIDGET_CONFIGURE_URI + widgetId));
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 
@@ -356,8 +455,6 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         String currentLang = conf.locale.getLanguage();
 
 
-
-
         String titleText;
         //get title by setting lang. Use context lang, so synchronize it
         //noinspection SynchronizationOnLocalVariableOrMethodParameter
@@ -383,7 +480,7 @@ public class OTDWidgetProvider extends AppWidgetProvider {
 
     }
 
-    private static String dateString(Date date){
+    private static String dateString(Date date) {
         SimpleDateFormat sdf = new SimpleDateFormat("MMdd");
         return sdf.format(date);
     }
@@ -408,12 +505,12 @@ public class OTDWidgetProvider extends AppWidgetProvider {
 
         int bgColor = -1;
         int textColor = -1;
-        if(SettingsActivity.THEME_LIGHT.equals(settingTheme)){
-            bgColor = ContextCompat.getColor(context,R.color.bgColor);
-            textColor = ContextCompat.getColor(context,R.color.textColor);
-        }else{
-            bgColor = ContextCompat.getColor(context,R.color.bgBlackColor);
-            textColor = ContextCompat.getColor(context,R.color.textBlackColor);
+        if (SettingsActivity.THEME_LIGHT.equals(settingTheme)) {
+            bgColor = ContextCompat.getColor(context, R.color.bgColor);
+            textColor = ContextCompat.getColor(context, R.color.textColor);
+        } else {
+            bgColor = ContextCompat.getColor(context, R.color.bgBlackColor);
+            textColor = ContextCompat.getColor(context, R.color.textBlackColor);
         }
 
         int transparency = SettingsActivity.loadPrefTransparency(context, appWidgetId, 128);
@@ -430,9 +527,9 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         adapter.putExtra(ATDAppWidgetService.EXTRA_WIDGET_THEME, settingTheme);
         adapter.putExtra(ATDAppWidgetService.EXTRA_WIDGET_DATE, dateS);
         adapter.putExtra(ATDAppWidgetService.EXTRA_BG_COLOR, bgColor);
-        adapter.putExtra(ATDAppWidgetService.EXTRA_TEXT_SIZE, textSize );
+        adapter.putExtra(ATDAppWidgetService.EXTRA_TEXT_SIZE, textSize);
         adapter.setData(Uri.parse(adapter.toUri(Intent.URI_INTENT_SCHEME)));
-        Log.d(TAG, "setRemoteAdapter id:"+appWidgetId + " lang:"+lang + " dateS:"+dateS);
+        Log.d(TAG, "setRemoteAdapter id:" + appWidgetId + " lang:" + lang + " dateS:" + dateS);
         rv.setRemoteAdapter(R.id.listView, adapter);
         //rv.setInt(R.id.listView, "setBackgroundColor", bgColor);
 
@@ -463,7 +560,7 @@ public class OTDWidgetProvider extends AppWidgetProvider {
         PendingIntent pendingIntent = PendingIntent.getActivity(context, appWidgetId, appIntent, 0);
         rv.setPendingIntentTemplate(R.id.listView, pendingIntent);
 
-        if(!isNoData){
+        if (!isNoData) {
             AppWidgetManager.getInstance(context).notifyAppWidgetViewDataChanged(appWidgetId, R.id.listView);
         }
 

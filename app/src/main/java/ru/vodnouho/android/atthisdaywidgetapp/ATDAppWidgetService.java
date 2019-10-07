@@ -1,17 +1,22 @@
 package ru.vodnouho.android.atthisdaywidgetapp;
 
 
+import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+
 import androidx.core.content.ContextCompat;
+
 import android.text.Html;
 import android.util.Log;
 import android.view.View;
@@ -40,6 +45,8 @@ import static ru.vodnouho.android.atthisdaywidgetapp.OTDWidgetProvider.LOGD;
  * The communication from the RemoteViewsFactory to the AppWidgetProvider can be done using Broadcasts
  */
 public class ATDAppWidgetService extends RemoteViewsService {
+
+
     private static String TAG = "vdnh.WidgetService";
     //храним живые сервисы по EXTRA_APPWIDGET_ID
     private static ConcurrentHashMap<String, CategoryListRemoteViewsFactory> mapByWidgetId = new ConcurrentHashMap<String, CategoryListRemoteViewsFactory>(3);
@@ -77,7 +84,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
 
         //сохраним для виджета
         categoryListRemoteViewsFactory = mapByWidgetId.get(appWidgetId);
-        if (categoryListRemoteViewsFactory == null ){
+        if (categoryListRemoteViewsFactory == null) {
             categoryListRemoteViewsFactory = new CategoryListRemoteViewsFactory(getApplicationContext(), intent);
             //TODO we don't need a map mapByWidgetId.put(appWidgetId, categoryListRemoteViewsFactory);
         }
@@ -96,6 +103,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
     public static class CategoryListRemoteViewsFactory extends BroadcastReceiver
             implements RemoteViewsFactory,
             NetworkFetcher.OnLoadListener, OnThisDayLogic.ModelChangedListener {
+
 
         private int mTextColor;
         private int mLinkTextColor;
@@ -164,11 +172,9 @@ public class ATDAppWidgetService extends RemoteViewsService {
                 = Collections.synchronizedMap(new HashMap<String, ArrayList<Fact>>());
 
 
-
         public CategoryListRemoteViewsFactory() {
             super();
         }
-
 
 
         public CategoryListRemoteViewsFactory(Context context, Intent intent) {
@@ -199,11 +205,11 @@ public class ATDAppWidgetService extends RemoteViewsService {
 
         }
 
-        public void refreshParameters(Context context){
+        public void refreshParameters(Context context) {
             mLang = SettingsActivity.loadPrefLang(context, mAppWidgetId);
             String settingTheme = SettingsActivity.loadPrefTheme(context, mAppWidgetId);
 
-            if(DEBUG) Log.d(TAG, "refreshParameters lang:"+mLang+" theme:"+settingTheme);
+            if (DEBUG) Log.d(TAG, "refreshParameters lang:" + mLang + " theme:" + settingTheme);
 
             mBgColor = -1;
             mTextColor = -1;
@@ -220,12 +226,12 @@ public class ATDAppWidgetService extends RemoteViewsService {
 
             //
             mTransparency = SettingsActivity.loadPrefTransparency(context, mAppWidgetId, mTransparency);
-            Log.d(TAG, "refreshParameters mTransparency:"+mTransparency);
+            Log.d(TAG, "refreshParameters mTransparency:" + mTransparency);
             mBgColor = Utils.setTransparency(mTransparency, mBgColor);
 
             mTextSize = SettingsActivity.loadPrefTextSize(context, mAppWidgetId);
-            Log.d(TAG, "textSize:"+mTextSize);
-            Log.d(TAG, "refreshParameters mBgColor:"+mBgColor);
+            Log.d(TAG, "textSize:" + mTextSize);
+            Log.d(TAG, "refreshParameters mBgColor:" + mBgColor);
 
             //updateViews();
         }
@@ -323,7 +329,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
         @Override
         public void onDataSetChanged() {
             if (LOGD)
-                Log.d(TAG, "onDataSetChanged() mModel:"+mModel);
+                Log.d(TAG, "onDataSetChanged() mModel:" + mModel);
 
             //no DataProvider - no Data. kekeke!
             if (!DataFetcher.isProviderInstalled(mContext)) {
@@ -354,10 +360,11 @@ public class ATDAppWidgetService extends RemoteViewsService {
                     Log.d(TAG, "fixing wasErrorOnImageLoad:" + wasErrorOnImageLoad);
                 wasErrorOnImageLoad = false;
 
-
-                for (RemoteViewsHolder h : mViewsHolder) {
-                    if (h.mFact != null && h.mFact.getThumbnailUrl() != null && h.mImageBitmap == null) {
-                        mNetworkFetcher.requestImage(h.mFact.getThumbnailUrl(), CategoryListRemoteViewsFactory.this);
+                synchronized (mViewsHolder) {
+                    for (RemoteViewsHolder h : mViewsHolder) {
+                        if (h.mFact != null && h.mFact.getThumbnailUrl() != null && h.mImageBitmap == null) {
+                            mNetworkFetcher.requestImage(h.mFact.getThumbnailUrl(), CategoryListRemoteViewsFactory.this);
+                        }
                     }
                 }
             }
@@ -366,7 +373,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
         }
 
         private void updateViews() {
-            if(LOGD) Log.d(TAG, "updateViews()");
+            if (LOGD) Log.d(TAG, "updateViews()");
 
             //once get localized MORE string
             String localizedMoreString = LocalizationUtils.getLocalizedString(R.string.more, mLang, mContext);
@@ -375,7 +382,9 @@ public class ATDAppWidgetService extends RemoteViewsService {
             if (mViewsHolder == null) {
                 mViewsHolder = Collections.synchronizedList(new ArrayList<ATDAppWidgetService.CategoryListRemoteViewsFactory.RemoteViewsHolder>());
             } else {
-                mViewsHolder.clear();
+                synchronized (mViewsHolder) {
+                    mViewsHolder.clear();
+                }
             }
 
             if (mModel == null || mModel.categories == null) {
@@ -384,66 +393,67 @@ public class ATDAppWidgetService extends RemoteViewsService {
             }
 
 
-            for (Category c : mModel.categories) {
-                //category name
-                RemoteViews rView = new RemoteViews(mContext.getPackageName(),
-                        R.layout.widget_item_category);
+            synchronized (mViewsHolder) {
+                for (Category c : mModel.categories) {
+                    //category name
+                    RemoteViews rView = new RemoteViews(mContext.getPackageName(),
+                            R.layout.widget_item_category);
 
 
-                rView.setTextViewText(R.id.tvItemText, c.name);
-                rView.setInt(R.id.tvItemText, "setTextColor", mTextColor);
-                rView.setFloat(R.id.tvItemText, "setTextSize", mTextSize + SettingsActivity.TEXT_SIZE_DIFF);
-
-
-                setOnClickFillInIntent(rView, R.id.list_item_ViewGroup, c.id, null);
-
-                mViewsHolder.add(new RemoteViewsHolder(rView, RemoteViewsHolder.TYPE_CATEGORY_NAME));
-
-                ArrayList<Fact> facts = c.getFavFacts();
-                for (int i = 0; i < facts.size(); i++) {
-                    Fact f = facts.get(i);
-
-                    rView = new RemoteViews(mContext.getPackageName(),
-                            R.layout.widget_item);
-
-
-                    rView.setTextViewText(R.id.tvItemText, Html.fromHtml(f.text));
+                    rView.setTextViewText(R.id.tvItemText, c.name);
                     rView.setInt(R.id.tvItemText, "setTextColor", mTextColor);
-                    rView.setInt(R.id.tvItemText, "setLinkTextColor", mTextColor);
-                    rView.setFloat(R.id.tvItemText, "setTextSize", mTextSize);
-                    rView.setInt(R.id.list_item_ViewGroup, "setBackgroundColor", mBgColor);
+                    rView.setFloat(R.id.tvItemText, "setTextSize", mTextSize + SettingsActivity.TEXT_SIZE_DIFF);
 
-                    setOnClickFillInIntent(rView, R.id.list_item_ViewGroup, c.id, f.id);
 
-                    RemoteViewsHolder factViewHolder = new RemoteViewsHolder(rView, ATDAppWidgetService.CategoryListRemoteViewsFactory.RemoteViewsHolder.TYPE_FACT);
-                    factViewHolder.mFact = f;
-                    mViewsHolder.add(factViewHolder);
+                    setOnClickFillInIntent(rView, R.id.list_item_ViewGroup, c.id, null);
 
-                    if(DEBUG && factViewHolder.mFact != null){
-                        Log.d(TAG, "factViewHolder.mFact.getThumbnailUrl():"+factViewHolder.mFact.getThumbnailUrl());
-                    }
 
-                    //better start parallel request after mViewsHolder.add()
-                    if (factViewHolder.mFact != null && factViewHolder.mFact.getThumbnailUrl() != null) {
-                        Bitmap image = mNetworkFetcher.getCachedBitmap(factViewHolder.mFact.getThumbnailUrl());
-                        if(image != null){
-                            factViewHolder.mImageBitmap = image;
-                        }else{
-                            mNetworkFetcher.requestImage(factViewHolder.mFact.getThumbnailUrl(), this);
+                    mViewsHolder.add(new RemoteViewsHolder(rView, RemoteViewsHolder.TYPE_CATEGORY_NAME));
+
+                    ArrayList<Fact> facts = c.getFavFacts();
+                    for (int i = 0; i < facts.size(); i++) {
+                        Fact f = facts.get(i);
+
+                        rView = new RemoteViews(mContext.getPackageName(),
+                                R.layout.widget_item);
+
+
+                        rView.setTextViewText(R.id.tvItemText, Html.fromHtml(f.text));
+                        rView.setInt(R.id.tvItemText, "setTextColor", mTextColor);
+                        rView.setInt(R.id.tvItemText, "setLinkTextColor", mTextColor);
+                        rView.setFloat(R.id.tvItemText, "setTextSize", mTextSize);
+                        rView.setInt(R.id.list_item_ViewGroup, "setBackgroundColor", mBgColor);
+
+                        setOnClickFillInIntent(rView, R.id.list_item_ViewGroup, c.id, f.id);
+
+                        RemoteViewsHolder factViewHolder = new RemoteViewsHolder(rView, ATDAppWidgetService.CategoryListRemoteViewsFactory.RemoteViewsHolder.TYPE_FACT);
+                        factViewHolder.mFact = f;
+                        mViewsHolder.add(factViewHolder);
+
+                        if (DEBUG && factViewHolder.mFact != null) {
+                            Log.d(TAG, "factViewHolder.mFact.getThumbnailUrl():" + factViewHolder.mFact.getThumbnailUrl());
                         }
 
-                    } else if (f.mayHasThumbnail()) {
-                        String findPictureUrlAt = f.getTitleForPicture();
-                        if (findPictureUrlAt != null) {
-                            addImageUrlRequest(findPictureUrlAt, f);
-                            mNetworkFetcher.requestJsonObject(findPictureUrlAt, this);
+                        //better start parallel request after mViewsHolder.add()
+                        if (factViewHolder.mFact != null && factViewHolder.mFact.getThumbnailUrl() != null) {
+                            Bitmap image = mNetworkFetcher.getCachedBitmap(factViewHolder.mFact.getThumbnailUrl());
+                            if (image != null) {
+                                factViewHolder.mImageBitmap = image;
+                            } else {
+                                mNetworkFetcher.requestImage(factViewHolder.mFact.getThumbnailUrl(), this);
+                            }
+
+                        } else if (f.mayHasThumbnail()) {
+                            String findPictureUrlAt = f.getTitleForPicture();
+                            if (findPictureUrlAt != null) {
+                                addImageUrlRequest(findPictureUrlAt, f);
+                                mNetworkFetcher.requestJsonObject(findPictureUrlAt, this);
+                            }
                         }
                     }
-
                 }
-
-
             }
+
 
         }
 
@@ -500,39 +510,44 @@ public class ATDAppWidgetService extends RemoteViewsService {
         public RemoteViews getViewAt(int position) {
             if (mViewsHolder == null
                     || mViewsHolder.size() == 0
-                    || mViewsHolder.size() <= position ) {
+                    || mViewsHolder.size() <= position) {
                 return null;
             }
 
-            RemoteViewsHolder holder = mViewsHolder.get(position);
-
+            RemoteViews mViews;
+            RemoteViewsHolder holder;
+            synchronized (mViewsHolder) {
+                holder = mViewsHolder.get(position);
+            }
+                mViews = holder.mViews;
             /*if (LOGD) {
                 Log.d(TAG, "getViewAt(" + position + ")");
             }*/
 
 
-            // show/hide image
-            if (holder.mFact == null || holder.mFact.getThumbnailUrl() == null || holder.mImageBitmap == null) {
-                holder.mViews.setViewVisibility(R.id.fact_ImageView, View.GONE);
-            } else {
-                holder.mViews.setImageViewBitmap(R.id.fact_ImageView, holder.mImageBitmap);
-                holder.mViews.setViewVisibility(R.id.fact_ImageView, View.VISIBLE);
-                //holder.mViews.setInt(R.id.fact_ImageView, "setBackgroundColor", mBgColor);
-            }
+                // show/hide image
+                if (holder.mFact == null || holder.mFact.getThumbnailUrl() == null || holder.mImageBitmap == null) {
+                    holder.mViews.setViewVisibility(R.id.fact_ImageView, View.GONE);
+                } else {
+                    holder.mViews.setImageViewBitmap(R.id.fact_ImageView, holder.mImageBitmap);
+                    holder.mViews.setViewVisibility(R.id.fact_ImageView, View.VISIBLE);
+                    //holder.mViews.setInt(R.id.fact_ImageView, "setBackgroundColor", mBgColor);
+                }
 
-            // show/hide year textView
-            if (holder.mFact == null || holder.mFact.getYearsAgoString() == null) {
-                holder.mViews.setViewVisibility(R.id.yearItemText, View.GONE);
-            } else {
-                String localizedYearsAgoString = LocalizationUtils.getLocalizedString(
-                        R.string.years_ago, mLang, mContext, holder.mFact.getYearsAgoString());
-                holder.mViews.setTextViewText(R.id.yearItemText, localizedYearsAgoString);
-                holder.mViews.setViewVisibility(R.id.yearItemText, View.VISIBLE);
-                holder.mViews.setInt(R.id.yearItemText, "setTextColor", mTextColor);
-            }
+                // show/hide year textView
+                if (holder.mFact == null || holder.mFact.getYearsAgoString() == null) {
+                    holder.mViews.setViewVisibility(R.id.yearItemText, View.GONE);
+                } else {
+                    String localizedYearsAgoString = LocalizationUtils.getLocalizedString(
+                            R.string.years_ago, mLang, mContext, holder.mFact.getYearsAgoString());
+                    holder.mViews.setTextViewText(R.id.yearItemText, localizedYearsAgoString);
+                    holder.mViews.setViewVisibility(R.id.yearItemText, View.VISIBLE);
+                    holder.mViews.setInt(R.id.yearItemText, "setTextColor", mTextColor);
+                }
 
 
-            return mViewsHolder.get(position).mViews;
+
+            return mViews;
         }
 
         /*
@@ -647,7 +662,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
         @Override
         public void onError(String url, Object error) {
             if (LOGD) {
-                Log.d(TAG, "onError() url:"+url+" reason:" + error.toString());
+                Log.d(TAG, "onError() url:" + url + " reason:" + error.toString());
             }
             ArrayList<Fact> isUrlRequest = mImageUrlRequests.get(url);
             if (isUrlRequest != null) {
@@ -716,6 +731,7 @@ public class ATDAppWidgetService extends RemoteViewsService {
         private class RemoteViewsHolder {
             static final int TYPE_CATEGORY_NAME = 1;
             static final int TYPE_FACT = 2;
+            static final int TYPE_PLZ_RATE = 3;
 
             RemoteViews mViews;
             int mType;

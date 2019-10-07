@@ -68,6 +68,9 @@
     <string name="loading_error">Information is not available</string>
     <string name="request_permission">I need the permission to show the wallpaper.</string>
 
+    <string name="rate">Rate "On this day" widget </string>
+    <string name="plz_rate_otd">Thank you for using "On this day" widget!\nWe would highly appreciate your feedback on the app.\nPlease rate it.</string>
+
 
     <!--string name="event1_ru"><![CDATA[<a href="http://wikipedia.org">День полотенца</a>]]>. День памяти британского писателя Дугласа Адамса. </string>
     <string name="event2_ru"><![CDATA[1977 — в кинотеатрах начался показ фильма «Звёздные войны. Эпизод IV: Новая надежда», ставшего первым по размерам кассовых сборов.]]> </string>

@@ -45,4 +45,7 @@
     <string name="settings_text_size">Tamaño del texto:</string>
     <string name="settings_transparency">Transparencia:</string>
 
+    <string name="rate">Puntúa Widget "En este día" </string>
+    <string name="plz_rate_otd">¡Gracias por usar Widget "En este día"!\nAgradeceríamos una valoración de la aplicación.\nNo te olvides de puntuarla.</string>
+
 </resources>

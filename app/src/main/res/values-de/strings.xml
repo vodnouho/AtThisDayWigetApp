@@ -42,4 +42,8 @@
     <string name="settings_text_size">Textgröße:</string>
     <string name="settings_transparency">Transparenz:</string>
 
+    <string name="rate">Rate "An diesem Tag" widget </string>
+    <string name="plz_rate_otd">Danke für das benutzen von "An diesem Tag" widget!\nWir würden uns sehr über Feedback freuen.</string>
+
+
 </resources>

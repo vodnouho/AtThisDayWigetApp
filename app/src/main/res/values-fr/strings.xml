@@ -42,4 +42,8 @@
     <string name="request_permission">J\'ai besoin de votre permission pour montrer le papier peint de l\'écran principal.</string>
     <string name="settings_text_size">La taille du texte:</string>
     <string name="settings_transparency">Transparence:</string>
+
+    <string name="rate">Noter "Ce jour là" widget </string>
+    <string name="plz_rate_otd">Merci d\'utiliser "Ce jour là" widget!\nNous apprecierions grandement votre retour sur l\'application.\nMerci de la noter.</string>
+
 </resources>

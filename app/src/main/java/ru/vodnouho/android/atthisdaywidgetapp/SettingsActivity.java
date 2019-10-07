@@ -14,13 +14,13 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-import androidx.annotation.RequiresApi;
+
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.appcompat.app.AppCompatActivity;
+
 import android.os.Bundle;
 import android.util.Log;
 import android.util.TypedValue;
@@ -57,12 +57,16 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
     private static final String PREF_TRANSPARENCY_KEY = "transparency_widget_";
     private static final String PREF_TEXT_SIZE_KEY = "textsize_widget_";
 
+
     public static final int BASE_TEXT_SIZE_SP = 10;
     public static final int TEXT_SIZE_DIFF = 4;
 
     public static final String THEME_LIGHT = "1";
     public static final String THEME_BLACK = "2";
 
+
+    private static final String PREF_RATE_TIME = "PREF_RATE_TIME";
+    private static long sRateTimeValue = 0;
 
 
     int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
@@ -114,7 +118,7 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        if(savedInstanceState != null){
+        if (savedInstanceState != null) {
             mLang = savedInstanceState.getString(PREF_LANG_KEY, mLang);
             mTheme = savedInstanceState.getString(PREF_THEME_KEY, mTheme);
             mTransparency = savedInstanceState.getInt(PREF_TRANSPARENCY_KEY, mTransparency);
@@ -126,14 +130,14 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
         prepareTransparencySeekBar(this, mTransparency);
         drawListView();
 
-        Log.d(TAG, "onRestoreInstanceState mLang:"+mLang);
-        Log.d(TAG, "onRestoreInstanceState mTransparency:"+mTransparency);
+        Log.d(TAG, "onRestoreInstanceState mLang:" + mLang);
+        Log.d(TAG, "onRestoreInstanceState mTransparency:" + mTransparency);
 
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        if(outState != null){
+        if (outState != null) {
             outState.putString(PREF_LANG_KEY, mLang);
             outState.putString(PREF_THEME_KEY, mTheme);
             outState.putInt(PREF_TRANSPARENCY_KEY, mTransparency);
@@ -142,7 +146,7 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
         super.onSaveInstanceState(outState);
     }
 
-    private void processIntent(Intent intent){
+    private void processIntent(Intent intent) {
         Bundle extras = intent.getExtras();
         if (extras != null) {
             mAppWidgetId = extras.getInt(
@@ -157,7 +161,7 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
         //Set land and activate listener for lang spinner
         mLang = calcLang(this, mAppWidgetId);
         prepareLangSpinner(this, mLang);
-        Log.d(TAG, "onCreate mLang:"+mLang);
+        Log.d(TAG, "onCreate mLang:" + mLang);
 
         //Set theme and activate listener for theme spinner
         mTheme = calcTheme(this, mAppWidgetId);
@@ -168,12 +172,12 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
         //Set transparency and activate listener for seek bar
         mTransparency = calcTransparency(this, mAppWidgetId);
         prepareTransparencySeekBar(this, mTransparency);
-        Log.d(TAG, "onCreate mTransparency:"+mTransparency);
+        Log.d(TAG, "onCreate mTransparency:" + mTransparency);
 
         //Set transparency and activate listener for seek bar
         mTextSize = calcTextSize(this, mAppWidgetId);
         prepareTextSizeSeekBar(this, mTextSize);
-        Log.d(TAG, "onCreate mTextSize:"+mTextSize);
+        Log.d(TAG, "onCreate mTextSize:" + mTextSize);
 
         calcBgColor(mBgColor, mTransparency);
 
@@ -200,7 +204,7 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
 
     private void drawWallpaper(Context context) {
         ImageView wallpaperImageView = findViewById(R.id.wallpaper_ImageView);
-        if(!checkPermissionForReadExtertalStorage(context)){
+        if (!checkPermissionForReadExtertalStorage(context)) {
             wallpaperImageView.setBackgroundColor(getResources().getColor(R.color.linkTextColor));
             return;
         }
@@ -215,17 +219,17 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
     private boolean checkPermissionForReadExtertalStorage(final Context context) {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N) {
             int result = context.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE);
-            if(result == PackageManager.PERMISSION_GRANTED){
+            if (result == PackageManager.PERMISSION_GRANTED) {
                 return true;
-            }else{
+            } else {
                 mPermissionAlertView = findViewById(R.id.needpermission_ImageView);
                 mPermissionAlertView.setClickable(true);
                 mPermissionAlertView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        if (DEBUG)Log.d(TAG, "checkPermissionForReadExtertalStorage");
+                        if (DEBUG) Log.d(TAG, "checkPermissionForReadExtertalStorage");
 
-                        requestPermissionForReadExtertalStorage( context);
+                        requestPermissionForReadExtertalStorage(context);
 
                     }
                 });
@@ -237,12 +241,12 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
     }
 
 
-    public void requestPermissionForReadExtertalStorage(Context context){
+    public void requestPermissionForReadExtertalStorage(Context context) {
         try {
             ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
                     READ_STORAGE_PERMISSION_REQUEST_CODE);
         } catch (Exception e) {
-            Log.e(TAG, "Can't requestPermissionForReadExtertalStorage",e);
+            Log.e(TAG, "Can't requestPermissionForReadExtertalStorage", e);
         }
     }
 
@@ -253,7 +257,7 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     mPermissionAlertView.setVisibility(View.GONE);
                     drawWallpaper(this);
-                }else{
+                } else {
                     Toast toast = Toast.makeText(this, R.string.request_permission, Toast.LENGTH_LONG);
                     toast.show();
                 }
@@ -261,7 +265,7 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
         }
     }
 
-    private void calcBaseColors(String theme){
+    private void calcBaseColors(String theme) {
         if (SettingsActivity.THEME_LIGHT.equals(theme)) { //mTheme to args
             mBaseBgColor = ContextCompat.getColor(this, R.color.bgColor);
             mTextColor = ContextCompat.getColor(this, R.color.textColor);
@@ -271,7 +275,7 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
         }
     }
 
-    private void  calcBgColor(int transparency, int bgColor){
+    private void calcBgColor(int transparency, int bgColor) {
         mBgColor = Utils.setTransparency(transparency, bgColor);
     }
 
@@ -283,7 +287,7 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
 
         //header
         int headerTransparency = Utils.getTransparency(mBgColor) + HEADER_TRANSPARENCY_DIFF;
-        if(headerTransparency > 255){
+        if (headerTransparency > 255) {
             headerTransparency = 255;
         }
         int headerColor = Utils.setTransparency(headerTransparency, mBgColor);
@@ -293,16 +297,16 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
         TextView titleTextView = (TextView) findViewById(R.id.titleTextView);
         titleTextView.setTextColor(mTextColor);
         titleTextView.setText(titleText);
-        titleTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP,mTextSize + TEXT_SIZE_DIFF);
+        titleTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, mTextSize + TEXT_SIZE_DIFF);
         ((ImageView) findViewById(R.id.settingsImageButton)).setColorFilter(mTextColor);
         ((ImageView) findViewById(R.id.refreshImageButton)).setColorFilter(mTextColor);
     }
 
-    private void  drawListView(){
+    private void drawListView() {
         mListView = (ListView) findViewById(R.id.listView);
         mListAdapter = new DataAdapter(this);
 
-        if(mModel != null && mModel.categories != null){
+        if (mModel != null && mModel.categories != null) {
             mListAdapter.setData(mModel.categories, mLang);
         }
         mListAdapter.setTheme(this, mTheme);
@@ -348,7 +352,6 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
     private int calcTextSize(Context context, int appWidgetId) {
         return loadPrefTextSize(context, appWidgetId, BASE_TEXT_SIZE_SP + 4);
     }
-
 
 
     View.OnClickListener mOnClickListener = new View.OnClickListener() {
@@ -397,7 +400,7 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
                     mLogic = OnThisDayLogic.getInstance(mDateString, mLang, SettingsActivity.this);
                     mLogic.registerModelChangedListener(SettingsActivity.this);
 
-                    if(mListAdapter != null){
+                    if (mListAdapter != null) {
                         mListAdapter.clearData();
                         mListAdapter.notifyDataSetChanged();
                     }
@@ -459,12 +462,12 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
         mTransparencySeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if(fromUser){
-                   mTransparency = invert(progress);
-                   calcBgColor(mTransparency, mBaseBgColor);
-                   drawWidget(mLang, mDate, mTheme);
-                   mListAdapter.setTransparency(mTransparency);
-                   mListAdapter.notifyDataSetChanged();
+                if (fromUser) {
+                    mTransparency = invert(progress);
+                    calcBgColor(mTransparency, mBaseBgColor);
+                    drawWidget(mLang, mDate, mTheme);
+                    mListAdapter.setTransparency(mTransparency);
+                    mListAdapter.notifyDataSetChanged();
                 }
             }
 
@@ -485,19 +488,18 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
     }
 
     /**
-     *
      * @param context
      * @param textSize - in sp
      */
     void prepareTextSizeSeekBar(Context context, int textSize) {
         mTextSizeSeekBar = findViewById(R.id.testSize_seekBar);
-        int progress = (textSize - BASE_TEXT_SIZE_SP)/2;
+        int progress = (textSize - BASE_TEXT_SIZE_SP) / 2;
         mTextSizeSeekBar.setProgress(progress);
         mTextSizeSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if(fromUser){
-                    mTextSize = progress*2 + BASE_TEXT_SIZE_SP;
+                if (fromUser) {
+                    mTextSize = progress * 2 + BASE_TEXT_SIZE_SP;
                     drawWidget(mLang, mDate, mTheme);
                     mListAdapter.setTextSize(mTextSize);
                     mListAdapter.notifyDataSetChanged();
@@ -515,7 +517,6 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
             }
         });
     }
-
 
 
     // Write settings to the SharedPreferences object for this widget
@@ -629,8 +630,50 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
 
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
         int anInt = prefs.getInt(PREF_TEXT_SIZE_KEY + appWidgetId, defValue);
-        Log.d(TAG, "loadPrefTextSize mTextSize:"+anInt);
+        Log.d(TAG, "loadPrefTextSize mTextSize:" + anInt);
         return anInt;
+    }
+
+    static boolean isNeedRate(Context context) {
+        fillTimes(context);
+        long nowTime = System.currentTimeMillis();
+        if (nowTime > sRateTimeValue) {
+            return true;
+        }
+        return false;
+    }
+
+    static void setNeedRate(Context context, boolean isNeedRate) {
+        fillTimes(context);
+        if (!isNeedRate) {
+            //see you next year
+            sRateTimeValue = System.currentTimeMillis() + 30 * 24 * 3600 * 1000L;
+            SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
+            prefs.putLong(PREF_RATE_TIME, sRateTimeValue);
+            prefs.apply();
+        }
+    }
+
+
+
+    private static void fillTimes(Context context) {
+        boolean needSave = false;
+
+        if (sRateTimeValue == 0) {
+            SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
+            sRateTimeValue = prefs.getLong(PREF_RATE_TIME, 0);
+            if (sRateTimeValue == 0) {
+                sRateTimeValue = System.currentTimeMillis() + 3 * 24 * 3600 * 1000;//plus 3 days
+                needSave = true;
+            }
+        }
+
+        if (needSave) {
+            SharedPreferences.Editor prefEditor = context.getSharedPreferences(PREFS_NAME, 0).edit();
+            prefEditor.putLong(PREF_RATE_TIME, sRateTimeValue);
+            prefEditor.apply();
+        }
+
     }
 
     @Override
@@ -661,11 +704,11 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
         );
     }
 
-    private void hideLoading(){
+    private void hideLoading() {
         mEmptyView.setVisibility(View.GONE);
     }
 
-    private void showLoading(){
+    private void showLoading() {
         String loadingString = LocalizationUtils.getLocalizedString(R.string.loading_inprogress,
                 mLang,
                 SettingsActivity.this);
@@ -683,13 +726,14 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
 
     /**
      * TODO implement method
+     *
      * @param mModel
      */
     private void updateViews(final OnThisDayModel mModel) {
         if (DEBUG)
             Log.d(TAG, "updateViews...");
 
-        if(mListAdapter != null){
+        if (mListAdapter != null) {
             //change data in UI Thread
             mListView.post(new Runnable() {
                 @Override
