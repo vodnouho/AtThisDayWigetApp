@@ -663,7 +663,7 @@ public class SettingsActivity extends AppCompatActivity implements OnThisDayLogi
             SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
             sRateTimeValue = prefs.getLong(PREF_RATE_TIME, 0);
             if (sRateTimeValue == 0) {
-                sRateTimeValue = System.currentTimeMillis() + 3 * 24 * 3600 * 1000;//plus 3 days
+                sRateTimeValue = System.currentTimeMillis() + 3 * 24 * 3600 * 1000;//1000*60*2;//plus 3 days
                 needSave = true;
             }
         }

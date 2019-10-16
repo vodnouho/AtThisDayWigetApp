@@ -96,7 +96,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="left"
                 android:text="@string/plz_rate_otd"
-                android:textAppearance="?android:attr/textAppearanceMedium"/>
+                android:textAppearance="?android:attr/textAppearanceSmall"/>
 
             <Button
                 android:id="@+id/rateButton"
@@ -104,6 +104,13 @@
                 android:layout_height="wrap_content"
                 android:text="@string/rate"
                 />
+            <Button
+                android:id="@+id/rateNoButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/rateNo"
+                />
+
         </LinearLayout>
 
         <LinearLayout

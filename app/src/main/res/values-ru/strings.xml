@@ -48,6 +48,7 @@
     <string name="request_permission">Мне нужно ваше разрешение, чтобы показать обои основного экрана.</string>
 
     <string name="rate">Оценить виджет \"В этот день\" </string>
+    <string name="rateNo">Нет, спасибо</string>
     <string name="plz_rate_otd">Спасибо, что используете виджет \"В этот день\"!\nДля нас оцень важны ваши отзывы о приложении.\nПожалуйста, оцените его.</string>
 
 </resources>

@@ -37,8 +37,10 @@ public class OTDWidgetProvider extends AppWidgetProvider {
     private static final String CONTENT_PROVIDER_PACKAGE = "ru.vodnouho.android.yourday";
     public static final String RUN_ACTION = "ru.vodnouho.android.RUN_ACTION"; //Action for run OTD app
     public static final String ACTION_REFRESH = "ru.vodnouho.android.ACTION_REFRESH"; //Action for refresh widget
+    
     public static final String ACTION_RATE = "ru.vodnouho.android.ACTION_RATE"; //Action for refresh widget
-
+    public static final String ACTION_RATE_NO = "ru.vodnouho.android.ACTION_RATE_NO"; //Action for refresh widget
+    
     public static final String ACTION_DATE_CHANGED = "android.intent.action.DATE_CHANGED"; //Action for refresh widget
 
     public static final String EXTRA_ITEM = "ru.vodnouho.android.EXTRA_ITEM"; //Action for run OTD app
@@ -87,15 +89,11 @@ public class OTDWidgetProvider extends AppWidgetProvider {
 
         }else if(intent.getAction().equals(ACTION_RATE)){
             //save action
-
-
             SettingsActivity.setNeedRate(context, false);
 
             Intent nIntent;
 
             try {
-                //TODO link to BETA !!!
-                //intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/apps/testing/ru.vodnouho.android.yourday"));
                 nIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + WIDGET_PACKAGE));
             } catch (android.content.ActivityNotFoundException anfe) {
                 nIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + WIDGET_PACKAGE));
@@ -110,6 +108,16 @@ public class OTDWidgetProvider extends AppWidgetProvider {
                 updateAppWidget(context, mgr, appWidgetIds[i], false);
             }
 
+        }else if(intent.getAction().equals(ACTION_RATE_NO)){
+            //save action
+            SettingsActivity.setNeedRate(context, false);
+
+            int[] appWidgetIds = mgr.getAppWidgetIds(
+                    new ComponentName(context, OTDWidgetProvider.class)
+            );
+            for (int i = 0; i < appWidgetIds.length; i++) {
+                updateAppWidget(context, mgr, appWidgetIds[i], false);
+            }
 
         } else if (intent.getAction().equals(ATDAppWidgetService.ACTION_NO_DATA)) {
             if (LOGD)
@@ -400,9 +408,10 @@ public class OTDWidgetProvider extends AppWidgetProvider {
 
         // Create an Intent to launch Play Market
 
-        PendingIntent refreshIntent = getRefreshIntent(context, ACTION_RATE, appWidgetId, new Date(), settingLang);
-
-        rv.setOnClickPendingIntent(R.id.rateButton, refreshIntent);
+        PendingIntent rateIntent = getRefreshIntent(context, ACTION_RATE, appWidgetId, new Date(), settingLang);
+        rv.setOnClickPendingIntent(R.id.rateButton, rateIntent);
+        PendingIntent rateNoIntent = getRefreshIntent(context, ACTION_RATE_NO, appWidgetId, new Date(), settingLang);
+        rv.setOnClickPendingIntent(R.id.rateNoButton, rateNoIntent);
 
         return rv;
 
