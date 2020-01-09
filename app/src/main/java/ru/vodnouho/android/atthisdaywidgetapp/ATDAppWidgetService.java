@@ -411,6 +411,10 @@ public class ATDAppWidgetService extends RemoteViewsService {
                     mViewsHolder.add(new RemoteViewsHolder(rView, RemoteViewsHolder.TYPE_CATEGORY_NAME));
 
                     ArrayList<Fact> facts = c.getFavFacts();
+                    if(facts == null){
+                        mViewsHolder.remove(mViewsHolder.size()-1);
+                        continue;
+                    }
                     for (int i = 0; i < facts.size(); i++) {
                         Fact f = facts.get(i);
 

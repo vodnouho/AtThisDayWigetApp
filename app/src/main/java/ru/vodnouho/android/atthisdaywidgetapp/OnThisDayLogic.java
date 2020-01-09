@@ -212,6 +212,9 @@ public class OnThisDayLogic implements Loader.OnLoadCompleteListener<Cursor>, Lo
         for (Category c : categories) {
 
             ArrayList<Fact> facts = c.getFavFacts();
+            if(facts == null){
+                continue;
+            }
             for (int i = 0; i < facts.size(); ) {
                 Fact f = facts.get(i);
                 if (isFilteredFacts(f)) {

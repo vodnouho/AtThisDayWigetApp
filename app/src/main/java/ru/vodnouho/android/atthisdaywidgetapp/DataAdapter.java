@@ -116,6 +116,10 @@ public class DataAdapter extends BaseAdapter implements NetworkFetcher.OnLoadLis
             mDataHolders.add(vh);
 
             ArrayList<Fact> facts = c.getFavFacts();
+            if(facts == null){
+                mDataHolders.remove(vh);
+                continue;
+            }
             for (int i = 0; i < facts.size(); i++) {
                 Fact f = facts.get(i);
 
